@@ -11,15 +11,6 @@ kitchen-sink/svelte/dist
 .github-access-token
 packages/*.zip
 packages/*.tar.gz
-packages/core/**/*.js
-!packages/core/postinstall.js
-packages/core/**/*.css
-packages/core/**/*.less
-packages/core/**/*.ts
-packages/core/**/*.map
-packages/core/components
-packages/core/modules
-packages/core/utils
 
 packages/react/**/*.js
 packages/react/**/*.ts
