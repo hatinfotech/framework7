@@ -1,6 +1,6 @@
-import { Module } from './module.js';
+import { Module } from './module';
 export declare type Hero = {
-  id: string;
+    id: string;
 };
 export declare const heroModule: Module;
 export default heroModule;

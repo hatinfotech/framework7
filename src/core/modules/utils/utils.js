@@ -1,11 +1,11 @@
-import * as utils from '../../shared/utils.js';
+import Utils from '../../utils/utils';
 
 export default {
   name: 'utils',
   proto: {
-    utils,
+    utils: Utils,
   },
   static: {
-    utils,
+    utils: Utils,
   },
 };

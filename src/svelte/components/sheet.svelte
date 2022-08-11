@@ -1,18 +1,16 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
-  import { modalStateClasses } from '../shared/modal-state-classes.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
 
   export let opened = undefined;
-  export let animate = undefined;
   export let top = undefined;
   export let bottom = undefined;
   export let position = undefined;
@@ -25,20 +23,22 @@
   export let swipeToClose = undefined;
   export let swipeToStep = undefined;
   export let swipeHandler = undefined;
-  export let containerEl = undefined;
 
   let el;
   let innerEl;
   let f7Sheet;
 
-  const state = {
-    isOpened: opened,
-    isClosing: false,
-    swipeStep: false,
-  };
-
   export function instance() {
     return f7Sheet;
+  }
+
+  export function open(anim) {
+    if (!f7Sheet) return undefined;
+    return f7Sheet.open(anim);
+  }
+  export function close(anim) {
+    if (!f7Sheet) return undefined;
+    return f7Sheet.close(anim);
   }
 
   $: positionComputed = (() => {
@@ -48,52 +48,43 @@
     return 'bottom';
   })();
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'sheet-modal',
     `sheet-modal-${positionComputed}`,
     {
       'sheet-modal-push': push,
-      'modal-in-swipe-step': state.swipeStep,
     },
-
-    modalStateClasses(state),
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function onOpen(instance) {
-    Object.assign(state, {
-      isOpened: true,
-      isClosing: false,
-    });
-    emit('sheetOpen', [instance]);
-    opened = true;
+    dispatch('sheetOpen', [instance]);
+    if (typeof $$props.onSheetOpen === 'function') $$props.onSheetOpen(instance);
   }
   function onOpened(instance) {
-    emit('sheetOpened', [instance]);
+    dispatch('sheetOpened', [instance]);
+    if (typeof $$props.onSheetOpened === 'function') $$props.onSheetOpened(instance);
   }
   function onClose(instance) {
-    Object.assign(state, {
-      isOpened: false,
-      isClosing: true,
-    });
-    emit('sheetClose', [instance]);
+    dispatch('sheetClose', [instance]);
+    if (typeof $$props.onSheetClose === 'function') $$props.onSheetClose(instance);
   }
   function onClosed(instance) {
-    Object.assign(state, {
-      isClosing: false,
-    });
-    emit('sheetClosed', [instance]);
-    opened = false;
+    dispatch('sheetClosed', [instance]);
+    if (typeof $$props.onSheetClosed === 'function') $$props.onSheetClosed(instance);
   }
   function onStepProgress(instance, progress) {
-    emit('sheetStepProgress', [instance, progress]);
+    dispatch('sheetStepProgress', [instance, progress]);
+    if (typeof $$props.onSheetStepProgress === 'function') $$props.onSheetStepProgress(instance, progress);
   }
   function onStepOpen(instance) {
-    emit('sheetStepOpen', [instance]);
+    dispatch('sheetStepOpen', [instance]);
+    if (typeof $$props.onSheetStepOpen === 'function') $$props.onSheetStepOpen(instance);
   }
   function onStepClose(instance) {
-    emit('sheetStepClose', [instance]);
+    dispatch('sheetStepClose', [instance]);
+    if (typeof $$props.onSheetStepClose === 'function') $$props.onSheetStepClose(instance);
   }
 
   let initialWatched = false;
@@ -120,34 +111,26 @@
         stepOpen: onStepOpen,
         stepClose: onStepClose,
         stepProgress: onStepProgress,
-        // eslint-disable-next-line
-        _swipeStep(isSwipeStep) {
-          state.swipeStep = isSwipeStep;
-        },
       },
     };
     if (typeof backdrop !== 'undefined') params.backdrop = backdrop;
-    if (typeof animate !== 'undefined') params.animate = animate;
     if (typeof backdropEl !== 'undefined') params.backdropEl = backdropEl;
-    if (typeof closeByBackdropClick !== 'undefined')
-      params.closeByBackdropClick = closeByBackdropClick;
-    if (typeof closeByOutsideClick !== 'undefined')
-      params.closeByOutsideClick = closeByOutsideClick;
+    if (typeof closeByBackdropClick !== 'undefined') params.closeByBackdropClick = closeByBackdropClick;
+    if (typeof closeByOutsideClick !== 'undefined') params.closeByOutsideClick = closeByOutsideClick;
     if (typeof closeOnEscape !== 'undefined') params.closeOnEscape = closeOnEscape;
     if (typeof swipeToClose !== 'undefined') params.swipeToClose = swipeToClose;
     if (typeof swipeToStep !== 'undefined') params.swipeToStep = swipeToStep;
     if (typeof swipeHandler !== 'undefined') params.swipeHandler = swipeHandler;
-    if (typeof containerEl !== 'undefined') params.containerEl = containerEl;
 
-    f7ready(() => {
+    f7.ready(() => {
       if (el && innerEl) {
-        const dom7 = app.f7.$;
+        const dom7 = f7.instance.$;
         const fixedEls = dom7(innerEl).children('.navbar, .toolbar, .tabbar, .searchbar');
         if (fixedEls.length) {
           dom7(el).prepend(fixedEls);
         }
       }
-      f7Sheet = app.f7.sheet.create(params);
+      f7Sheet = f7.instance.sheet.create(params);
       if (opened) {
         f7Sheet.open(false);
       }
@@ -156,14 +139,16 @@
 
   onDestroy(() => {
     if (f7Sheet) f7Sheet.destroy();
-    f7Sheet = null;
+    f7Sheet = undefined;
   });
 </script>
-
-<div class={classes} bind:this={el} {...restProps($$restProps)}>
-  <slot sheet={f7Sheet} name="fixed" />
+<div
+  class={classes}
+  bind:this={el}
+  {...restProps($$restProps)}
+>
+  <slot name="fixed" />
   <div class="sheet-modal-inner" bind:this={innerEl}>
-    <slot sheet={f7Sheet} />
-    <slot sheet={f7Sheet} name="static" />
+    <slot />
   </div>
 </div>

@@ -1,5 +1,5 @@
-import Actions from './actions-class.js';
-import ModalMethods from '../../shared/modal-methods.js';
+import Actions from './actions-class';
+import ModalMethods from '../../utils/modal-methods';
 
 export default {
   name: 'actions',
@@ -9,13 +9,11 @@ export default {
       forceToPopover: false,
       backdrop: true,
       backdropEl: undefined,
-      backdropUnique: false,
       cssClass: null,
       closeByBackdropClick: true,
       closeOnEscape: false,
       render: null,
       renderPopover: null,
-      containerEl: null,
     },
   },
   static: {

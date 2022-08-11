@@ -2,10 +2,7 @@
   <f7-page @page:beforeremove="onPageBeforeRemove" @page:beforeout="onPageBeforeOut">
     <f7-navbar title="Sheet Modal" back-link="Back"></f7-navbar>
     <f7-block strong>
-      <p>
-        Sheet Modals slide up from the bottom of the screen to reveal more content. Such modals
-        allow to create custom overlays with custom content.
-      </p>
+      <p>Sheet Modals slide up from the bottom of the screen to reveal more content. Such modals allow to create custom overlays with custom content.</p>
       <f7-row tag="p">
         <f7-button class="col" fill sheet-open=".demo-sheet">Open Sheet</f7-button>
         <f7-button class="col" fill @click="createSheet">Create Dynamic Sheet</f7-button>
@@ -20,10 +17,7 @@
 
     <f7-block-title>Push View</f7-block-title>
     <f7-block strong>
-      <p>
-        Sheet can push view behind on open. By default it has effect only when `safe-area-inset-top`
-        is more than zero (iOS fullscreen webapp or iOS cordova app)
-      </p>
+      <p>Sheet can push view behind on open. By default it has effect only when `safe-area-inset-top` is more than zero (iOS fullscreen webapp or iOS cordova app)</p>
       <p>
         <f7-button fill sheet-open=".demo-sheet-push">Sheet Push</f7-button>
       </p>
@@ -31,10 +25,7 @@
 
     <f7-block-title>Swipeable Sheet</f7-block-title>
     <f7-block strong>
-      <p>
-        Sheet modal can be closed with swipe to top (for top Sheet) or bottom (for default Bottom
-        sheet):
-      </p>
+      <p>Sheet modal can be closed with swipe to top (for top Sheet) or bottom (for default Bottom sheet):</p>
       <p>
         <f7-button fill sheet-open=".demo-sheet-swipe-to-close">Swipe To Close</f7-button>
       </p>
@@ -44,7 +35,7 @@
       </p>
     </f7-block>
 
-    <f7-sheet v-model:opened="sheetOpened" class="demo-sheet">
+    <f7-sheet class="demo-sheet" :opened="sheetOpened" @sheet:closed="sheetOpened = false">
       <f7-toolbar>
         <div class="left"></div>
         <div class="right">
@@ -54,31 +45,11 @@
       <!-- Scrollable sheet content -->
       <f7-page-content>
         <f7-block>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quae ducimus dolorum ipsa
-            aliquid accusamus perferendis laboriosam delectus numquam minima animi, libero illo in
-            tempora harum sequi corporis alias ex adipisci.
-          </p>
-          <p>
-            Sunt magni enim saepe quasi aspernatur delectus consectetur fugiat necessitatibus qui
-            sed, similique quis facere tempora, laudantium quae expedita ea, aperiam dolores. Aut
-            deserunt soluta alias magnam. Consequatur, nisi, enim.
-          </p>
-          <p>
-            Eaque maiores ducimus, impedit unde culpa qui, explicabo accusamus, non vero corporis
-            voluptatibus similique odit ab. Quaerat quasi consectetur quidem libero? Repudiandae
-            adipisci vel voluptatum, autem libero minus dignissimos repellat.
-          </p>
-          <p>
-            Iusto, est corrupti! Totam minus voluptas natus esse possimus nobis, delectus veniam
-            expedita sapiente ut cum reprehenderit aliquid odio amet praesentium vero temporibus
-            obcaecati beatae aspernatur incidunt, perferendis voluptates doloribus?
-          </p>
-          <p>
-            Illum id laborum tempore, doloribus culpa labore ex iusto odit. Quibusdam consequuntur
-            totam nam obcaecati, enim cumque nobis, accusamus, quos voluptates, voluptatibus
-            sapiente repellendus nesciunt praesentium velit ipsa illo iusto.
-          </p>
+          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quae ducimus dolorum ipsa aliquid accusamus perferendis laboriosam delectus numquam minima animi, libero illo in tempora harum sequi corporis alias ex adipisci.</p>
+          <p>Sunt magni enim saepe quasi aspernatur delectus consectetur fugiat necessitatibus qui sed, similique quis facere tempora, laudantium quae expedita ea, aperiam dolores. Aut deserunt soluta alias magnam. Consequatur, nisi, enim.</p>
+          <p>Eaque maiores ducimus, impedit unde culpa qui, explicabo accusamus, non vero corporis voluptatibus similique odit ab. Quaerat quasi consectetur quidem libero? Repudiandae adipisci vel voluptatum, autem libero minus dignissimos repellat.</p>
+          <p>Iusto, est corrupti! Totam minus voluptas natus esse possimus nobis, delectus veniam expedita sapiente ut cum reprehenderit aliquid odio amet praesentium vero temporibus obcaecati beatae aspernatur incidunt, perferendis voluptates doloribus?</p>
+          <p>Illum id laborum tempore, doloribus culpa labore ex iusto odit. Quibusdam consequuntur totam nam obcaecati, enim cumque nobis, accusamus, quos voluptates, voluptatibus sapiente repellendus nesciunt praesentium velit ipsa illo iusto.</p>
         </f7-block>
       </f7-page-content>
     </f7-sheet>
@@ -93,31 +64,11 @@
       <!-- Scrollable sheet content -->
       <f7-page-content>
         <f7-block>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quae ducimus dolorum ipsa
-            aliquid accusamus perferendis laboriosam delectus numquam minima animi, libero illo in
-            tempora harum sequi corporis alias ex adipisci.
-          </p>
-          <p>
-            Sunt magni enim saepe quasi aspernatur delectus consectetur fugiat necessitatibus qui
-            sed, similique quis facere tempora, laudantium quae expedita ea, aperiam dolores. Aut
-            deserunt soluta alias magnam. Consequatur, nisi, enim.
-          </p>
-          <p>
-            Eaque maiores ducimus, impedit unde culpa qui, explicabo accusamus, non vero corporis
-            voluptatibus similique odit ab. Quaerat quasi consectetur quidem libero? Repudiandae
-            adipisci vel voluptatum, autem libero minus dignissimos repellat.
-          </p>
-          <p>
-            Iusto, est corrupti! Totam minus voluptas natus esse possimus nobis, delectus veniam
-            expedita sapiente ut cum reprehenderit aliquid odio amet praesentium vero temporibus
-            obcaecati beatae aspernatur incidunt, perferendis voluptates doloribus?
-          </p>
-          <p>
-            Illum id laborum tempore, doloribus culpa labore ex iusto odit. Quibusdam consequuntur
-            totam nam obcaecati, enim cumque nobis, accusamus, quos voluptates, voluptatibus
-            sapiente repellendus nesciunt praesentium velit ipsa illo iusto.
-          </p>
+          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quae ducimus dolorum ipsa aliquid accusamus perferendis laboriosam delectus numquam minima animi, libero illo in tempora harum sequi corporis alias ex adipisci.</p>
+          <p>Sunt magni enim saepe quasi aspernatur delectus consectetur fugiat necessitatibus qui sed, similique quis facere tempora, laudantium quae expedita ea, aperiam dolores. Aut deserunt soluta alias magnam. Consequatur, nisi, enim.</p>
+          <p>Eaque maiores ducimus, impedit unde culpa qui, explicabo accusamus, non vero corporis voluptatibus similique odit ab. Quaerat quasi consectetur quidem libero? Repudiandae adipisci vel voluptatum, autem libero minus dignissimos repellat.</p>
+          <p>Iusto, est corrupti! Totam minus voluptas natus esse possimus nobis, delectus veniam expedita sapiente ut cum reprehenderit aliquid odio amet praesentium vero temporibus obcaecati beatae aspernatur incidunt, perferendis voluptates doloribus?</p>
+          <p>Illum id laborum tempore, doloribus culpa labore ex iusto odit. Quibusdam consequuntur totam nam obcaecati, enim cumque nobis, accusamus, quos voluptates, voluptatibus sapiente repellendus nesciunt praesentium velit ipsa illo iusto.</p>
         </f7-block>
       </f7-page-content>
     </f7-sheet>
@@ -132,58 +83,36 @@
       <!-- Scrollable sheet content -->
       <f7-page-content>
         <f7-block>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quae ducimus dolorum ipsa
-            aliquid accusamus perferendis laboriosam delectus numquam minima animi, libero illo in
-            tempora harum sequi corporis alias ex adipisci.
-          </p>
-          <p>
-            Sunt magni enim saepe quasi aspernatur delectus consectetur fugiat necessitatibus qui
-            sed, similique quis facere tempora, laudantium quae expedita ea, aperiam dolores. Aut
-            deserunt soluta alias magnam. Consequatur, nisi, enim.
-          </p>
-          <p>
-            Eaque maiores ducimus, impedit unde culpa qui, explicabo accusamus, non vero corporis
-            voluptatibus similique odit ab. Quaerat quasi consectetur quidem libero? Repudiandae
-            adipisci vel voluptatum, autem libero minus dignissimos repellat.
-          </p>
-          <p>
-            Iusto, est corrupti! Totam minus voluptas natus esse possimus nobis, delectus veniam
-            expedita sapiente ut cum reprehenderit aliquid odio amet praesentium vero temporibus
-            obcaecati beatae aspernatur incidunt, perferendis voluptates doloribus?
-          </p>
-          <p>
-            Illum id laborum tempore, doloribus culpa labore ex iusto odit. Quibusdam consequuntur
-            totam nam obcaecati, enim cumque nobis, accusamus, quos voluptates, voluptatibus
-            sapiente repellendus nesciunt praesentium velit ipsa illo iusto.
-          </p>
+          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quae ducimus dolorum ipsa aliquid accusamus perferendis laboriosam delectus numquam minima animi, libero illo in tempora harum sequi corporis alias ex adipisci.</p>
+          <p>Sunt magni enim saepe quasi aspernatur delectus consectetur fugiat necessitatibus qui sed, similique quis facere tempora, laudantium quae expedita ea, aperiam dolores. Aut deserunt soluta alias magnam. Consequatur, nisi, enim.</p>
+          <p>Eaque maiores ducimus, impedit unde culpa qui, explicabo accusamus, non vero corporis voluptatibus similique odit ab. Quaerat quasi consectetur quidem libero? Repudiandae adipisci vel voluptatum, autem libero minus dignissimos repellat.</p>
+          <p>Iusto, est corrupti! Totam minus voluptas natus esse possimus nobis, delectus veniam expedita sapiente ut cum reprehenderit aliquid odio amet praesentium vero temporibus obcaecati beatae aspernatur incidunt, perferendis voluptates doloribus?</p>
+          <p>Illum id laborum tempore, doloribus culpa labore ex iusto odit. Quibusdam consequuntur totam nam obcaecati, enim cumque nobis, accusamus, quos voluptates, voluptatibus sapiente repellendus nesciunt praesentium velit ipsa illo iusto.</p>
         </f7-block>
       </f7-page-content>
     </f7-sheet>
 
-    <f7-sheet class="demo-sheet-swipe-to-close" style="height: auto" swipe-to-close push backdrop>
+    <f7-sheet
+      class="demo-sheet-swipe-to-close"
+      style="height:auto"
+      swipe-to-close
+      push
+      backdrop
+    >
       <div class="swipe-handler"></div>
 
       <f7-page-content>
         <f7-block-title large>Hello!</f7-block-title>
         <f7-block>
-          <p>
-            Eaque maiores ducimus, impedit unde culpa qui, explicabo accusamus, non vero corporis
-            voluptatibus similique odit ab. Quaerat quasi consectetur quidem libero? Repudiandae
-            adipisci vel voluptatum, autem libero minus dignissimos repellat.
-          </p>
-          <p>
-            Iusto, est corrupti! Totam minus voluptas natus esse possimus nobis, delectus veniam
-            expedita sapiente ut cum reprehenderit aliquid odio amet praesentium vero temporibus
-            obcaecati beatae aspernatur incidunt, perferendis voluptates doloribus?
-          </p>
+          <p>Eaque maiores ducimus, impedit unde culpa qui, explicabo accusamus, non vero corporis voluptatibus similique odit ab. Quaerat quasi consectetur quidem libero? Repudiandae adipisci vel voluptatum, autem libero minus dignissimos repellat.</p>
+          <p>Iusto, est corrupti! Totam minus voluptas natus esse possimus nobis, delectus veniam expedita sapiente ut cum reprehenderit aliquid odio amet praesentium vero temporibus obcaecati beatae aspernatur incidunt, perferendis voluptates doloribus?</p>
         </f7-block>
       </f7-page-content>
     </f7-sheet>
 
     <f7-sheet
       class="demo-sheet-swipe-to-step"
-      style="height: auto"
+      style="height:auto"
       swipe-to-close
       swipe-to-step
       push
@@ -203,41 +132,20 @@
       <f7-block-title medium class="margin-top">Your order:</f7-block-title>
       <f7-list no-hairlines>
         <f7-list-item title="Item 1">
-          <template #after>
-            <b class="text-color-black">$200</b>
-          </template>
+          <b slot="after" class="text-color-black">$200</b>
         </f7-list-item>
         <f7-list-item title="Item 2">
-          <template #after>
-            <b class="text-color-black">$180</b>
-          </template>
+          <b slot="after" class="text-color-black">$180</b>
         </f7-list-item>
         <f7-list-item title="Delivery">
-          <template #after>
-            <b class="text-color-black">$120</b>
-          </template>
+          <b slot="after" class="text-color-black">$120</b>
         </f7-list-item>
       </f7-list>
     </f7-sheet>
   </f7-page>
 </template>
 <script>
-import {
-  f7Page,
-  f7Navbar,
-  f7Sheet,
-  f7PageContent,
-  f7Toolbar,
-  f7BlockTitle,
-  f7Block,
-  f7Button,
-  f7Link,
-  f7Row,
-  f7List,
-  f7ListItem,
-  f7,
-} from 'framework7-vue';
-import $ from 'dom7';
+import { f7Page, f7Navbar, f7Sheet, f7PageContent, f7Toolbar, f7BlockTitle, f7Block, f7Button, f7Link, f7Row, f7List, f7ListItem } from 'framework7-vue';
 
 export default {
   components: {
@@ -261,15 +169,17 @@ export default {
   },
   methods: {
     toggleSwipeStep() {
-      f7.sheet.stepToggle('.demo-sheet-swipe-to-step');
+      const self = this;
+      self.$f7.sheet.stepToggle('.demo-sheet-swipe-to-step');
     },
     createSheet() {
       const self = this;
+      const $ = self.$$;
       // Create sheet modal
       if (!self.sheet) {
-        self.sheet = f7.sheet.create({
+        self.sheet = self.$f7.sheet.create({
           content: `
-            <div class="sheet-modal sheet-modal-bottom">
+            <div class="sheet-modal">
               <div class="toolbar">
                 <div class="toolbar-inner justify-content-flex-end">
                   <a href="#" class="link sheet-close">Close</a>
@@ -288,13 +198,14 @@ export default {
         });
       }
       // Close inline sheet
-      if ($('.demo-sheet.modal-in').length > 0) f7.sheet.close('.demo-sheet');
+      if ($('.demo-sheet.modal-in').length > 0) self.$f7.sheet.close('.demo-sheet');
       // Open it
       self.sheet.open();
     },
     onPageBeforeOut() {
+      const self = this;
       // Close opened sheets on page out
-      f7.sheet.close();
+      self.$f7.sheet.close();
     },
     onPageBeforeRemove() {
       const self = this;

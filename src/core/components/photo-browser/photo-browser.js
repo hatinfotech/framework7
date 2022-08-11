@@ -1,5 +1,5 @@
-import PhotoBrowser from './photo-browser-class.js';
-import ConstructorMethods from '../../shared/constructor-methods.js';
+import PhotoBrowser from './photo-browser-class';
+import ConstructorMethods from '../../utils/constructor-methods';
 
 export default {
   name: 'photoBrowser',
@@ -22,7 +22,7 @@ export default {
       navbarShowCount: undefined,
       view: undefined,
       url: 'photos/',
-      routableModals: false,
+      routableModals: true,
       virtualSlides: true,
 
       renderNavbar: undefined,
@@ -41,9 +41,6 @@ export default {
         speed: 300,
         loop: false,
         preloadImages: true,
-        keyboard: {
-          enabled: true,
-        },
         navigation: {
           nextEl: '.photo-browser-next',
           prevEl: '.photo-browser-prev',

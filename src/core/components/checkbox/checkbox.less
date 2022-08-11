@@ -1,5 +1,5 @@
 /* === Checkbox === */
-@import './checkbox-vars.less';
+@import url('./checkbox-vars.less');
 
 .checkbox {
   position: relative;
@@ -38,35 +38,35 @@
     });
   }
 }
-label.item-checkbox input[type='checkbox']:not(:checked) ~ .icon-checkbox,
-label.item-checkbox input[type='checkbox']:not(:checked) ~ * .icon-checkbox,
-.checkbox input[type='checkbox']:not(:checked) ~ i {
+label.item-checkbox input[type="checkbox"]:not(:checked) ~ .icon-checkbox,
+label.item-checkbox input[type="checkbox"]:not(:checked) ~ * .icon-checkbox,
+.checkbox input[type="checkbox"]:not(:checked) ~ i {
   &:after {
     font-size: 0;
   }
 }
-label.item-checkbox input[type='checkbox']:checked ~ .icon-checkbox,
-label.item-checkbox input[type='checkbox']:checked ~ * .icon-checkbox,
-.checkbox input[type='checkbox']:checked ~ i,
-label.item-checkbox input[type='checkbox']:indeterminate ~ .icon-checkbox,
-label.item-checkbox input[type='checkbox']:indeterminate ~ * .icon-checkbox,
-.checkbox input[type='checkbox']:indeterminate ~ i {
+label.item-checkbox input[type="checkbox"]:checked ~ .icon-checkbox,
+label.item-checkbox input[type="checkbox"]:checked ~ * .icon-checkbox,
+.checkbox input[type="checkbox"]:checked ~ i,
+label.item-checkbox input[type="checkbox"]:indeterminate ~ .icon-checkbox,
+label.item-checkbox input[type="checkbox"]:indeterminate ~ * .icon-checkbox,
+.checkbox input[type="checkbox"]:indeterminate ~ i {
   border-color: var(--f7-checkbox-active-color, var(--f7-theme-color));
   background-color: var(--f7-checkbox-active-color, var(--f7-theme-color));
   &:after {
     opacity: 1;
   }
 }
-label.item-checkbox input[type='checkbox']:indeterminate ~ .icon-checkbox,
-label.item-checkbox input[type='checkbox']:indeterminate ~ * .icon-checkbox,
-.checkbox input[type='checkbox']:indeterminate ~ i {
+label.item-checkbox input[type="checkbox"]:indeterminate ~ .icon-checkbox,
+label.item-checkbox input[type="checkbox"]:indeterminate ~ * .icon-checkbox,
+.checkbox input[type="checkbox"]:indeterminate ~ i {
   &:after {
     font-size: 0;
     content: '';
     position: absolute;
     top: 50%;
     width: 70%;
-    background: var(--f7-checkbox-icon-color);
+    background: #fff;
     height: 2px;
     border-radius: 2px;
     margin-top: -1px;
@@ -83,16 +83,14 @@ label.item-checkbox input[type='checkbox']:indeterminate ~ * .icon-checkbox,
 label.item-checkbox,
 .checkbox {
   cursor: pointer;
-  input[type='checkbox'],
-  input[type='radio'] {
+  input[type="checkbox"], input[type="radio"] {
     display: none;
   }
 }
 
 label.item-checkbox {
   transition-duration: 300ms;
-  .item-content,
-  &.item-content {
+  .item-content, &.item-content {
     .item-media {
       align-self: center;
     }
@@ -109,18 +107,17 @@ label.item-checkbox {
     .hairline-color(bottom, transparent);
     background-color: var(--f7-list-link-pressed-bg-color);
   }
-  &.disabled,
-  .disabled & {
+  &.disabled, .disabled & {
     .disabled();
   }
 }
 
 .if-ios-theme({
-  @import './checkbox-ios.less';
+  @import url('./checkbox-ios.less');
 });
 .if-md-theme({
-  @import './checkbox-md.less';
+  @import url('./checkbox-md.less');
 });
 .if-aurora-theme({
-  @import './checkbox-aurora.less';
+  @import url('./checkbox-aurora.less');
 });

@@ -1,19 +1,113 @@
-<script>
-  import {
-    f7,
-    theme,
-    Navbar,
-    Page,
-    BlockTitle,
-    Subnavbar,
-    Searchbar,
-    Block,
-    List,
-    ListItem,
-    ListInput,
-  } from 'framework7-svelte';
+<Page onPageInit={onPageInit} onPageBeforeRemove={onPageBeforeRemove}>
+  <Navbar title="Autocomplete" backLink="Back">
+    <Subnavbar inner={false}>
+      <Searchbar init={false} id="searchbar-autocomplete" disableButton={!theme.aurora}></Searchbar>
+    </Subnavbar>
+  </Navbar>
 
-  const fruits = 'Apple Apricot Avocado Banana Melon Orange Peach Pear Pineapple'.split(' ');
+  <BlockTitle>Dropdown Autocomplete</BlockTitle>
+  <Block>
+    <p>Dropdown autocomplete is good to use as a quick and simple solution to provide more options in addition to free-type value.</p>
+  </Block>
+  <List noHairlinesMd>
+    <div class="block-header" slot="before-list">Simple Dropdown Autocomplete</div>
+    <ListInput
+      label="Fruit"
+      inlineLabel
+      type="text"
+      placeholder="Fruit"
+      inputId="autocomplete-dropdown"
+    />
+  </List>
+
+  <List noHairlinesMd>
+    <div class="block-header" slot="before-list">Dropdown With Input Expand</div>
+    <ListInput
+      label="Fruit"
+      inlineLabel
+      type="text"
+      placeholder="Fruit"
+      inputId="autocomplete-dropdown-expand"
+    />
+  </List>
+  <List noHairlinesMd>
+    <div class="block-header" slot="before-list">Dropdown With All Values</div>
+    <ListInput
+      label="Fruit"
+      type="text"
+      placeholder="Fruit"
+      inputId="autocomplete-dropdown-all"
+    />
+  </List>
+  <List noHairlinesMd>
+    <div class="block-header" slot="before-list">Dropdown With Placeholder</div>
+    <ListInput
+      label="Fruit"
+      type="text"
+      placeholder="Fruit"
+      inputId="autocomplete-dropdown-placeholder"
+    />
+  </List>
+  <List noHairlinesMd>
+    <div class="block-header" slot="before-list">Dropdown With Typeahead</div>
+    <ListInput
+      label="Fruit"
+      type="text"
+      placeholder="Fruit"
+      inputId="autocomplete-dropdown-typeahead"
+    />
+  </List>
+  <List noHairlinesMd>
+    <div class="block-header" slot="before-list">Dropdown With Ajax-Data</div>
+    <ListInput
+      label="Language"
+      type="text"
+      placeholder="Language"
+      inputId="autocomplete-dropdown-ajax"
+    />
+  </List>
+  <List noHairlinesMd>
+    <div class="block-header" slot="before-list">Dropdown With Ajax-Data + Typeahead</div>
+    <ListInput
+      label="Language"
+      type="text"
+      placeholder="Language"
+      inputId="autocomplete-dropdown-ajax-typeahead"
+    />
+  </List>
+  <BlockTitle>Standalone Autocomplete</BlockTitle>
+  <Block>
+    <p>Standalone autocomplete provides better mobile UX by opening it in a new page or popup. Good to use when you need to get strict values without allowing free-type values.</p>
+  </Block>
+  <List>
+    <div class="block-header" slot="before-list">Simple Standalone Autocomplete</div>
+    <ListItem link="#" id="autocomplete-standalone" title="Favorite Fruite" after=" ">
+      <input type="hidden"/>
+    </ListItem>
+  </List>
+  <List>
+    <div class="block-header" slot="before-list">Popup Autocomplete</div>
+    <ListItem link="#" id="autocomplete-standalone-popup" title="Favorite Fruite" after=" ">
+      <input type="hidden"/>
+    </ListItem>
+  </List>
+  <List>
+    <div class="block-header" slot="before-list">Multiple Values</div>
+    <ListItem link="#" id="autocomplete-standalone-multiple" title="Favorite Fruite" after=" ">
+      <input type="hidden"/>
+    </ListItem>
+  </List>
+  <List>
+    <div class="block-header" slot="before-list">With Ajax-Data</div>
+    <ListItem link="#" id="autocomplete-standalone-ajax" title="Language" after=" ">
+      <input type="hidden"/>
+    </ListItem>
+  </List>
+</Page>
+<script>
+  import { f7, theme, Navbar, Page, BlockTitle, Subnavbar, Searchbar, Block, List, BlockHeader, ListItem, ListInput } from 'framework7-svelte';
+
+  let fruits = 'Apple Apricot Avocado Banana Melon Orange Peach Pear Pineapple'.split(' ');
 
   let autocompleteDropdownSimple;
   let autocompleteDropdownExpand;
@@ -166,7 +260,7 @@
 
         // Do Ajax request to Autocomplete data
         f7.request({
-          url: './autocomplete-languages.json',
+          url: './js/autocomplete-languages.json',
           method: 'GET',
           dataType: 'json',
           // send "query" to server. Useful in case you generate response dynamically
@@ -174,10 +268,9 @@
             query,
           },
           success(data) {
-            // Find matched items
+          // Find matched items
             for (let i = 0; i < data.length; i += 1) {
-              if (data[i].name.toLowerCase().indexOf(query.toLowerCase()) >= 0)
-                results.push(data[i]);
+              if (data[i].name.toLowerCase().indexOf(query.toLowerCase()) >= 0) results.push(data[i]);
             }
             // Hide Preoloader
             autocomplete.preloaderHide();
@@ -211,7 +304,7 @@
 
         // Do Ajax request to Autocomplete data
         f7.request({
-          url: './autocomplete-languages.json',
+          url: './js/autocomplete-languages.json',
           method: 'GET',
           dataType: 'json',
           // send "query" to server. Useful in case you generate response dynamically
@@ -219,10 +312,9 @@
             query,
           },
           success(data) {
-            // Find matched items
+          // Find matched items
             for (let i = 0; i < data.length; i += 1) {
-              if (data[i].name.toLowerCase().indexOf(query.toLowerCase()) === 0)
-                results.push(data[i]);
+              if (data[i].name.toLowerCase().indexOf(query.toLowerCase()) === 0) results.push(data[i]);
             }
             // Hide Preoloader
             autocomplete.preloaderHide();
@@ -337,7 +429,7 @@
         autocomplete.preloaderShow();
         // Do Ajax request to Autocomplete data
         f7.request({
-          url: './autocomplete-languages.json',
+          url: './js/autocomplete-languages.json',
           method: 'GET',
           dataType: 'json',
           // send "query" to server. Useful in case you generate response dynamically
@@ -345,10 +437,9 @@
             query,
           },
           success(data) {
-            // Find matched items
+          // Find matched items
             for (let i = 0; i < data.length; i += 1) {
-              if (data[i].name.toLowerCase().indexOf(query.toLowerCase()) >= 0)
-                results.push(data[i]);
+              if (data[i].name.toLowerCase().indexOf(query.toLowerCase()) >= 0) results.push(data[i]);
             }
             // Hide Preoloader
             autocomplete.preloaderHide();
@@ -403,105 +494,3 @@
     });
   }
 </script>
-
-<Page {onPageInit} {onPageBeforeRemove}>
-  <Navbar title="Autocomplete" backLink="Back">
-    <Subnavbar inner={false}>
-      <Searchbar init={false} id="searchbar-autocomplete" disableButton={!theme.aurora} />
-    </Subnavbar>
-  </Navbar>
-
-  <BlockTitle>Dropdown Autocomplete</BlockTitle>
-  <Block>
-    <p>
-      Dropdown autocomplete is good to use as a quick and simple solution to provide more options in
-      addition to free-type value.
-    </p>
-  </Block>
-  <List noHairlinesMd>
-    <div class="block-header" slot="before-list">Simple Dropdown Autocomplete</div>
-    <ListInput
-      label="Fruit"
-      inlineLabel
-      type="text"
-      placeholder="Fruit"
-      inputId="autocomplete-dropdown" />
-  </List>
-
-  <List noHairlinesMd>
-    <div class="block-header" slot="before-list">Dropdown With Input Expand</div>
-    <ListInput
-      label="Fruit"
-      inlineLabel
-      type="text"
-      placeholder="Fruit"
-      inputId="autocomplete-dropdown-expand" />
-  </List>
-  <List noHairlinesMd>
-    <div class="block-header" slot="before-list">Dropdown With All Values</div>
-    <ListInput label="Fruit" type="text" placeholder="Fruit" inputId="autocomplete-dropdown-all" />
-  </List>
-  <List noHairlinesMd>
-    <div class="block-header" slot="before-list">Dropdown With Placeholder</div>
-    <ListInput
-      label="Fruit"
-      type="text"
-      placeholder="Fruit"
-      inputId="autocomplete-dropdown-placeholder" />
-  </List>
-  <List noHairlinesMd>
-    <div class="block-header" slot="before-list">Dropdown With Typeahead</div>
-    <ListInput
-      label="Fruit"
-      type="text"
-      placeholder="Fruit"
-      inputId="autocomplete-dropdown-typeahead" />
-  </List>
-  <List noHairlinesMd>
-    <div class="block-header" slot="before-list">Dropdown With Ajax-Data</div>
-    <ListInput
-      label="Language"
-      type="text"
-      placeholder="Language"
-      inputId="autocomplete-dropdown-ajax" />
-  </List>
-  <List noHairlinesMd>
-    <div class="block-header" slot="before-list">Dropdown With Ajax-Data + Typeahead</div>
-    <ListInput
-      label="Language"
-      type="text"
-      placeholder="Language"
-      inputId="autocomplete-dropdown-ajax-typeahead" />
-  </List>
-  <BlockTitle>Standalone Autocomplete</BlockTitle>
-  <Block>
-    <p>
-      Standalone autocomplete provides better mobile UX by opening it in a new page or popup. Good
-      to use when you need to get strict values without allowing free-type values.
-    </p>
-  </Block>
-  <List>
-    <div class="block-header" slot="before-list">Simple Standalone Autocomplete</div>
-    <ListItem link="#" id="autocomplete-standalone" title="Favorite Fruite" after=" ">
-      <input type="hidden" />
-    </ListItem>
-  </List>
-  <List>
-    <div class="block-header" slot="before-list">Popup Autocomplete</div>
-    <ListItem link="#" id="autocomplete-standalone-popup" title="Favorite Fruite" after=" ">
-      <input type="hidden" />
-    </ListItem>
-  </List>
-  <List>
-    <div class="block-header" slot="before-list">Multiple Values</div>
-    <ListItem link="#" id="autocomplete-standalone-multiple" title="Favorite Fruite" after=" ">
-      <input type="hidden" />
-    </ListItem>
-  </List>
-  <List>
-    <div class="block-header" slot="before-list">With Ajax-Data</div>
-    <ListItem link="#" id="autocomplete-standalone-ajax" title="Language" after=" ">
-      <input type="hidden" />
-    </ListItem>
-  </List>
-</Page>

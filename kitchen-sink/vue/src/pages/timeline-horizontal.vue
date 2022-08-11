@@ -9,17 +9,13 @@
             <div class="timeline-item-time">12:56</div>
             <div class="timeline-item-title">Title 1</div>
             <div class="timeline-item-subtitle">Subtitle 1</div>
-            <div class="timeline-item-text">
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit
-            </div>
+            <div class="timeline-item-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit</div>
           </div>
           <div class="timeline-item-inner">
             <div class="timeline-item-time">13:15</div>
             <div class="timeline-item-title">Title 2</div>
             <div class="timeline-item-subtitle">Subtitle 2</div>
-            <div class="timeline-item-text">
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit
-            </div>
+            <div class="timeline-item-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit</div>
           </div>
           <div class="timeline-item-inner">
             <div class="timeline-item-time">14:45</div>
@@ -110,12 +106,13 @@
   </f7-page>
 </template>
 <script>
-import { f7Navbar, f7Page } from 'framework7-vue';
+  import { f7Navbar, f7Page, f7BlockTitle } from 'framework7-vue';
 
-export default {
-  components: {
-    f7Navbar,
-    f7Page,
-  },
-};
+  export default {
+    components: {
+      f7Navbar,
+      f7Page,
+      f7BlockTitle,
+    },
+  };
 </script>

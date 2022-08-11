@@ -1,3 +1,85 @@
+<Page>
+  <Navbar large title="Color Themes" backLink="Back"></Navbar>
+  <BlockTitle medium>Layout Themes</BlockTitle>
+  <Block strong>
+    <p>Framework7 comes with 2 main layout themes: Light (default) and Dark:</p>
+    <Row>
+      <Col width="50" class="bg-color-white demo-theme-picker" onClick={() => setLayoutTheme('light')}>
+        {#if theme === 'light'}
+          <Checkbox checked disabled />
+        {/if}
+      </Col>
+      <Col width="50" class="bg-color-black demo-theme-picker" onClick={() => setLayoutTheme('dark')}>
+        {#if theme === 'dark'}
+          <Checkbox checked disabled />
+        {/if}
+      </Col>
+    </Row>
+  </Block>
+  <BlockTitle medium>Navigation Bars Style</BlockTitle>
+  <Block strong>
+    <p>Switch navigation bars to filled style:</p>
+    <Row>
+      <Col width="50" class="demo-bars-picker demo-bars-picker-empty" onClick={() => setBarsStyle('empty')}>
+        <div class="demo-navbar"></div>
+        {#if barsStyle === 'empty'}
+          <Checkbox checked disabled />
+        {/if}
+      </Col>
+      <Col width="50" class="demo-bars-picker demo-bars-picker-fill" onClick={() => setBarsStyle('fill')}>
+        <div class="demo-navbar"></div>
+        {#if barsStyle === 'fill'}
+          <Checkbox checked disabled />
+        {/if}
+      </Col>
+    </Row>
+  </Block>
+  <BlockTitle medium>Default Color Themes</BlockTitle>
+  <Block strong>
+    <p>Framework7 comes with {colors.length} color themes set.</p>
+    <Row>
+      {#each colors as color, index}
+        <Col width="33" medium="25" large="20" key={index}>
+          <Button fill round small class="demo-color-picker-button" color={color} onClick={() => setColorTheme(color)}>{color}</Button>
+        </Col>
+      {/each}
+
+      <Col width="33" medium="25" large="20" />
+      <Col width="33" medium="25" large="20" />
+      <Col width="33" medium="25" large="20" />
+    </Row>
+  </Block>
+  <BlockTitle medium>Custom Color Theme</BlockTitle>
+  <List>
+    <ListInput
+      type="colorpicker"
+      label="HEX Color"
+      placeholder="e.g. #ff0000"
+      readonly
+      value={{hex: customColor || themeColor}}
+      onColorPickerChange={(value) => setCustomColor(value.hex)}
+      colorPickerParams={{
+        targetEl: '#color-theme-picker-color',
+      }}
+    >
+      <div
+        slot="media"
+        id="color-theme-picker-color"
+        style="width: 28px; height: 28px; borderRadius: 4px; background: var(--f7-theme-color)"
+      ></div>
+    </ListInput>
+  </List>
+
+  <BlockTitle medium>Generated CSS Variables</BlockTitle>
+  <Block strong>
+    {#if customProperties}
+      <p>Add this code block to your custom stylesheet:</p>
+      <pre style="overflow: auto; -webkit-overflow-scrolling: touch; margin: 0; font-size: 12px">{customProperties}</pre>
+    {:else}
+      <p>Change navigation bars styles or specify custom color to see custom CSS variables here</p>
+    {/if}
+  </Block>
+</Page>
 <script context="module">
   let stylesheet;
   let globalTheme = 'light';
@@ -5,28 +87,15 @@
   let globalCustomColor = '';
   let globalCustomProperties = '';
 </script>
-
 <script>
   import { onMount } from 'svelte';
-  import {
-    f7,
-    Navbar,
-    Page,
-    BlockTitle,
-    Button,
-    Row,
-    Col,
-    Block,
-    List,
-    ListInput,
-    Checkbox,
-  } from 'framework7-svelte';
+  import { f7, Navbar, Page, BlockTitle, Button, Row, Col, Block, List, ListInput, Checkbox } from 'framework7-svelte';
 
   let theme = globalTheme;
   let barsStyle = globalBarsStyle;
   let customColor = globalCustomColor;
   let customProperties = globalCustomProperties;
-  const colors = [
+  let colors = [
     'red',
     'green',
     'blue',
@@ -45,17 +114,8 @@
   let themeColor = f7.$('html').css('--f7-theme-color').trim();
   let timeout;
 
-  const setWebThemeColor = (hexColor) => {
-    const metaEl = f7.$('meta[name="theme-color"]');
-    if (!metaEl.length) {
-      f7.$('head').append(`<meta name="theme-color" content="${hexColor}">`);
-      return;
-    }
-    metaEl.attr('content', hexColor);
-  };
-
   function generateStylesheet() {
-    let styles = '';
+    var styles = '';
     if (customColor) {
       const colorThemeProperties = f7.utils.colorThemeCSSProperties(customColor);
       if (Object.keys(colorThemeProperties).length) {
@@ -63,23 +123,18 @@
 /* Custom color theme */
 :root {
   ${Object.keys(colorThemeProperties)
-    .map((key) => `${key}: ${colorThemeProperties[key]};`)
-    .join('\n  ')}
+  .map(key => `${key}: ${colorThemeProperties[key]};`)
+  .join('\n  ')}
 }`;
       }
     }
     if (barsStyle === 'fill') {
-      const colorThemeRgb = f7
-        .$('html')
-        .css('--f7-theme-color-rgb')
-        .trim()
-        .split(',')
-        .map((c) => c.trim());
+      const colorThemeRgb = f7.$('html').css('--f7-theme-color-rgb').trim().split(',').map(c => c.trim());
       styles += `
 /* Invert navigation bars to fill style */
 :root,
-:root.dark,
-:root .dark {
+:root.theme-dark,
+:root .theme-dark {
   --f7-bars-bg-color: var(--f7-theme-color);
   --f7-bars-bg-color-rgb: var(--f7-theme-color-rgb);
   --f7-bars-translucent-opacity: 0.9;
@@ -100,7 +155,6 @@
 .calendar-footer {
   --f7-touch-ripple-color: var(--f7-touch-ripple-white);
   --f7-link-highlight-color: var(--f7-link-highlight-white);
-  --f7-link-touch-ripple-color: var(--f7-touch-ripple-white);
   --f7-button-text-color: #fff;
   --f7-button-pressed-bg-color: rgba(255,255,255,0.1);
 }
@@ -117,21 +171,11 @@
     calc(var(--b) + (255 - var(--b)) * var(--progress))
   );
 }
-.dark .navbar-large-transparent {
+.theme-dark .navbar-large-transparent {
   --f7-navbar-large-title-text-color: #fff;
 }
       `;
     }
-
-    setTimeout(() => {
-      if (self.barsStyle === 'fill') {
-        setWebThemeColor(self.themeColor);
-      } else if (self.theme === 'light') {
-        setWebThemeColor('#fff');
-      } else if (self.theme === 'dark') {
-        setWebThemeColor('#000');
-      }
-    });
     return styles.trim();
   }
 
@@ -140,23 +184,22 @@
       stylesheet = document.createElement('style');
       document.head.appendChild(stylesheet);
     }
-  });
+  })
 
   function setLayoutTheme(newTheme) {
-    const htmlEl = f7.$('html');
+    var htmlEl = f7.$('html');
     globalTheme = newTheme;
-    htmlEl.removeClass('dark light').addClass(`${globalTheme}`);
+    htmlEl.removeClass('theme-dark theme-light').addClass('theme-' + globalTheme);
     theme = globalTheme;
   }
 
   function setColorTheme(color) {
-    const htmlEl = f7.$('html');
-    const currentColorClass = htmlEl[0].className.match(/color-theme-([a-z]*)/);
-    if (currentColorClass) htmlEl.removeClass(currentColorClass[0]);
-    htmlEl.addClass(`color-theme-${color}`);
-    // eslint-disable-next-line
+    var htmlEl = f7.$('html');
+    var currentColorClass = htmlEl[0].className.match(/color-theme-([a-z]*)/);
+    if (currentColorClass) htmlEl.removeClass(currentColorClass[0])
+    htmlEl.addClass('color-theme-' + color);
     unsetCustomColor();
-    themeColor = htmlEl.css(`--f7-color-${color}`).trim();
+    themeColor = htmlEl.css('--f7-color-' + color).trim();
   }
 
   function setBarsStyle(newBarsStyle) {
@@ -187,110 +230,3 @@
     }, 300);
   }
 </script>
-
-<Page>
-  <Navbar large title="Color Themes" backLink="Back" />
-  <BlockTitle medium>Layout Themes</BlockTitle>
-  <Block strong>
-    <p>Framework7 comes with 2 main layout themes: Light (default) and Dark:</p>
-    <Row>
-      <Col
-        width="50"
-        class="bg-color-white demo-theme-picker"
-        onClick={() => setLayoutTheme('light')}
-      >
-        {#if theme === 'light'}
-          <Checkbox checked disabled />
-        {/if}
-      </Col>
-      <Col
-        width="50"
-        class="bg-color-black demo-theme-picker"
-        onClick={() => setLayoutTheme('dark')}
-      >
-        {#if theme === 'dark'}
-          <Checkbox checked disabled />
-        {/if}
-      </Col>
-    </Row>
-  </Block>
-  <BlockTitle medium>Navigation Bars Style</BlockTitle>
-  <Block strong>
-    <p>Switch navigation bars to filled style:</p>
-    <Row>
-      <Col
-        width="50"
-        class="demo-bars-picker demo-bars-picker-empty"
-        onClick={() => setBarsStyle('empty')}
-      >
-        <div class="demo-navbar" />
-        {#if barsStyle === 'empty'}
-          <Checkbox checked disabled />
-        {/if}
-      </Col>
-      <Col
-        width="50"
-        class="demo-bars-picker demo-bars-picker-fill"
-        onClick={() => setBarsStyle('fill')}
-      >
-        <div class="demo-navbar" />
-        {#if barsStyle === 'fill'}
-          <Checkbox checked disabled />
-        {/if}
-      </Col>
-    </Row>
-  </Block>
-  <BlockTitle medium>Default Color Themes</BlockTitle>
-  <Block strong>
-    <p>Framework7 comes with {colors.length} color themes set.</p>
-    <Row>
-      {#each colors as color, index}
-        <Col width="33" medium="25" large="20" key={index}>
-          <Button
-            fill
-            round
-            small
-            class="demo-color-picker-button"
-            {color}
-            onClick={() => setColorTheme(color)}
-          >
-            {color}
-          </Button>
-        </Col>
-      {/each}
-
-      <Col width="33" medium="25" large="20" />
-      <Col width="33" medium="25" large="20" />
-      <Col width="33" medium="25" large="20" />
-    </Row>
-  </Block>
-  <BlockTitle medium>Custom Color Theme</BlockTitle>
-  <List>
-    <ListInput
-      type="colorpicker"
-      label="HEX Color"
-      placeholder="e.g. #ff0000"
-      readonly
-      value={{ hex: customColor || themeColor }}
-      onColorPickerChange={(value) => setCustomColor(value.hex)}
-      colorPickerParams={{ targetEl: '#color-theme-picker-color' }}
-    >
-      <div
-        slot="media"
-        id="color-theme-picker-color"
-        style="width: 28px; height: 28px; borderRadius: 4px; background: var(--f7-theme-color)"
-      />
-    </ListInput>
-  </List>
-
-  <BlockTitle medium>Generated CSS Variables</BlockTitle>
-  <Block strong>
-    {#if customProperties}
-      <p>Add this code block to your custom stylesheet:</p>
-      <pre
-        style="overflow: auto; -webkit-overflow-scrolling: touch; margin: 0; font-size: 12px">{customProperties}</pre>
-    {:else}
-      <p>Change navigation bars styles or specify custom color to see custom CSS variables here</p>
-    {/if}
-  </Block>
-</Page>

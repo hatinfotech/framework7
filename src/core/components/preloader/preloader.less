@@ -1,5 +1,5 @@
 /* === Preloader === */
-@import './preloader-vars.less';
+@import url('./preloader-vars.less');
 
 .preloader {
   display: inline-block;
@@ -8,12 +8,6 @@
   height: var(--f7-preloader-size);
   font-size: 0;
   position: relative;
-  .preloader-inner {
-    width: 100%;
-    height: 100%;
-    display: block;
-    position: relative;
-  }
 }
 
 /* === Preloader Modal === */
@@ -43,15 +37,15 @@ html.with-modal-preloader .page-content,
 .with-modal-preloader.page-content {
   .not-scrollable();
 }
-.preloader[class*='color-'] {
+.preloader[class*="color-"] {
   --f7-preloader-color: var(--f7-theme-color);
 }
 .if-ios-theme({
-  @import './preloader-ios.less';
+  @import url('./preloader-ios.less');
 });
 .if-md-theme({
-  @import './preloader-md.less';
+  @import url('./preloader-md.less');
 });
 .if-aurora-theme({
-  @import './preloader-aurora.less';
+  @import url('./preloader-aurora.less');
 });

@@ -1,20 +1,19 @@
-import $ from '../../shared/dom7.js';
-import { extend, now, nextTick, deleteProps } from '../../shared/utils.js';
-import Framework7Class from '../../shared/class.js';
-import { getSupport } from '../../shared/get-support.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
+import Framework7Class from '../../utils/class';
+import Support from '../../utils/support';
 
 class Toggle extends Framework7Class {
   constructor(app, params = {}) {
     super(params, [app]);
     const toggle = this;
-    const support = getSupport();
 
     const defaults = {};
 
     // Extend defaults with modules params
     toggle.useModulesParams(defaults);
 
-    toggle.params = extend(defaults, params);
+    toggle.params = Utils.extend(defaults, params);
 
     const el = toggle.params.el;
     if (!el) return toggle;
@@ -26,17 +25,13 @@ class Toggle extends Framework7Class {
 
     const $inputEl = $el.children('input[type="checkbox"]');
 
-    extend(toggle, {
+    Utils.extend(toggle, {
       app,
       $el,
       el: $el[0],
       $inputEl,
       inputEl: $inputEl[0],
-      disabled:
-        $el.hasClass('disabled') ||
-        $inputEl.hasClass('disabled') ||
-        $inputEl.attr('disabled') ||
-        $inputEl[0].disabled,
+      disabled: $el.hasClass('disabled') || $inputEl.hasClass('disabled') || $inputEl.attr('disabled') || $inputEl[0].disabled,
     });
 
     Object.defineProperty(toggle, 'checked', {
@@ -70,11 +65,11 @@ class Toggle extends Framework7Class {
 
       isTouched = true;
       isScrolling = undefined;
-      touchStartTime = now();
+      touchStartTime = Utils.now();
       touchStartChecked = toggle.checked;
 
       toggleWidth = $el[0].offsetWidth;
-      nextTick(() => {
+      Utils.nextTick(() => {
         if (isTouched) {
           $el.addClass('toggle-active-state');
         }
@@ -87,9 +82,7 @@ class Toggle extends Framework7Class {
       const inverter = app.rtl ? -1 : 1;
 
       if (typeof isScrolling === 'undefined') {
-        isScrolling = !!(
-          isScrolling || Math.abs(pageY - touchesStart.y) > Math.abs(pageX - touchesStart.x)
-        );
+        isScrolling = !!(isScrolling || Math.abs(pageY - touchesStart.y) > Math.abs(pageX - touchesStart.x));
       }
       if (isScrolling) {
         isTouched = false;
@@ -99,19 +92,12 @@ class Toggle extends Framework7Class {
 
       touchesDiff = pageX - touchesStart.x;
 
+
       let changed;
-      if (
-        touchesDiff * inverter < 0 &&
-        Math.abs(touchesDiff) > toggleWidth / 3 &&
-        touchStartChecked
-      ) {
+      if (touchesDiff * inverter < 0 && Math.abs(touchesDiff) > toggleWidth / 3 && touchStartChecked) {
         changed = true;
       }
-      if (
-        touchesDiff * inverter > 0 &&
-        Math.abs(touchesDiff) > toggleWidth / 3 &&
-        !touchStartChecked
-      ) {
+      if (touchesDiff * inverter > 0 && Math.abs(touchesDiff) > toggleWidth / 3 && !touchStartChecked) {
         changed = true;
       }
       if (changed) {
@@ -132,7 +118,7 @@ class Toggle extends Framework7Class {
       $el.removeClass('toggle-active-state');
 
       let changed;
-      if (now() - touchStartTime < 300) {
+      if ((Utils.now() - touchStartTime) < 300) {
         if (touchesDiff * inverter < 0 && touchStartChecked) {
           changed = true;
         }
@@ -149,14 +135,14 @@ class Toggle extends Framework7Class {
       toggle.emit('local::change toggleChange', toggle);
     }
     toggle.attachEvents = function attachEvents() {
-      const passive = support.passiveListener ? { passive: true } : false;
+      const passive = Support.passiveListener ? { passive: true } : false;
       $el.on(app.touchEvents.start, handleTouchStart, passive);
       app.on('touchmove', handleTouchMove);
       app.on('touchend:passive', handleTouchEnd);
       toggle.$inputEl.on('change', handleInputChange);
     };
     toggle.detachEvents = function detachEvents() {
-      const passive = support.passiveListener ? { passive: true } : false;
+      const passive = Support.passiveListener ? { passive: true } : false;
       $el.off(app.touchEvents.start, handleTouchStart, passive);
       app.off('touchmove', handleTouchMove);
       app.off('touchend:passive', handleTouchEnd);
@@ -186,7 +172,7 @@ class Toggle extends Framework7Class {
     toggle.emit('local::beforeDestroy toggleBeforeDestroy', toggle);
     delete toggle.$el[0].f7Toggle;
     toggle.detachEvents();
-    deleteProps(toggle);
+    Utils.deleteProps(toggle);
     toggle = null;
   }
 }

@@ -1,9 +1,8 @@
 <script>
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { setReactiveContext } from '../shared/set-reactive-context.js';
-  import { getReactiveContext } from '../shared/get-reactive-context.js';
+  import { setContext } from 'svelte';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
 
   let className = undefined;
   export { className as class };
@@ -13,21 +12,20 @@
   export let sortableOpposite = undefined;
   export let sortableTapHold = false;
   export let sortableMoveElements = undefined;
-  export let simpleList = undefined;
 
-  let ListContext =
-    getReactiveContext('ListContext', (value) => {
-      ListContext = value || {};
-    }) || {};
+  $: if (typeof mediaList !== 'undefined') {
+    setContext('f7ListMedia', mediaList);
+  }
 
-  setReactiveContext('ListContext', () => ({
-    listIsMedia: mediaList || ListContext.listIsMedia,
-    listIsSimple: simpleList || ListContext.listIsSimple,
-    listIsSortable: sortable || ListContext.listIsSortable,
-    listIsSortableOpposite: sortableOpposite || ListContext.listIsSortableOpposite,
-  }));
+  $: if (typeof sortable !== 'undefined') {
+    setContext('f7ListSortable', sortable);
+  }
 
-  $: classes = classNames(
+  $: if (typeof sortable !== 'undefined' && typeof sortableOpposite !== 'undefined') {
+    setContext('f7ListSortableOpposite', sortable);
+  }
+
+  $: classes = Utils.classNames(
     className,
     'list-group',
     {
@@ -36,17 +34,11 @@
       'sortable-tap-hold': sortableTapHold,
       'sortable-opposite': sortableOpposite,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 </script>
 
-<div
-  class={classes}
-  data-sortable-move-elements={typeof sortableMoveElements !== 'undefined'
-    ? sortableMoveElements.toString()
-    : undefined}
-  {...restProps($$restProps)}
->
+<div class={classes} data-sortable-move-elements={typeof sortableMoveElements !== 'undefined' ? sortableMoveElements.toString() : undefined} {...restProps($$restProps)}>
   <ul>
     <slot />
   </ul>

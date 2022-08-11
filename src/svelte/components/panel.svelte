@@ -1,21 +1,19 @@
 <script>
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
-  import { restProps } from '../shared/rest-props.js';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, noUndefinedProps, createEmitter } from '../shared/utils.js';
-  import { app, f7ready } from '../shared/f7.js';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import Mixins from '../utils/mixins';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
 
   export let side = undefined;
   export let effect = undefined;
-  // svelte-ignore unused-export-let
   export let cover = false;
   export let reveal = false;
-  export let push = false;
   export let left = false;
   export let right = false;
   export let opened = false;
@@ -23,8 +21,6 @@
 
   export let backdrop = true;
   export let backdropEl = undefined;
-  export let containerEl = undefined;
-  export let closeByBackdropClick = undefined;
   export let visibleBreakpoint = undefined;
   export let collapsedBreakpoint = undefined;
   export let swipe = false;
@@ -33,17 +29,8 @@
   export let swipeActiveArea = 0;
   export let swipeThreshold = 0;
 
-  export let f7Slot = 'fixed';
-
   let el;
   let f7Panel;
-
-  const state = {
-    isOpened: false,
-    isClosing: false,
-    isCollapsed: false,
-    isBreakpoint: false,
-  };
 
   export function instance() {
     return f7Panel;
@@ -52,19 +39,16 @@
   // eslint-disable-next-line
   $: sideComputed = side || (left ? 'left' : right ? 'right' : 'left');
   // eslint-disable-next-line
-  $: effectComputed = effect || (reveal ? 'reveal' : push ? 'push' : 'cover');
-  $: classes = classNames(
+  $: effectComputed = effect || (reveal ? 'reveal' : cover ? 'cover' : 'cover');
+  $: classes = Utils.classNames(
     className,
     'panel',
     {
-      'panel-in': state.isOpened && !state.isClosing && !state.isBreakpoint,
-      'panel-in-breakpoint': state.isBreakpoint,
-      'panel-in-collapsed': state.isCollapsed,
       'panel-resizable': resizable,
       [`panel-${sideComputed}`]: sideComputed,
       [`panel-${effectComputed}`]: effectComputed,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   let resizableOld = resizable;
@@ -100,71 +84,70 @@
   $: watchOpened(opened);
 
   function onOpen(...args) {
-    Object.assign(state, {
-      isOpened: true,
-      isClosing: false,
-    });
-
-    emit('panelOpen', args);
-    opened = true;
+    dispatch('panelOpen', [...args]);
+    if (typeof $$props.onPanelOpen === 'function') $$props.onPanelOpen(...args);
   }
   function onOpened(...args) {
-    emit('panelOpened', args);
+    dispatch('panelOpened', [...args]);
+    if (typeof $$props.onPanelOpened === 'function') $$props.onPanelOpened(...args);
   }
   function onClose(...args) {
-    Object.assign(state, {
-      isOpened: false,
-      isClosing: true,
-    });
-    emit('panelClose', args);
+    dispatch('panelClose', [...args]);
+    if (typeof $$props.onPanelClose === 'function') $$props.onPanelClose(...args);
   }
   function onClosed(...args) {
-    Object.assign(state, {
-      isClosing: false,
-    });
-    emit('panelClosed', args);
-    opened = false;
+    dispatch('panelClosed', [...args]);
+    if (typeof $$props.onPanelClosed === 'function') $$props.onPanelClosed(...args);
   }
   function onBackdropClick(...args) {
-    emit('panelBackdropClick', args);
+    dispatch('panelBackdropClick', [...args]);
+    if (typeof $$props.onPanelBackdropClick === 'function') $$props.onPanelBackdropClick(...args);
   }
   function onSwipe(...args) {
-    emit('panelSwipe', args);
+    dispatch('panelSwipe', [...args]);
+    if (typeof $$props.onPanelSwipe === 'function') $$props.onPanelSwipe(...args);
   }
   function onSwipeOpen(...args) {
-    emit('panelSwipeOpen', args);
+    dispatch('panelSwipeOpen', [...args]);
+    if (typeof $$props.onPanelSwipeOpen === 'function') $$props.onPanelSwipeOpen(...args);
   }
   function onBreakpoint(...args) {
-    Object.assign(state, {
-      isBreakpoint: true,
-      isCollapsed: false,
-    });
-    emit('panelBreakpoint', args);
+    dispatch('panelBreakpoint', [...args]);
+    if (typeof $$props.onPanelBreakpoint === 'function') $$props.onPanelBreakpoint(...args);
   }
   function onCollapsedBreakpoint(...args) {
-    Object.assign(state, {
-      isBreakpoint: false,
-      isCollapsed: true,
-    });
-    emit('panelCollapsedBreakpoint', args);
+    dispatch('panelCollapsedBreakpoint', [...args]);
+    if (typeof $$props.onPanelCollapsedBreakpoint === 'function') $$props.onPanelCollapsedBreakpoint(...args);
   }
   function onResize(...args) {
-    emit('panelResize', args);
+    dispatch('panelResize', [...args]);
+    if (typeof $$props.onPanelResize === 'function') $$props.onPanelResize(...args);
   }
 
+  export function open(animate) {
+    if (!f7Panel) return;
+    f7Panel.open(animate);
+  }
+  export function close(animate) {
+    if (!f7Panel) return;
+    f7Panel.close(animate);
+  }
+  export function toggle(animate) {
+    if (!f7Panel) return;
+    f7Panel.toggle(animate);
+	} // eslint-disable-line
+
   onMount(() => {
-    f7ready(() => {
-      const dom7 = app.f7.$;
+    f7.ready(() => {
+      const dom7 = f7.instance.$;
       if (dom7('.panel-backdrop').length === 0) {
         dom7('<div class="panel-backdrop"></div>').insertBefore(el);
       }
-      const params = noUndefinedProps({
+      const params = Utils.noUndefinedProps({
         el,
         resizable,
         backdrop,
         backdropEl,
-        containerEl,
-        closeByBackdropClick,
         visibleBreakpoint,
         collapsedBreakpoint,
         swipe,
@@ -185,7 +168,7 @@
           resize: onResize,
         },
       });
-      f7Panel = app.f7.panel.create(params);
+      f7Panel = f7.instance.panel.create(params);
       if (opened) {
         f7Panel.open(false);
       }
@@ -200,9 +183,9 @@
   });
 </script>
 
-<div bind:this={el} class={classes} data-f7-slot={f7Slot} {...restProps($$restProps)}>
-  <slot panel={f7Panel} />
+<div bind:this={el} class={classes} {...restProps($$restProps)}>
+  <slot />
   {#if resizable}
-    <div class="panel-resize-handler" />
+    <div class="panel-resize-handler"></div>
   {/if}
 </div>

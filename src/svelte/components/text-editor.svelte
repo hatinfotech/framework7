@@ -1,11 +1,11 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, noUndefinedProps, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -28,11 +28,11 @@
     return f7TextEditor;
   }
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'text-editor',
     resizable && 'text-editor-resizable',
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function watchValue(newValue) {
@@ -44,41 +44,44 @@
   $: watchValue(value);
 
   function onChange(editor, editorValue) {
-    emit('textEditorChange', [editorValue]);
+    dispatch('textEditorChange', [editorValue]);
+    if (typeof $$props.onTextEditorChange === 'function') $$props.onTextEditorChange(editorValue);
   }
-  function onInput(editor, editorValue) {
-    emit('textEditorInput', [editorValue]);
+  function onInput() {
+    dispatch('textEditorChange');
+    if (typeof $$props.onTextEditorChange === 'function') $$props.onTextEditorChange();
   }
   function onFocus() {
-    emit('textEditorFocus');
+    dispatch('textEditorFocus');
+    if (typeof $$props.onTextEditorFocus === 'function') $$props.onTextEditorFocus();
   }
   function onBlur() {
-    emit('textEditorBlur');
+    dispatch('textEditorBlur');
+    if (typeof $$props.onTextEditorBlur === 'function') $$props.onTextEditorBlur();
   }
   function onButtonClick(editor, button) {
-    emit('textEditorButtonClick', [button]);
+    dispatch('textEditorButtonClick', [button]);
+    if (typeof $$props.onTextEditorButtonClick === 'function') $$props.onTextEditorButtonClick(button);
   }
   function onKeyboardOpen() {
-    emit('textEditorKeyboardOpen');
+    dispatch('textEditorKeyboardOpen');
+    if (typeof $$props.onTextEditorKeyboardOpen === 'function') $$props.onTextEditorKeyboardOpen();
   }
   function onKeyboardClose() {
-    emit('textEditorKeyboardClose');
+    dispatch('textEditorKeyboardClose');
+    if (typeof $$props.onTextEditorKeyboardClose === 'function') $$props.onTextEditorKeyboardClose();
   }
   function onPopoverOpen() {
-    emit('textEditorPopoverOpen');
+    dispatch('textEditorPopoverOpen');
+    if (typeof $$props.onTextEditorPopoverOpen === 'function') $$props.onTextEditorPopoverOpen();
   }
   function onPopoverClose() {
-    emit('textEditorPopoverClose');
+    dispatch('textEditorPopoverClose');
+    if (typeof $$props.onTextEditorPopoverClose === 'function') $$props.onTextEditorPopoverClose();
   }
-  const onInsertLink = (editor, url) => {
-    emit('textEditorInsertLink', [url]);
-  };
-  const onInsertImage = (editor, url) => {
-    emit('textEditorInsertImage', [url]);
-  };
 
   onMount(() => {
-    const params = noUndefinedProps({
+    const params = Utils.noUndefinedProps({
       el,
       mode,
       value,
@@ -99,28 +102,23 @@
         keyboardClose: onKeyboardClose,
         popoverOpen: onPopoverOpen,
         popoverClose: onPopoverClose,
-        insertLink: onInsertLink,
-        insertImage: onInsertImage,
       },
     });
-    f7ready(() => {
-      f7TextEditor = app.f7.textEditor.create(params);
+    f7.ready(() => {
+      f7TextEditor = f7.instance.textEditor.create(params);
     });
   });
 
   onDestroy(() => {
     if (f7TextEditor && f7TextEditor.destroy) {
       f7TextEditor.destroy();
-      f7TextEditor = null;
     }
   });
 </script>
 
 <div bind:this={el} class={classes} {...restProps($$restProps)}>
-  <slot textEditor={f7TextEditor} name="root-start" />
-  <div class="text-editor-content" contenteditable>
-    <slot textEditor={f7TextEditor} />
-  </div>
-  <slot textEditor={f7TextEditor} name="root-end" />
-  <slot textEditor={f7TextEditor} name="root" />
+  <slot name="root-start" />
+  <div class="text-editor-content" contenteditable><slot /></div>
+  <slot name="root-end" />
+  <slot name="root" />
 </div>

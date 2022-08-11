@@ -1,7 +1,7 @@
 <script>
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, plainText } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
 
   let className = undefined;
   export { className as class };
@@ -10,18 +10,22 @@
   export let subtitle = undefined;
   export let sliding = undefined;
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'title',
     {
       sliding,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 </script>
-
-<div class={classes} {...restProps($$restProps)}>
-  {#if typeof title !== 'undefined'}{plainText(title)}{/if}
-  {#if typeof subtitle !== 'undefined'}<span class="subtitle">{plainText(subtitle)}</span>{/if}
+<div
+  class={classes}
+  {...restProps($$restProps)}
+>
+  {#if typeof title !== 'undefined'}{Utils.text(title)}{/if}
+  {#if typeof subtitle !== 'undefined'}
+    <span class="subtitle">{Utils.text(subtitle)}</span>
+  {/if}
   <slot />
 </div>

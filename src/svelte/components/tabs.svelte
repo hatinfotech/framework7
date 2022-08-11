@@ -1,9 +1,8 @@
 <script>
   import { onMount } from 'svelte';
-
-  import { restProps } from '../shared/rest-props.js';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames } from '../shared/utils.js';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import Mixins from '../utils/mixins';
 
   let className = undefined;
   export { className as class };
@@ -14,12 +13,15 @@
 
   let wrapEl;
 
-  $: classes = classNames(className, colorClasses($$props));
-  $: wrapClasses = classNames({
+  $: classes = Utils.classNames(
+    className,
+    Mixins.colorClasses($$props),
+  );
+  $: wrapClasses = Utils.classNames({
     'tabs-animated-wrap': animated,
     'tabs-swipeable-wrap': swipeable,
   });
-  $: tabsClasses = classNames({
+  $: tabsClasses = Utils.classNames({
     tabs: true,
     'tabs-routable': routable,
   });
@@ -32,13 +34,14 @@
 </script>
 
 {#if animated || swipeable}
-  <div class={classNames(wrapClasses, classes)} bind:this={wrapEl} {...restProps($$restProps)}>
+  <div class={Utils.classNames(wrapClasses, classes)} bind:this={wrapEl} {...restProps($$restProps)}>
     <div class={tabsClasses}>
       <slot />
     </div>
   </div>
 {:else}
-  <div class={classNames(tabsClasses, classes)} {...restProps($$restProps)}>
+  <div class={Utils.classNames(tabsClasses, classes)} {...restProps($$restProps)}>
     <slot />
   </div>
 {/if}
+

@@ -1,10 +1,10 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
 
-  import { extend, createEmitter } from '../shared/utils.js';
-  import { app, f7ready } from '../shared/f7.js';
+  import Utils from '../utils/utils';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   export let init = true;
   export let params = undefined;
@@ -24,7 +24,7 @@
   export let navbarShowCount = undefined;
   export let swiper = undefined;
   export let url = undefined;
-  export let routableModals = false;
+  export let routableModals = true;
   export let virtualSlides = true;
   export let view = undefined;
   export let renderNavbar = undefined;
@@ -76,7 +76,7 @@
 
   onMount(() => {
     if (!init) return;
-    f7ready(() => {
+    f7.ready(() => {
       let pbParams;
 
       if (typeof params !== 'undefined') pbParams = params;
@@ -114,38 +114,39 @@
       }
 
       Object.keys(pbParams).forEach((param) => {
-        if (typeof pbParams[param] === 'undefined' || pbParams[param] === '')
-          delete pbParams[param];
+        if (typeof pbParams[param] === 'undefined' || pbParams[param] === '') delete pbParams[param];
       });
 
-      pbParams = extend({}, pbParams, {
+      pbParams = Utils.extend({}, pbParams, {
         on: {
           open() {
-            emit('photoBrowserOpen');
+            dispatch('photoBrowserOpen');
+            if (typeof $$props.onPhotoBrowserOpen === 'function') $$props.onPhotoBrowserOpen();
           },
           close() {
-            emit('photoBrowserClose');
+            dispatch('photoBrowserClose');
+            if (typeof $$props.onPhotoBrowserClose === 'function') $$props.onPhotoBrowserClose();
           },
           opened() {
-            emit('photoBrowserOpened');
+            dispatch('photoBrowserOpened');
+            if (typeof $$props.onPhotoBrowserOpened === 'function') $$props.onPhotoBrowserOpened();
           },
           closed() {
-            emit('photoBrowserClosed');
+            dispatch('photoBrowserClosed');
+            if (typeof $$props.onPhotoBrowserClosed === 'function') $$props.onPhotoBrowserClosed();
           },
           swipeToClose() {
-            emit('photoBrowserSwipeToClose');
+            dispatch('photoBrowserSwipeToClose');
+            if (typeof $$props.onPhotoBrowserSwipeToClose === 'function') $$props.onPhotoBrowserSwipeToClose();
           },
         },
       });
 
-      f7PhotoBrowser = app.f7.photoBrowser.create(pbParams);
+      f7PhotoBrowser = f7.instance.photoBrowser.create(pbParams);
     });
   });
 
   onDestroy(() => {
-    if (f7PhotoBrowser && f7PhotoBrowser.destroy) {
-      f7PhotoBrowser.destroy();
-      f7PhotoBrowser = null;
-    }
+    if (f7PhotoBrowser && f7PhotoBrowser.destroy) f7PhotoBrowser.destroy();
   });
 </script>

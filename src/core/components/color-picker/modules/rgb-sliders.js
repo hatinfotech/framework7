@@ -1,81 +1,57 @@
-import $ from '../../../shared/dom7.js';
-/** @jsx $jsx */
-import $jsx from '../../../shared/$jsx.js';
+import $ from 'dom7';
 
 export default {
   render(self) {
-    const {
-      sliderLabel,
-      sliderValue,
-      sliderValueEditable,
-      redLabelText,
-      greenLabelText,
-      blueLabelText,
-    } = self.params;
-    return (
+    const { sliderLabel, sliderValue, sliderValueEditable, redLabelText, greenLabelText, blueLabelText } = self.params;
+    return `
       <div class="color-picker-module color-picker-module-rgb-sliders">
         <div class="color-picker-slider-wrap">
-          {sliderLabel && <div class="color-picker-slider-label">{redLabelText}</div>}
+          ${sliderLabel ? `
+            <div class="color-picker-slider-label">${redLabelText}</div>
+          ` : ''}
           <div class="range-slider color-picker-slider color-picker-slider-red"></div>
-          {sliderValue && (
+          ${sliderValue ? `
             <div class="color-picker-slider-value">
-              {sliderValueEditable ? (
-                <input
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="255"
-                  class="color-picker-value-red"
-                  data-color-index="0"
-                />
-              ) : (
+              ${sliderValueEditable ? `
+                <input type="number" step="1" min="0" max="255" class="color-picker-value-red" data-color-index="0">
+              ` : `
                 <span class="color-picker-value-red"></span>
-              )}
+              `}
             </div>
-          )}
+          ` : ''}
         </div>
         <div class="color-picker-slider-wrap">
-          {sliderLabel && <div class="color-picker-slider-label">{greenLabelText}</div>}
+          ${sliderLabel ? `
+            <div class="color-picker-slider-label">${greenLabelText}</div>
+          ` : ''}
           <div class="range-slider color-picker-slider color-picker-slider-green"></div>
-          {sliderValue && (
+          ${sliderValue ? `
             <div class="color-picker-slider-value">
-              {sliderValueEditable ? (
-                <input
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="255"
-                  class="color-picker-value-green"
-                  data-color-index="1"
-                />
-              ) : (
+              ${sliderValueEditable ? `
+                <input type="number" step="1" min="0" max="255" class="color-picker-value-green" data-color-index="1">
+              ` : `
                 <span class="color-picker-value-green"></span>
-              )}
+              `}
             </div>
-          )}
+          ` : ''}
         </div>
         <div class="color-picker-slider-wrap">
-          {sliderLabel && <div class="color-picker-slider-label">{blueLabelText}</div>}
+          ${sliderLabel ? `
+            <div class="color-picker-slider-label">${blueLabelText}</div>
+          ` : ''}
           <div class="range-slider color-picker-slider color-picker-slider-blue"></div>
-          {sliderValue && (
+          ${sliderValue ? `
             <div class="color-picker-slider-value">
-              {sliderValueEditable ? (
-                <input
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="255"
-                  class="color-picker-value-blue"
-                  data-color-index="2"
-                />
-              ) : (
+              ${sliderValueEditable ? `
+                <input type="number" step="1" min="0" max="255" class="color-picker-value-blue" data-color-index="2">
+              ` : `
                 <span class="color-picker-value-blue"></span>
-              )}
+              `}
             </div>
-          )}
+          ` : ''}
         </div>
       </div>
-    );
+    `;
   },
   init(self) {
     self.redRangeSlider = self.app.range.create({
@@ -135,7 +111,13 @@ export default {
     };
   },
   update(self) {
-    const { app, value, redRangeSlider, greenRangeSlider, blueRangeSlider } = self;
+    const {
+      app,
+      value,
+      redRangeSlider,
+      greenRangeSlider,
+      blueRangeSlider,
+    } = self;
 
     const { sliderValue, sliderValueEditable } = self.params;
 
@@ -149,39 +131,15 @@ export default {
     greenRangeSlider.layout();
     blueRangeSlider.layout();
 
-    redRangeSlider.$el[0].style.setProperty(
-      '--f7-range-knob-color',
-      `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`,
-    );
-    greenRangeSlider.$el[0].style.setProperty(
-      '--f7-range-knob-color',
-      `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`,
-    );
-    blueRangeSlider.$el[0].style.setProperty(
-      '--f7-range-knob-color',
-      `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`,
-    );
+    redRangeSlider.$el[0].style.setProperty('--f7-range-knob-color', `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`);
+    greenRangeSlider.$el[0].style.setProperty('--f7-range-knob-color', `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`);
+    blueRangeSlider.$el[0].style.setProperty('--f7-range-knob-color', `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`);
 
     const direction = app.rtl ? 'to left' : 'to right';
 
-    redRangeSlider.$el
-      .find('.range-bar')
-      .css(
-        'background-image',
-        `linear-gradient(${direction}, rgb(0, ${rgb[1]}, ${rgb[2]}), rgb(255, ${rgb[1]}, ${rgb[2]}))`,
-      );
-    greenRangeSlider.$el
-      .find('.range-bar')
-      .css(
-        'background-image',
-        `linear-gradient(${direction}, rgb(${rgb[0]}, 0, ${rgb[2]}), rgb(${rgb[0]}, 255, ${rgb[2]}))`,
-      );
-    blueRangeSlider.$el
-      .find('.range-bar')
-      .css(
-        'background-image',
-        `linear-gradient(${direction}, rgb(${rgb[0]}, ${rgb[1]}, 0), rgb(${rgb[0]}, ${rgb[1]}, 255))`,
-      );
+    redRangeSlider.$el.find('.range-bar').css('background-image', `linear-gradient(${direction}, rgb(0, ${rgb[1]}, ${rgb[2]}), rgb(255, ${rgb[1]}, ${rgb[2]}))`);
+    greenRangeSlider.$el.find('.range-bar').css('background-image', `linear-gradient(${direction}, rgb(${rgb[0]}, 0, ${rgb[2]}), rgb(${rgb[0]}, 255, ${rgb[2]}))`);
+    blueRangeSlider.$el.find('.range-bar').css('background-image', `linear-gradient(${direction}, rgb(${rgb[0]}, ${rgb[1]}, 0), rgb(${rgb[0]}, ${rgb[1]}, 255))`);
 
     if (sliderValue && sliderValueEditable) {
       self.$el.find('input.color-picker-value-red').val(rgb[0]);

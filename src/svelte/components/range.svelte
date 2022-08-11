@@ -1,11 +1,11 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, noUndefinedProps, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -37,8 +37,17 @@
   export function instance() {
     return f7Range;
   }
+  export function setValue(newValue) {
+    if (f7Range && f7Range.setValue) f7Range.setValue(newValue);
+  }
+  export function getValue() {
+    if (f7Range && f7Range.getValue) {
+      return f7Range.getValue();
+    }
+    return undefined;
+  }
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'range-slider',
     {
@@ -47,7 +56,7 @@
       'range-slider-vertical-reversed': vertical && verticalReversed,
       disabled,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function watchValue(newValue) {
@@ -59,48 +68,50 @@
 
   onMount(() => {
     if (!init) return;
-    f7ready(() => {
-      f7Range = app.f7.range.create(
-        noUndefinedProps({
-          el,
-          value,
-          min,
-          max,
-          step,
-          label,
-          dual,
-          draggableBar,
-          vertical,
-          verticalReversed,
-          formatLabel,
-          scale,
-          scaleSteps,
-          scaleSubSteps,
-          formatScaleLabel,
-          limitKnobPosition,
-          on: {
-            change(range, val) {
-              emit('rangeChange', [val]);
-            },
-            changed(range, val) {
-              emit('rangeChanged', [val]);
-              value = val;
-            },
+    f7.ready(() => {
+      f7Range = f7.instance.range.create(Utils.noUndefinedProps({
+        el,
+        value,
+        min,
+        max,
+        step,
+        label,
+        dual,
+        draggableBar,
+        vertical,
+        verticalReversed,
+        formatLabel,
+        scale,
+        scaleSteps,
+        scaleSubSteps,
+        formatScaleLabel,
+        limitKnobPosition,
+        on: {
+          change(range, val) {
+            dispatch('rangeChange', [val]);
+            if (typeof $$props.onRangeChange === 'function') $$props.onRangeChange(val);
           },
-        }),
-      );
+          changed(range, val) {
+            dispatch('rangeChanged', [val]);
+            if (typeof $$props.onRangeChanged === 'function') $$props.onRangeChanged(val);
+          },
+        },
+      }));
     });
   });
 
   onDestroy(() => {
-    if (f7Range && f7Range.destroy) {
-      f7Range.destroy();
-      f7Range = null;
-    }
+    if (f7Range && f7Range.destroy) f7Range.destroy();
   });
 </script>
 
-<div bind:this={el} class={classes} {...restProps($$restProps)}>
-  {#if input}<input type="range" {name} id={inputId} />{/if}
-  <slot range={f7Range} />
+<div
+  bind:this={el}
+  class={classes}
+  {...restProps($$restProps)}
+>
+  {#if input}
+    <input type="range" name={name} id={inputId} />
+  {/if}
+  <slot />
 </div>

@@ -1,8 +1,8 @@
-import $ from '../../shared/dom7.js';
-import { bindMethods } from '../../shared/utils.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
 
 const InfiniteScroll = {
-  handle(el, e) {
+  handleScroll(el, e) {
     const app = this;
     const $el = $(el);
     const scrollTop = $el[0].scrollTop;
@@ -41,14 +41,14 @@ const InfiniteScroll = {
     function scrollHandler(e) {
       app.infiniteScroll.handle(this, e);
     }
-    $el.each((element) => {
+    $el.each((index, element) => {
       element.f7InfiniteScrollHandler = scrollHandler;
       element.addEventListener('scroll', element.f7InfiniteScrollHandler);
     });
   },
   destroy(el) {
     const $el = $(el);
-    $el.each((element) => {
+    $el.each((index, element) => {
       element.removeEventListener('scroll', element.f7InfiniteScrollHandler);
       delete element.f7InfiniteScrollHandler;
     });
@@ -58,8 +58,12 @@ export default {
   name: 'infiniteScroll',
   create() {
     const app = this;
-    bindMethods(app, {
-      infiniteScroll: InfiniteScroll,
+    Utils.extend(app, {
+      infiniteScroll: {
+        handle: InfiniteScroll.handleScroll.bind(app),
+        create: InfiniteScroll.create.bind(app),
+        destroy: InfiniteScroll.destroy.bind(app),
+      },
     });
   },
   on: {
@@ -68,7 +72,7 @@ export default {
       const $tabEl = $(tabEl);
       const $isEls = $tabEl.find('.infinite-scroll-content');
       if ($tabEl.is('.infinite-scroll-content')) $isEls.add($tabEl);
-      $isEls.each((el) => {
+      $isEls.each((index, el) => {
         app.infiniteScroll.create(el);
       });
     },
@@ -77,19 +81,19 @@ export default {
       const app = this;
       const $isEls = $tabEl.find('.infinite-scroll-content');
       if ($tabEl.is('.infinite-scroll-content')) $isEls.add($tabEl);
-      $isEls.each((el) => {
+      $isEls.each((index, el) => {
         app.infiniteScroll.destroy(el);
       });
     },
     pageInit(page) {
       const app = this;
-      page.$el.find('.infinite-scroll-content').each((el) => {
+      page.$el.find('.infinite-scroll-content').each((index, el) => {
         app.infiniteScroll.create(el);
       });
     },
     pageBeforeRemove(page) {
       const app = this;
-      page.$el.find('.infinite-scroll-content').each((el) => {
+      page.$el.find('.infinite-scroll-content').each((index, el) => {
         app.infiniteScroll.destroy(el);
       });
     },

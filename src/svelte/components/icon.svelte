@@ -1,9 +1,10 @@
 <script>
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { useTooltip } from '../shared/use-tooltip.js';
-  import { useTheme } from '../shared/use-theme.js';
+  import { onMount, onDestroy } from 'svelte';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import { theme } from '../utils/plugin';
+  import F7 from '../utils/f7';
 
   export let style = undefined;
 
@@ -20,21 +21,27 @@
   export let tooltipTrigger = undefined;
   export let size = undefined;
 
+  // eslint-disable-next-line
+  let _theme = F7.instance ? theme : null;
   let el;
-  let theme = useTheme((t) => {
-    theme = t;
-  });
+  let f7Tooltip;
 
   let classes = {
     icon: true,
   };
 
+  if (!F7.instance) {
+    F7.ready(() => {
+      _theme = theme;
+    });
+  }
+
   let themeIcon;
 
-  $: if (theme) {
-    if (theme.ios) themeIcon = ios;
-    if (theme.md) themeIcon = md;
-    if (theme.aurora) themeIcon = aurora;
+  $: if (_theme) {
+    if (_theme.ios) themeIcon = ios;
+    if (_theme.md) themeIcon = md;
+    if (_theme.aurora) themeIcon = aurora;
   }
 
   $: if (themeIcon) {
@@ -58,7 +65,11 @@
     if (icon) classes[icon] = true;
   }
 
-  $: iconClasses = classNames(className, classes, colorClasses($$props));
+  $: iconClasses = Utils.classNames(
+    className,
+    classes,
+    Mixins.colorClasses($$props),
+  );
 
   function iconTextComputed(t) {
     let textComputed = material || f7;
@@ -66,34 +77,63 @@
       textComputed = md.split(':')[1];
     } else if (ios && t && t.ios && (ios.indexOf('material:') >= 0 || ios.indexOf('f7:') >= 0)) {
       textComputed = ios.split(':')[1];
-    } else if (
-      aurora &&
-      t &&
-      t.aurora &&
-      (aurora.indexOf('material:') >= 0 || aurora.indexOf('f7:') >= 0)
-    ) {
+    } else if (aurora && t && t.aurora && (aurora.indexOf('material:') >= 0 || aurora.indexOf('f7:') >= 0)) {
       textComputed = aurora.split(':')[1];
     }
     return textComputed;
   }
-  $: iconText = iconTextComputed(theme);
+  $: iconText = iconTextComputed(_theme);
 
-  $: iconSize = typeof size === 'number' || parseFloat(size) === size * 1 ? `${size}px` : size;
+  $: iconSize = typeof size === 'number' || parseFloat(size) === size * 1
+    ? `${size}px`
+    : size;
 
-  $: iconStyle =
-    (style || '') +
-    (iconSize
-      ? `;font-size: ${iconSize}; width: ${iconSize}; height: ${iconSize}`.replace(';;', '')
-      : '');
+  $: iconStyle = (style || '') + (iconSize ? `;font-size: ${iconSize}; width: ${iconSize}; height: ${iconSize}`.replace(';;', '') : '');
+
+
+  let tooltipText = tooltip;
+  function watchTooltip(newText) {
+    const oldText = tooltipText;
+    if (oldText === newText) return;
+    tooltipText = newText;
+    if (!newText && f7Tooltip) {
+      f7Tooltip.destroy();
+      f7Tooltip = null;
+      return;
+    }
+    if (newText && !f7Tooltip && F7.instance) {
+      f7Tooltip = F7.instance.tooltip.create({
+        targetEl: el,
+        text: newText,
+        trigger: tooltipTrigger,
+      });
+      return;
+    }
+    if (!newText || !f7Tooltip) return;
+    f7Tooltip.setText(newText);
+  }
+  $: watchTooltip(tooltip);
+
+  onMount(() => {
+    if (!tooltip) return;
+    F7.ready(() => {
+      f7Tooltip = F7.instance.tooltip.create({
+        targetEl: el,
+        text: tooltip,
+        trigger: tooltipTrigger,
+      });
+    });
+  });
+
+  onDestroy(() => {
+    if (f7Tooltip && f7Tooltip.destroy) {
+      f7Tooltip.destroy();
+      f7Tooltip = null;
+    }
+  });
 </script>
 
-<i
-  style={iconStyle}
-  class={iconClasses}
-  bind:this={el}
-  {...restProps($$restProps)}
-  use:useTooltip={{ tooltip, tooltipTrigger }}
->
+<i style={iconStyle} class={iconClasses} bind:this={el} {...restProps($$restProps)}>
   {iconText || ''}
   <slot />
 </i>

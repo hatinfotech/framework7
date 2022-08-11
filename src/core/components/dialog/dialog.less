@@ -1,8 +1,7 @@
 /* === Dialog === */
-@import './dialog-vars.less';
+@import url('./dialog-vars.less');
 
-.dialog-backdrop {
-}
+.dialog-backdrop {}
 .dialog {
   position: absolute;
   z-index: 13500;
@@ -127,12 +126,13 @@ html.with-modal-dialog {
   }
 }
 
+
 .if-ios-theme({
-  @import './dialog-ios.less';
+  @import url('./dialog-ios.less');
 });
 .if-md-theme({
-  @import './dialog-md.less';
+  @import url('./dialog-md.less');
 });
 .if-aurora-theme({
-  @import './dialog-aurora.less';
+  @import url('./dialog-aurora.less');
 });

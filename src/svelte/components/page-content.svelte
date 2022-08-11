@@ -1,14 +1,13 @@
 <script>
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
-  import { restProps } from '../shared/rest-props.js';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { app, f7ready } from '../shared/f7.js';
-  import { useTab } from '../shared/use-tab.js';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import Mixins from '../utils/mixins';
+  import f7 from '../utils/f7';
 
   import Preloader from './preloader.svelte';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
   export let tab = false;
   export let tabActive = false;
   export let ptr = false;
@@ -29,9 +28,10 @@
   let className = undefined;
   export { className as class };
 
+
   let pageContentEl;
 
-  $: pageContentClasses = classNames(
+  $: pageContentClasses = Utils.classNames(
     className,
     'page-content',
     {
@@ -47,69 +47,91 @@
       'messages-content': messagesContent,
       'login-screen-content': loginScreen,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   // Event handlers
   function onPtrPullStart(ptrEl) {
     if (ptrEl !== pageContentEl) return;
-    emit('ptrPullStart');
+    dispatch('ptrPullStart');
+    if (typeof $$props.onPtrPullStart === 'function') $$props.onPtrPullStart();
   }
   function onPtrPullMove(ptrEl) {
     if (ptrEl !== pageContentEl) return;
-    emit('ptrPullMove');
+    dispatch('ptrPullMove');
+    if (typeof $$props.onPtrPullMove === 'function') $$props.onPtrPullMove();
   }
   function onPtrPullEnd(ptrEl) {
     if (ptrEl !== pageContentEl) return;
-    emit('ptrPullEnd');
+    dispatch('ptrPullEnd');
+    if (typeof $$props.onPtrPullEnd === 'function') $$props.onPtrPullEnd();
   }
   function onPtrRefresh(ptrEl, done) {
     if (ptrEl !== pageContentEl) return;
-    emit('ptrRefresh', [done]);
+    dispatch('ptrRefresh', [done]);
+    if (typeof $$props.onPtrRefresh === 'function') $$props.onPtrRefresh(done);
   }
   function onPtrDone(ptrEl) {
     if (ptrEl !== pageContentEl) return;
-    emit('ptrDone');
+    dispatch('ptrDone');
+    if (typeof $$props.onPtrDone === 'function') $$props.onPtrDone();
   }
   function onInfinite(infEl) {
     if (infEl !== pageContentEl) return;
-    emit('infinite');
+    dispatch('infinite');
+    if (typeof $$props.onInfinite === 'function') $$props.onInfinite();
+  }
+  function onTabShow(tabEl) {
+    if (pageContentEl !== tabEl) return;
+    dispatch('tabShow');
+    if (typeof $$props.onTabShow === 'function') $$props.onTabShow(tabEl);
+  }
+  function onTabHide(tabEl) {
+    if (pageContentEl !== tabEl) return;
+    dispatch('tabHide');
+    if (typeof $$props.onTabHide === 'function') $$props.onTabHide(tabEl);
   }
 
   function mountPageContent() {
     if (ptr) {
-      app.f7.on('ptrPullStart', onPtrPullStart);
-      app.f7.on('ptrPullMove', onPtrPullMove);
-      app.f7.on('ptrPullEnd', onPtrPullEnd);
-      app.f7.on('ptrRefresh', onPtrRefresh);
-      app.f7.on('ptrDone', onPtrDone);
+      f7.instance.on('ptrPullStart', onPtrPullStart);
+      f7.instance.on('ptrPullMove', onPtrPullMove);
+      f7.instance.on('ptrPullEnd', onPtrPullEnd);
+      f7.instance.on('ptrRefresh', onPtrRefresh);
+      f7.instance.on('ptrDone', onPtrDone);
     }
     if (infinite) {
-      app.f7.on('infinite', onInfinite);
+      f7.instance.on('infinite', onInfinite);
+    }
+    if (tab) {
+      f7.instance.on('tabShow', onTabShow);
+      f7.instance.on('tabHide', onTabHide);
     }
   }
   function destroyPageContent() {
     if (ptr) {
-      app.f7.off('ptrPullStart', onPtrPullStart);
-      app.f7.off('ptrPullMove', onPtrPullMove);
-      app.f7.off('ptrPullEnd', onPtrPullEnd);
-      app.f7.off('ptrRefresh', onPtrRefresh);
-      app.f7.off('ptrDone', onPtrDone);
+      f7.instance.off('ptrPullStart', onPtrPullStart);
+      f7.instance.off('ptrPullMove', onPtrPullMove);
+      f7.instance.off('ptrPullEnd', onPtrPullEnd);
+      f7.instance.off('ptrRefresh', onPtrRefresh);
+      f7.instance.off('ptrDone', onPtrDone);
     }
     if (infinite) {
-      app.f7.off('infinite', onInfinite);
+      f7.instance.off('infinite', onInfinite);
+    }
+    if (tab) {
+      f7.instance.off('tabShow', onTabShow);
+      f7.instance.off('tabHide', onTabHide);
     }
   }
 
-  useTab(() => pageContentEl, emit);
-
   onMount(() => {
-    f7ready(() => {
+    f7.ready(() => {
       mountPageContent();
     });
   });
   onDestroy(() => {
-    if (!app.f7) return;
+    if (!f7.instance) return;
     destroyPageContent();
   });
 </script>
@@ -129,11 +151,11 @@
     </div>
   {/if}
   {#if infinite && infiniteTop && infinitePreloader}
-    <Preloader class="infinite-scroll-preloader" />
+    <Preloader class="infinite-scroll-preloader"/>
   {/if}
   <slot />
   {#if infinite && !infiniteTop && infinitePreloader}
-    <Preloader class="infinite-scroll-preloader" />
+    <Preloader class="infinite-scroll-preloader"/>
   {/if}
   {#if ptr && ptrPreloader && ptrBottom}
     <div class="ptr-preloader">

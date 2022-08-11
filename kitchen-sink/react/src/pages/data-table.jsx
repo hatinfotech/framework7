@@ -1,16 +1,5 @@
 import React from 'react';
-import {
-  Navbar,
-  Page,
-  BlockTitle,
-  Link,
-  Icon,
-  Card,
-  CardContent,
-  CardHeader,
-  BlockHeader,
-  Checkbox,
-} from 'framework7-react';
+import { Navbar, Page, BlockTitle, Link, Icon, Card, CardContent, CardHeader, BlockHeader, Checkbox } from 'framework7-react';
 
 export default () => (
   <Page>
@@ -181,9 +170,7 @@ export default () => (
     </Card>
     <BlockTitle>Tablet-only columns</BlockTitle>
     <BlockHeader>
-      <p>
-        "Comments" column will be visible only on devices with screen width {'>'}= 768px (tablets)
-      </p>
+      <p>"Comments" column will be visible only on devices with screen width >= 768px (tablets)</p>
     </BlockHeader>
     <Card className="data-table data-table-init">
       <table>
@@ -197,14 +184,7 @@ export default () => (
             <th className="numeric-cell">Fat (g)</th>
             <th className="numeric-cell">Carbs</th>
             <th className="numeric-cell">Protein (g)</th>
-            <th className="medium-only">
-              <Icon
-                ios="f7:chat_bubble_text_fill"
-                aurora="f7:chat_bubble_text_fill"
-                md="material:message"
-              />{' '}
-              Comments
-            </th>
+            <th className="medium-only"><Icon ios="f7:chat_bubble_text_fill" aurora="f7:chat_bubble_text_fill" md="material:message"></Icon> Comments</th>
           </tr>
         </thead>
         <tbody>
@@ -257,16 +237,14 @@ export default () => (
     </Card>
 
     <BlockTitle>With inputs</BlockTitle>
-    <BlockHeader>
-      Such tables are widely used in admin interfaces for filtering or search data
-    </BlockHeader>
+    <BlockHeader>Such tables are widely used in admin interfaces for filtering or search data</BlockHeader>
     <Card className="data-table">
       <table>
         <thead>
           <tr>
             <th className="input-cell">
               <span className="table-head-label">ID</span>
-              <div className="input" style={{ width: '50px' }}>
+              <div className="input" style={{width: '50px'}}>
                 <input type="number" placeholder="Filter" />
               </div>
             </th>
@@ -327,16 +305,8 @@ export default () => (
       <CardHeader>
         <div className="data-table-title">Nutrition</div>
         <div className="data-table-actions">
-          <Link
-            iconIos="f7:line_horizontal_3_decrease"
-            iconAurora="f7:line_horizontal_3_decrease"
-            iconMd="material:sort"
-          />
-          <Link
-            iconIos="f7:ellipsis_vertical_circle"
-            iconAurora="f7:ellipsis_vertical_circle"
-            iconMd="material:more_vert"
-          />
+          <Link iconIos="f7:line_horizontal_3_decrease" iconAurora="f7:line_horizontal_3_decrease" iconMd="material:sort"></Link>
+          <Link iconIos="f7:ellipsis_vertical_circle" iconAurora="f7:ellipsis_vertical_circle" iconMd="material:more_vert"></Link>
         </div>
       </CardHeader>
       <CardContent padding={false}>
@@ -351,14 +321,7 @@ export default () => (
               <th className="numeric-cell">Fat (g)</th>
               <th className="numeric-cell">Carbs</th>
               <th className="numeric-cell">Protein (g)</th>
-              <th className="medium-only">
-                <Icon
-                  ios="f7:chat_bubble_text_fill"
-                  aurora="f7:chat_bubble_text_fill"
-                  md="material:message"
-                />{' '}
-                Comments
-              </th>
+              <th className="medium-only"><Icon ios="f7:chat_bubble_text_fill" aurora="f7:chat_bubble_text_fill" md="material:message"></Icon> Comments</th>
             </tr>
           </thead>
           <tbody>
@@ -416,16 +379,8 @@ export default () => (
       <CardHeader>
         <div className="data-table-title">Nutrition</div>
         <div className="data-table-actions">
-          <Link
-            iconIos="f7:line_horizontal_3_decrease"
-            iconAurora="f7:line_horizontal_3_decrease"
-            iconMd="material:sort"
-          />
-          <Link
-            iconIos="f7:ellipsis_vertical_circle"
-            iconAurora="f7:ellipsis_vertical_circle"
-            iconMd="material:more_vert"
-          />
+          <Link iconIos="f7:line_horizontal_3_decrease" iconAurora="f7:line_horizontal_3_decrease" iconMd="material:sort"></Link>
+          <Link iconIos="f7:ellipsis_vertical_circle" iconAurora="f7:ellipsis_vertical_circle" iconMd="material:more_vert"></Link>
         </div>
       </CardHeader>
       <CardContent padding={false}>
@@ -435,21 +390,12 @@ export default () => (
               <th className="checkbox-cell">
                 <Checkbox />
               </th>
-              <th className="label-cell sortable-cell sortable-cell-active">
-                Desert (100g serving)
-              </th>
+              <th className="label-cell sortable-cell sortable-cell-active">Dessert (100g serving)</th>
               <th className="numeric-cell sortable-cell">Calories</th>
               <th className="numeric-cell sortable-cell">Fat (g)</th>
               <th className="numeric-cell sortable-cell">Carbs</th>
               <th className="numeric-cell sortable-cell">Protein (g)</th>
-              <th className="medium-only">
-                <Icon
-                  ios="f7:chat_bubble_text_fill"
-                  aurora="f7:chat_bubble_text_fill"
-                  md="material:message"
-                />{' '}
-                Comments
-              </th>
+              <th className="medium-only"><Icon ios="f7:chat_bubble_text_fill" aurora="f7:chat_bubble_text_fill" md="material:message"></Icon> Comments</th>
             </tr>
           </thead>
           <tbody>
@@ -507,29 +453,15 @@ export default () => (
         <div className="data-table-header">
           <div className="data-table-title">Nutrition</div>
           <div className="data-table-actions">
-            <Link
-              iconIos="f7:line_horizontal_3_decrease"
-              iconAurora="f7:line_horizontal_3_decrease"
-              iconMd="material:sort"
-            />
-            <Link
-              iconIos="f7:ellipsis_vertical_circle"
-              iconAurora="f7:ellipsis_vertical_circle"
-              iconMd="material:more_vert"
-            />
+            <Link iconIos="f7:line_horizontal_3_decrease" iconAurora="f7:line_horizontal_3_decrease" iconMd="material:sort"></Link>
+            <Link iconIos="f7:ellipsis_vertical_circle" iconAurora="f7:ellipsis_vertical_circle" iconMd="material:more_vert"></Link>
           </div>
         </div>
         <div className="data-table-header-selected">
-          <div className="data-table-title-selected">
-            <span className="data-table-selected-count"></span> items selected
-          </div>
+          <div className="data-table-title-selected"><span className="data-table-selected-count"></span> items selected</div>
           <div className="data-table-actions">
-            <Link iconIos="f7:trash" iconAurora="f7:trash" iconMd="material:delete" />
-            <Link
-              iconIos="f7:ellipsis_vertical_circle"
-              iconAurora="f7:ellipsis_vertical_circle"
-              iconMd="material:more_vert"
-            />
+            <Link iconIos="f7:trash" iconAurora="f7:trash" iconMd="material:delete"></Link>
+            <Link iconIos="f7:ellipsis_vertical_circle" iconAurora="f7:ellipsis_vertical_circle" iconMd="material:more_vert"></Link>
           </div>
         </div>
       </CardHeader>
@@ -545,14 +477,7 @@ export default () => (
               <th className="numeric-cell">Fat (g)</th>
               <th className="numeric-cell">Carbs</th>
               <th className="numeric-cell">Protein (g)</th>
-              <th className="medium-only">
-                <Icon
-                  ios="f7:chat_bubble_text_fill"
-                  aurora="f7:chat_bubble_text_fill"
-                  md="material:message"
-                />{' '}
-                Comments
-              </th>
+              <th className="medium-only"><Icon ios="f7:chat_bubble_text_fill" aurora="f7:chat_bubble_text_fill" md="material:message"></Icon> Comments</th>
             </tr>
           </thead>
           <tbody>
@@ -608,21 +533,10 @@ export default () => (
     <BlockTitle>Alternate header with actions</BlockTitle>
     <Card className="data-table data-table-init">
       <CardHeader>
-        <div className="data-table-links">
-          <a className="button">Add</a>
-          <a className="button">Remove</a>
-        </div>
+        <div className="data-table-links"><a className="button">Add</a><a className="button">Remove</a></div>
         <div className="data-table-actions">
-          <Link
-            iconIos="f7:line_horizontal_3_decrease"
-            iconAurora="f7:line_horizontal_3_decrease"
-            iconMd="material:sort"
-          />
-          <Link
-            iconIos="f7:ellipsis_vertical_circle"
-            iconAurora="f7:ellipsis_vertical_circle"
-            iconMd="material:more_vert"
-          />
+          <Link iconIos="f7:line_horizontal_3_decrease" iconAurora="f7:line_horizontal_3_decrease" iconMd="material:sort"></Link>
+          <Link iconIos="f7:ellipsis_vertical_circle" iconAurora="f7:ellipsis_vertical_circle" iconMd="material:more_vert"></Link>
         </div>
       </CardHeader>
       <CardContent padding={false}>
@@ -637,14 +551,7 @@ export default () => (
               <th className="numeric-cell">Fat (g)</th>
               <th className="numeric-cell">Carbs</th>
               <th className="numeric-cell">Protein (g)</th>
-              <th className="medium-only">
-                <Icon
-                  ios="f7:chat_bubble_text_fill"
-                  aurora="f7:chat_bubble_text_fill"
-                  md="material:message"
-                />{' '}
-                Comments
-              </th>
+              <th className="medium-only"><Icon ios="f7:chat_bubble_text_fill" aurora="f7:chat_bubble_text_fill" md="material:message"></Icon> Comments</th>
               <th></th>
             </tr>
           </thead>
@@ -660,12 +567,8 @@ export default () => (
               <td className="numeric-cell">4.0</td>
               <td className="medium-only">I like frozen yogurt</td>
               <td className="actions-cell">
-                <Link
-                  iconIos="f7:square_pencil"
-                  iconAurora="f7:square_pencil"
-                  iconMd="material:edit"
-                />
-                <Link iconIos="f7:trash" iconAurora="f7:trash" iconMd="material:delete" />
+                <Link iconIos="f7:square_pencil" iconAurora="f7:square_pencil" iconMd="material:edit"></Link>
+                <Link iconIos="f7:trash" iconAurora="f7:trash" iconMd="material:delete"></Link>
               </td>
             </tr>
             <tr>
@@ -679,12 +582,8 @@ export default () => (
               <td className="numeric-cell">4.4</td>
               <td className="medium-only">But like ice cream more</td>
               <td className="actions-cell">
-                <Link
-                  iconIos="f7:square_pencil"
-                  iconAurora="f7:square_pencil"
-                  iconMd="material:edit"
-                />
-                <Link iconIos="f7:trash" iconAurora="f7:trash" iconMd="material:delete" />
+                <Link iconIos="f7:square_pencil" iconAurora="f7:square_pencil" iconMd="material:edit"></Link>
+                <Link iconIos="f7:trash" iconAurora="f7:trash" iconMd="material:delete"></Link>
               </td>
             </tr>
             <tr>
@@ -698,12 +597,8 @@ export default () => (
               <td className="numeric-cell">6.0</td>
               <td className="medium-only">Super tasty</td>
               <td className="actions-cell">
-                <Link
-                  iconIos="f7:square_pencil"
-                  iconAurora="f7:square_pencil"
-                  iconMd="material:edit"
-                />
-                <Link iconIos="f7:trash" iconAurora="f7:trash" iconMd="material:delete" />
+                <Link iconIos="f7:square_pencil" iconAurora="f7:square_pencil" iconMd="material:edit"></Link>
+                <Link iconIos="f7:trash" iconAurora="f7:trash" iconMd="material:delete"></Link>
               </td>
             </tr>
             <tr>
@@ -717,12 +612,8 @@ export default () => (
               <td className="numeric-cell">4.3</td>
               <td className="medium-only">Don't like it</td>
               <td className="actions-cell">
-                <Link
-                  iconIos="f7:square_pencil"
-                  iconAurora="f7:square_pencil"
-                  iconMd="material:edit"
-                />
-                <Link iconIos="f7:trash" iconAurora="f7:trash" iconMd="material:delete" />
+                <Link iconIos="f7:square_pencil" iconAurora="f7:square_pencil" iconMd="material:edit"></Link>
+                <Link iconIos="f7:trash" iconAurora="f7:trash" iconMd="material:delete"></Link>
               </td>
             </tr>
           </tbody>
@@ -738,16 +629,8 @@ export default () => (
       <CardHeader>
         <div className="data-table-title">Nutrition</div>
         <div className="data-table-actions">
-          <Link
-            iconIos="f7:line_horizontal_3_decrease"
-            iconAurora="f7:line_horizontal_3_decrease"
-            iconMd="material:sort"
-          />
-          <Link
-            iconIos="f7:ellipsis_vertical_circle"
-            iconAurora="f7:ellipsis_vertical_circle"
-            iconMd="material:more_vert"
-          />
+          <Link iconIos="f7:line_horizontal_3_decrease" iconAurora="f7:line_horizontal_3_decrease" iconMd="material:sort"></Link>
+          <Link iconIos="f7:ellipsis_vertical_circle" iconAurora="f7:ellipsis_vertical_circle" iconMd="material:more_vert"></Link>
         </div>
       </CardHeader>
       <CardContent padding={false}>

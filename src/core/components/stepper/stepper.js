@@ -1,13 +1,13 @@
-import $ from '../../shared/dom7.js';
-import { extend } from '../../shared/utils.js';
-import Stepper from './stepper-class.js';
-import ConstructorMethods from '../../shared/constructor-methods.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
+import Stepper from './stepper-class';
+import ConstructorMethods from '../../utils/constructor-methods';
 
 export default {
   name: 'stepper',
   create() {
     const app = this;
-    app.stepper = extend(
+    app.stepper = Utils.extend(
       ConstructorMethods({
         defaultSelector: '.stepper',
         constructor: Stepper,
@@ -25,7 +25,7 @@ export default {
           if (stepper) return stepper.setValue(value);
           return undefined;
         },
-      },
+      }
     );
   },
   static: {
@@ -34,29 +34,25 @@ export default {
   on: {
     tabMounted(tabEl) {
       const app = this;
-      $(tabEl)
-        .find('.stepper-init')
-        .each((stepperEl) => {
-          const dataset = $(stepperEl).dataset();
-          app.stepper.create(extend({ el: stepperEl }, dataset || {}));
-        });
+      $(tabEl).find('.stepper-init').each((index, stepperEl) => {
+        const dataset = $(stepperEl).dataset();
+        app.stepper.create(Utils.extend({ el: stepperEl }, dataset || {}));
+      });
     },
     tabBeforeRemove(tabEl) {
-      $(tabEl)
-        .find('.stepper-init')
-        .each((stepperEl) => {
-          if (stepperEl.f7Stepper) stepperEl.f7Stepper.destroy();
-        });
+      $(tabEl).find('.stepper-init').each((index, stepperEl) => {
+        if (stepperEl.f7Stepper) stepperEl.f7Stepper.destroy();
+      });
     },
     pageInit(page) {
       const app = this;
-      page.$el.find('.stepper-init').each((stepperEl) => {
+      page.$el.find('.stepper-init').each((index, stepperEl) => {
         const dataset = $(stepperEl).dataset();
-        app.stepper.create(extend({ el: stepperEl }, dataset || {}));
+        app.stepper.create(Utils.extend({ el: stepperEl }, dataset || {}));
       });
     },
     pageBeforeRemove(page) {
-      page.$el.find('.stepper-init').each((stepperEl) => {
+      page.$el.find('.stepper-init').each((index, stepperEl) => {
         if (stepperEl.f7Stepper) stepperEl.f7Stepper.destroy();
       });
     },
@@ -67,7 +63,7 @@ export default {
         const app = this;
         const stepperEl = vnode.elm;
         const dataset = $(stepperEl).dataset();
-        app.stepper.create(extend({ el: stepperEl }, dataset || {}));
+        app.stepper.create(Utils.extend({ el: stepperEl }, dataset || {}));
       },
       destroy(vnode) {
         const stepperEl = vnode.elm;

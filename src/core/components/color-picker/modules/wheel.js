@@ -1,35 +1,28 @@
-import $ from '../../../shared/dom7.js';
-import { getSupport } from '../../../shared/get-support.js';
-/** @jsx $jsx */
-import $jsx from '../../../shared/$jsx.js';
+import $ from 'dom7';
 
 function svgWheelCircles() {
   const total = 256;
   let circles = '';
   for (let i = total; i > 0; i -= 1) {
-    const angle = (i * Math.PI) / (total / 2);
-    const hue = (360 / total) * i;
-    circles += `<circle cx="${150 - Math.sin(angle) * 125}" cy="${
-      150 - Math.cos(angle) * 125
-    }" r="25" fill="hsl(${hue}, 100%, 50%)"></circle>`;
+    const angle = i * Math.PI / (total / 2);
+    const hue = 360 / total * i;
+    circles += `<circle cx="${150 - Math.sin(angle) * 125}" cy="${150 - Math.cos(angle) * 125}" r="25" fill="hsl(${hue}, 100%, 50%)"></circle>`;
   }
   return circles;
 }
 export default {
   render() {
-    return (
+    return `
       <div class="color-picker-module color-picker-module-wheel">
         <div class="color-picker-wheel">
-          <svg viewBox="0 0 300 300" width="300" height="300">
-            {svgWheelCircles()}
-          </svg>
+          <svg viewBox="0 0 300 300" width="300" height="300">${svgWheelCircles()}</svg>
           <div class="color-picker-wheel-handle"></div>
           <div class="color-picker-sb-spectrum" style="background-color: hsl(0, 100%, 50%)">
             <div class="color-picker-sb-spectrum-handle"></div>
           </div>
         </div>
       </div>
-    );
+    `;
   },
   init(self) {
     const { app } = self;
@@ -54,7 +47,7 @@ export default {
       const wheelCenterX = wheelRect.left + wheelRect.width / 2;
       const wheelCenterY = wheelRect.top + wheelRect.height / 2;
       const angleRad = Math.atan2(y - wheelCenterY, x - wheelCenterX);
-      let angleDeg = (angleRad * 180) / Math.PI + 90;
+      let angleDeg = angleRad * 180 / Math.PI + 90;
       if (angleDeg < 0) angleDeg += 360;
       angleDeg = 360 - angleDeg;
       self.setValue({ hue: angleDeg });
@@ -90,17 +83,11 @@ export default {
         setSBFromSpecterCoords(touchStartX, touchStartY);
       }
       if (specterHandleIsTouched || specterIsTouched) {
-        $el
-          .find('.color-picker-sb-spectrum-handle')
-          .addClass('color-picker-sb-spectrum-handle-pressed');
+        $el.find('.color-picker-sb-spectrum-handle').addClass('color-picker-sb-spectrum-handle-pressed');
       }
     }
     function handleTouchMove(e) {
-      if (
-        !(wheelIsTouched || wheelHandleIsTouched) &&
-        !(specterIsTouched || specterHandleIsTouched)
-      )
-        return;
+      if (!(wheelIsTouched || wheelHandleIsTouched) && !(specterIsTouched || specterHandleIsTouched)) return;
       touchCurrentX = e.type === 'touchmove' ? e.targetTouches[0].pageX : e.pageX;
       touchCurrentY = e.type === 'touchmove' ? e.targetTouches[0].pageY : e.pageY;
       e.preventDefault();
@@ -124,9 +111,7 @@ export default {
     function handleTouchEnd() {
       isMoved = false;
       if (specterIsTouched || specterHandleIsTouched) {
-        $el
-          .find('.color-picker-sb-spectrum-handle')
-          .removeClass('color-picker-sb-spectrum-handle-pressed');
+        $el.find('.color-picker-sb-spectrum-handle').removeClass('color-picker-sb-spectrum-handle-pressed');
       }
       wheelIsTouched = false;
       wheelHandleIsTouched = false;
@@ -138,10 +123,7 @@ export default {
       self.modules.wheel.update(self);
     }
 
-    const passiveListener =
-      app.touchEvents.start === 'touchstart' && getSupport().passiveListener
-        ? { passive: true, capture: false }
-        : false;
+    const passiveListener = app.touchEvents.start === 'touchstart' && app.support.passiveListener ? { passive: true, capture: false } : false;
 
     self.$el.on(app.touchEvents.start, handleTouchStart, passiveListener);
     app.on('touchmove:active', handleTouchMove);
@@ -156,7 +138,9 @@ export default {
     };
   },
   update(self) {
-    const { value } = self;
+    const {
+      value,
+    } = self;
 
     const { hsl, hsb } = value;
 
@@ -164,22 +148,19 @@ export default {
     const specterHeight = self.$el.find('.color-picker-sb-spectrum')[0].offsetHeight;
     const wheelSize = self.$el.find('.color-picker-wheel')[0].offsetWidth;
     const wheelHalfSize = wheelSize / 2;
-    const angleRad = (value.hue * Math.PI) / 180;
+    const angleRad = value.hue * Math.PI / 180;
     const handleSize = wheelSize / 6;
     const handleHalfSize = handleSize / 2;
-    const tX =
-      wheelHalfSize - Math.sin(angleRad) * (wheelHalfSize - handleHalfSize) - handleHalfSize;
-    const tY =
-      wheelHalfSize - Math.cos(angleRad) * (wheelHalfSize - handleHalfSize) - handleHalfSize;
-    self.$el
-      .find('.color-picker-wheel-handle')
+    const tX = wheelHalfSize - Math.sin(angleRad) * (wheelHalfSize - handleHalfSize) - handleHalfSize;
+    const tY = wheelHalfSize - Math.cos(angleRad) * (wheelHalfSize - handleHalfSize) - handleHalfSize;
+    self.$el.find('.color-picker-wheel-handle')
       .css('background-color', `hsl(${hsl[0]}, 100%, 50%)`)
       .transform(`translate(${tX}px, ${tY}px)`);
 
-    self.$el.find('.color-picker-sb-spectrum').css('background-color', `hsl(${hsl[0]}, 100%, 50%)`);
+    self.$el.find('.color-picker-sb-spectrum')
+      .css('background-color', `hsl(${hsl[0]}, 100%, 50%)`);
 
-    self.$el
-      .find('.color-picker-sb-spectrum-handle')
+    self.$el.find('.color-picker-sb-spectrum-handle')
       .css('background-color', `hsl(${hsl[0]}, ${hsl[1] * 100}%, ${hsl[2] * 100}%)`)
       .transform(`translate(${specterWidth * hsb[1]}px, ${specterHeight * (1 - hsb[2])}px)`);
   },

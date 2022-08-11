@@ -11,14 +11,10 @@
   </f7-actions>
 </template>
 <script>
-import { f7Actions, f7ActionsLabel, f7ActionsGroup, f7ActionsButton } from 'framework7-vue';
-
-export default {
-  components: {
-    f7Actions,
-    f7ActionsLabel,
-    f7ActionsGroup,
-    f7ActionsButton,
-  },
-};
+  import { f7Actions, f7ActionsLabel, f7ActionsGroup, f7ActionsButton } from 'framework7-vue';
+  export default {
+    components: {
+      f7Actions, f7ActionsLabel, f7ActionsGroup, f7ActionsButton,
+    },
+  };
 </script>

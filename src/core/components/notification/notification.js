@@ -1,6 +1,6 @@
-import { extend } from '../../shared/utils.js';
-import Notification from './notification-class.js';
-import ModalMethods from '../../shared/modal-methods.js';
+import Utils from '../../utils/utils';
+import Notification from './notification-class';
+import ModalMethods from '../../utils/modal-methods';
 
 export default {
   name: 'notification',
@@ -9,13 +9,13 @@ export default {
   },
   create() {
     const app = this;
-    app.notification = extend(
+    app.notification = Utils.extend(
       {},
       ModalMethods({
         app,
         constructor: Notification,
         defaultSelector: '.notification.modal-in',
-      }),
+      })
     );
   },
   params: {
@@ -31,7 +31,6 @@ export default {
       swipeToClose: true,
       cssClass: null,
       render: null,
-      containerEl: null,
     },
   },
 };

@@ -1,10 +1,10 @@
 <script>
   import { createEventDispatcher } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -17,18 +17,18 @@
 
   let inputEl;
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'radio',
     {
       disabled,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function onChange(event) {
-    emit('change', [event]);
-    checked = event.target.checked;
+    dispatch('change', [event]);
+    if (typeof $$props.onChange === 'function') $$props.onChange(event);
   }
 </script>
 
@@ -36,11 +36,11 @@
   <input
     bind:this={inputEl}
     type="radio"
-    {name}
+    name={name}
     value={typeof value === 'undefined' ? '' : value}
-    {disabled}
-    {readonly}
-    {checked}
+    disabled={disabled}
+    readonly={readonly}
+    checked={checked}
     on:change={onChange}
   />
   <i class="icon-radio" />

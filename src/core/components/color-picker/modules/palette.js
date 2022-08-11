@@ -1,34 +1,27 @@
 /* eslint indent: ["off"] */
-import $ from '../../../shared/dom7.js';
-/** @jsx $jsx */
-import $jsx from '../../../shared/$jsx.js';
+import $ from 'dom7';
 
 export default {
   render(self) {
-    return (
+    return `
       <div class="color-picker-module color-picker-module-palette">
         <div class="color-picker-palette">
-          {self.params.palette.map((p) => {
+          ${self.params.palette.map((p) => {
             if (Array.isArray(p)) {
               let row = '<div class="color-picker-palette-row">';
-              // prettier-ignore
-              row += p.map((c) => `
+              row += p.map(c => `
                 <div class="color-picker-palette-value" data-palette-color="${c}" style="background-color: ${c}"></div>
               `).join('');
               row += '</div>';
               return row;
             }
-            return (
-              <div
-                class="color-picker-palette-value"
-                data-palette-color={p}
-                style={`background-color: ${p}`}
-              ></div>
-            );
-          })}
+            return `
+              <div class="color-picker-palette-value" data-palette-color="${p}" style="background-color: ${p}"></div>
+            `;
+          }).join('')}
         </div>
       </div>
-    );
+    `;
   },
   init(self) {
     function handlePaletteClick(e) {
@@ -38,11 +31,7 @@ export default {
       });
     }
 
-    self.$el.on(
-      'click',
-      '.color-picker-module-palette .color-picker-palette-value',
-      handlePaletteClick,
-    );
+    self.$el.on('click', '.color-picker-module-palette .color-picker-palette-value', handlePaletteClick);
 
     self.destroyPaletteEvents = function destroyPaletteEvents() {
       self.$el.off('click', '.color-picker-module-hex input', handlePaletteClick);

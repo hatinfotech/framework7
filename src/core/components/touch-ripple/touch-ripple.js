@@ -1,4 +1,4 @@
-import TouchRipple from './touch-ripple-class.js';
+import TouchRipple from './touch-ripple-class';
 
 export default {
   name: 'touch-ripple',

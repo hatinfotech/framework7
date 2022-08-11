@@ -1,63 +1,61 @@
 /* eslint no-nested-ternary: off */
-import { getDocument } from 'ssr-window';
-import $ from '../../shared/dom7.js';
-import { extend, deleteProps } from '../../shared/utils.js';
-import Framework7Class from '../../shared/class.js';
-/** @jsx $jsx */
-import $jsx from '../../shared/$jsx.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
+import Framework7Class from '../../utils/class';
 
 class Gauge extends Framework7Class {
   constructor(app, params = {}) {
+    // Extends with open/close Modal methods;
     super(params, [app]);
 
-    const self = this;
+    const gauge = this;
 
-    const defaults = extend({}, app.params.gauge);
+    const defaults = Utils.extend({}, app.params.gauge);
 
     // Extend defaults with modules params
-    self.useModulesParams(defaults);
+    gauge.useModulesParams(defaults);
 
-    self.params = extend(defaults, params);
+    gauge.params = Utils.extend(defaults, params);
 
-    const { el } = self.params;
-    if (!el) return self;
+    const { el } = gauge.params;
+    if (!el) return gauge;
 
     const $el = $(el);
-    if ($el.length === 0) return self;
+    if ($el.length === 0) return gauge;
 
     if ($el[0].f7Gauge) return $el[0].f7Gauge;
 
-    extend(self, {
+    Utils.extend(gauge, {
       app,
       $el,
       el: $el && $el[0],
     });
 
-    $el[0].f7Gauge = self;
+    $el[0].f7Gauge = gauge;
 
     // Install Modules
-    self.useModules();
+    gauge.useModules();
 
-    self.init();
+    gauge.init();
 
-    return self;
+    return gauge;
   }
 
   calcRadius() {
-    const self = this;
-    const { size, borderWidth } = self.params;
-    return size / 2 - borderWidth / 2;
+    const gauge = this;
+    const { size, borderWidth } = gauge.params;
+    return (size / 2) - (borderWidth / 2);
   }
 
   calcBorderLength() {
-    const self = this;
-    const radius = self.calcRadius();
+    const gauge = this;
+    const radius = gauge.calcRadius();
     return 2 * Math.PI * radius;
   }
 
   render() {
-    const self = this;
-    if (self.params.render) return self.params.render.call(self, self);
+    const gauge = this;
+    if (gauge.params.render) return gauge.params.render.call(gauge, gauge);
 
     const {
       type,
@@ -75,111 +73,97 @@ class Gauge extends Framework7Class {
       labelTextColor,
       labelFontSize,
       labelFontWeight,
-    } = self.params;
+    } = gauge.params;
 
     const semiCircle = type === 'semicircle';
-    const radius = self.calcRadius();
-    const length = self.calcBorderLength();
+    const radius = gauge.calcRadius();
+    const length = gauge.calcBorderLength();
     const progress = Math.max(Math.min(value, 1), 0);
 
-    return (
-      <svg
-        class="gauge-svg"
-        width={`${size}px`}
-        height={`${semiCircle ? size / 2 : size}px`}
-        viewBox={`0 0 ${size} ${semiCircle ? size / 2 : size}`}
-      >
-        {semiCircle && (
+    return `
+      <svg class="gauge-svg" width="${size}px" height="${semiCircle ? size / 2 : size}px" viewBox="0 0 ${size} ${semiCircle ? size / 2 : size}">
+        ${semiCircle ? `
           <path
             class="gauge-back-semi"
-            d={`M${size - borderWidth / 2},${size / 2} a1,1 0 0,0 -${size - borderWidth},0`}
-            stroke={borderBgColor}
-            stroke-width={borderWidth}
-            fill={bgColor || 'none'}
+            d="M${size - (borderWidth / 2)},${size / 2} a1,1 0 0,0 -${size - borderWidth},0"
+            stroke="${borderBgColor}"
+            stroke-width="${borderWidth}"
+            fill="${bgColor || 'none'}"
           />
-        )}
-        {semiCircle && (
           <path
             class="gauge-front-semi"
-            d={`M${size - borderWidth / 2},${size / 2} a1,1 0 0,0 -${size - borderWidth},0`}
-            stroke={borderColor}
-            stroke-width={borderWidth}
-            stroke-dasharray={length / 2}
-            stroke-dashoffset={(length / 2) * (1 + progress)}
-            fill={borderBgColor ? 'none' : bgColor || 'none'}
+            d="M${size - (borderWidth / 2)},${size / 2} a1,1 0 0,0 -${size - borderWidth},0"
+            stroke="${borderColor}"
+            stroke-width="${borderWidth}"
+            stroke-dasharray="${length / 2}"
+            stroke-dashoffset="${(length / 2) * (1 + progress)}"
+            fill="${borderBgColor ? 'none' : (bgColor || 'none')}"
           />
-        )}
-        {!semiCircle && borderBgColor && (
-          <circle
-            class="gauge-back-circle"
-            stroke={borderBgColor}
-            stroke-width={borderWidth}
-            fill={bgColor || 'none'}
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-          />
-        )}
-        {!semiCircle && (
+        ` : `
+          ${borderBgColor ? `
+            <circle
+              class="gauge-back-circle"
+              stroke="${borderBgColor}"
+              stroke-width="${borderWidth}"
+              fill="${bgColor || 'none'}"
+              cx="${size / 2}"
+              cy="${size / 2}"
+              r="${radius}"
+            ></circle>
+          ` : ''}
           <circle
             class="gauge-front-circle"
-            transform={`rotate(-90 ${size / 2} ${size / 2})`}
-            stroke={borderColor}
-            stroke-width={borderWidth}
-            stroke-dasharray={length}
-            stroke-dashoffset={length * (1 - progress)}
-            fill={borderBgColor ? 'none' : bgColor || 'none'}
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-          />
-        )}
-
-        {valueText && (
+            transform="${`rotate(-90 ${size / 2} ${size / 2})`}"
+            stroke="${borderColor}"
+            stroke-width="${borderWidth}"
+            stroke-dasharray="${length}"
+            stroke-dashoffset="${length * (1 - progress)}"
+            fill="${borderBgColor ? 'none' : bgColor || 'none'}"
+            cx="${size / 2}"
+            cy="${size / 2}"
+            r="${radius}"
+          ></circle>
+        `}
+        ${valueText ? `
           <text
             class="gauge-value-text"
             x="50%"
-            y={semiCircle ? '100%' : '50%'}
-            font-weight={valueFontWeight}
-            font-size={valueFontSize}
-            fill={valueTextColor}
-            dy={semiCircle ? (labelText ? -labelFontSize - 15 : -5) : 0}
+            y="${semiCircle ? '100%' : '50%'}"
+            font-weight="${valueFontWeight}"
+            font-size="${valueFontSize}"
+            fill="${valueTextColor}"
+            dy="${semiCircle ? (labelText ? -labelFontSize - 15 : -5) : 0}"
             text-anchor="middle"
-            dominant-baseline={!semiCircle && 'middle'}
-          >
-            {valueText}
-          </text>
-        )}
-        {labelText && (
+            dominant-baseline="${!semiCircle && 'middle'}"
+          >${valueText}</text>
+        ` : ''}
+        ${labelText ? `
           <text
             class="gauge-label-text"
             x="50%"
-            y={semiCircle ? '100%' : '50%'}
-            font-weight={labelFontWeight}
-            font-size={labelFontSize}
-            fill={labelTextColor}
-            dy={semiCircle ? -5 : valueText ? valueFontSize / 2 + 10 : 0}
+            y="${semiCircle ? '100%' : '50%'}"
+            font-weight="${labelFontWeight}"
+            font-size="${labelFontSize}"
+            fill="${labelTextColor}"
+            dy="${semiCircle ? -5 : (valueText ? ((valueFontSize / 2) + 10) : 0)}"
             text-anchor="middle"
-            dominant-baseline={!semiCircle && 'middle'}
-          >
-            {labelText}
-          </text>
-        )}
+            dominant-baseline="${!semiCircle && 'middle'}"
+          >${labelText}</text>
+        ` : ''}
       </svg>
-    );
+    `.trim();
   }
 
   update(newParams = {}) {
-    const self = this;
-    const document = getDocument();
-    const { params, $svgEl } = self;
+    const gauge = this;
+    const { params, $gaugeSvgEl } = gauge;
 
     Object.keys(newParams).forEach((param) => {
       if (typeof newParams[param] !== 'undefined') {
         params[param] = newParams[param];
       }
     });
-    if ($svgEl.length === 0) return self;
+    if ($gaugeSvgEl.length === 0) return gauge;
 
     const {
       value,
@@ -198,9 +182,9 @@ class Gauge extends Framework7Class {
       labelFontWeight,
     } = params;
 
-    const length = self.calcBorderLength();
+    const length = gauge.calcBorderLength();
     const progress = Math.max(Math.min(value, 1), 0);
-    const radius = self.calcRadius();
+    const radius = gauge.calcRadius();
     const semiCircle = params.type === 'semicircle';
 
     const svgAttrs = {
@@ -209,28 +193,28 @@ class Gauge extends Framework7Class {
       viewBox: `0 0 ${size} ${semiCircle ? size / 2 : size}`,
     };
     Object.keys(svgAttrs).forEach((attr) => {
-      $svgEl.attr(attr, svgAttrs[attr]);
+      $gaugeSvgEl.attr(attr, svgAttrs[attr]);
     });
     if (semiCircle) {
       const backAttrs = {
-        d: `M${size - borderWidth / 2},${size / 2} a1,1 0 0,0 -${size - borderWidth},0`,
+        d: `M${size - (borderWidth / 2)},${size / 2} a1,1 0 0,0 -${size - borderWidth},0`,
         stroke: borderBgColor,
         'stroke-width': borderWidth,
         fill: bgColor || 'none',
       };
       const frontAttrs = {
-        d: `M${size - borderWidth / 2},${size / 2} a1,1 0 0,0 -${size - borderWidth},0`,
+        d: `M${size - (borderWidth / 2)},${size / 2} a1,1 0 0,0 -${size - borderWidth},0`,
         stroke: borderColor,
         'stroke-width': borderWidth,
         'stroke-dasharray': length / 2,
         'stroke-dashoffset': (length / 2) * (1 + progress),
-        fill: borderBgColor ? 'none' : bgColor || 'none',
+        fill: borderBgColor ? 'none' : (bgColor || 'none'),
       };
       Object.keys(backAttrs).forEach((attr) => {
-        $svgEl.find('.gauge-back-semi').attr(attr, backAttrs[attr]);
+        $gaugeSvgEl.find('.gauge-back-semi').attr(attr, backAttrs[attr]);
       });
       Object.keys(frontAttrs).forEach((attr) => {
-        $svgEl.find('.gauge-front-semi').attr(attr, frontAttrs[attr]);
+        $gaugeSvgEl.find('.gauge-front-semi').attr(attr, frontAttrs[attr]);
       });
     } else {
       const backAttrs = {
@@ -253,17 +237,17 @@ class Gauge extends Framework7Class {
         r: radius,
       };
       Object.keys(backAttrs).forEach((attr) => {
-        $svgEl.find('.gauge-back-circle').attr(attr, backAttrs[attr]);
+        $gaugeSvgEl.find('.gauge-back-circle').attr(attr, backAttrs[attr]);
       });
       Object.keys(frontAttrs).forEach((attr) => {
-        $svgEl.find('.gauge-front-circle').attr(attr, frontAttrs[attr]);
+        $gaugeSvgEl.find('.gauge-front-circle').attr(attr, frontAttrs[attr]);
       });
     }
     if (valueText) {
-      if (!$svgEl.find('.gauge-value-text').length) {
+      if (!$gaugeSvgEl.find('.gauge-value-text').length) {
         const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         textEl.classList.add('gauge-value-text');
-        $svgEl.append(textEl);
+        $gaugeSvgEl.append(textEl);
       }
       const textAttrs = {
         x: '50%',
@@ -276,17 +260,17 @@ class Gauge extends Framework7Class {
         'dominant-baseline': !semiCircle && 'middle',
       };
       Object.keys(textAttrs).forEach((attr) => {
-        $svgEl.find('.gauge-value-text').attr(attr, textAttrs[attr]);
+        $gaugeSvgEl.find('.gauge-value-text').attr(attr, textAttrs[attr]);
       });
-      $svgEl.find('.gauge-value-text').text(valueText);
+      $gaugeSvgEl.find('.gauge-value-text').text(valueText);
     } else {
-      $svgEl.find('.gauge-value-text').remove();
+      $gaugeSvgEl.find('.gauge-value-text').remove();
     }
     if (labelText) {
-      if (!$svgEl.find('.gauge-label-text').length) {
+      if (!$gaugeSvgEl.find('.gauge-label-text').length) {
         const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         textEl.classList.add('gauge-label-text');
-        $svgEl.append(textEl);
+        $gaugeSvgEl.append(textEl);
       }
       const labelAttrs = {
         x: '50%',
@@ -294,41 +278,41 @@ class Gauge extends Framework7Class {
         'font-weight': labelFontWeight,
         'font-size': labelFontSize,
         fill: labelTextColor,
-        dy: semiCircle ? -5 : valueText ? valueFontSize / 2 + 10 : 0,
+        dy: semiCircle ? -5 : (valueText ? ((valueFontSize / 2) + 10) : 0),
         'text-anchor': 'middle',
         'dominant-baseline': !semiCircle && 'middle',
       };
       Object.keys(labelAttrs).forEach((attr) => {
-        $svgEl.find('.gauge-label-text').attr(attr, labelAttrs[attr]);
+        $gaugeSvgEl.find('.gauge-label-text').attr(attr, labelAttrs[attr]);
       });
-      $svgEl.find('.gauge-label-text').text(labelText);
+      $gaugeSvgEl.find('.gauge-label-text').text(labelText);
     } else {
-      $svgEl.find('.gauge-label-text').remove();
+      $gaugeSvgEl.find('.gauge-label-text').remove();
     }
-    return self;
+    return gauge;
   }
 
   init() {
-    const self = this;
-    const $svgEl = $(self.render()).eq(0);
-    $svgEl.f7Gauge = self;
-    extend(self, {
-      $svgEl,
-      svgEl: $svgEl && $svgEl[0],
+    const gauge = this;
+    const $gaugeSvgEl = $(gauge.render()).eq(0);
+    $gaugeSvgEl.f7Gauge = gauge;
+    Utils.extend(gauge, {
+      $gaugeSvgEl,
+      gaugeSvgEl: $gaugeSvgEl && $gaugeSvgEl[0],
     });
-    self.$el.append($svgEl);
-    return self;
+    gauge.$el.append($gaugeSvgEl);
+    return gauge;
   }
 
   destroy() {
-    const self = this;
-    if (!self.$el || self.destroyed) return;
-    self.$el.trigger('gauge:beforedestroy');
-    self.emit('local::beforeDestroy gaugeBeforeDestroy', self);
-    self.$svgEl.remove();
-    delete self.$el[0].f7Gauge;
-    deleteProps(self);
-    self.destroyed = true;
+    const gauge = this;
+    if (!gauge.$el || gauge.destroyed) return;
+    gauge.$el.trigger('gauge:beforedestroy');
+    gauge.emit('local::beforeDestroy gaugeBeforeDestroy', gauge);
+    gauge.$gaugeSvgEl.remove();
+    delete gauge.$el[0].f7Gauge;
+    Utils.deleteProps(gauge);
+    gauge.destroyed = true;
   }
 }
 export default Gauge;

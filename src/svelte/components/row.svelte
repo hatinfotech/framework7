@@ -1,11 +1,11 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -19,7 +19,7 @@
 
   let el;
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'row',
     {
@@ -28,36 +28,51 @@
       'resizable-fixed': resizableFixed,
       'resizable-absolute': resizableAbsolute,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function onClick() {
-    emit('click');
+    dispatch('click');
+    if (typeof $$props.onClick === 'function') $$props.onClick();
   }
   function onResize(targetEl) {
     if (el !== targetEl) return;
-    emit('gridResize');
+    dispatch('gridResize');
+    if (typeof $$props.onGridResize === 'function') $$props.onGridResize();
   }
 
   onMount(() => {
-    f7ready(() => {
-      app.f7.on('gridResize', onResize);
+    f7.ready(() => {
+      f7.instance.on('gridResize', onResize);
     });
   });
   onDestroy(() => {
-    if (!app.f7) return;
-    app.f7.off('gridResize', onResize);
+    if (!f7.instance) return;
+    f7.instance.off('gridResize', onResize);
   });
 </script>
-
 {#if tag === 'div'}
-  <div class={classes} bind:this={el} on:click={onClick} {...restProps($$restProps)}>
+  <div
+    class={classes}
+    bind:this={el}
+    on:click={onClick}
+    {...restProps($$restProps)}
+  >
     <slot />
-    {#if resizable && resizableHandler}<span class="resize-handler" />{/if}
+    {#if resizable && resizableHandler}
+      <span class="resize-handler"></span>
+    {/if}
   </div>
 {:else if tag === 'p'}
-  <p class={classes} bind:this={el} on:click={onClick} {...restProps($$restProps)}>
+  <p
+    class={classes}
+    bind:this={el}
+    on:click={onClick}
+    {...restProps($$restProps)}
+  >
     <slot />
-    {#if resizable && resizableHandler}<span class="resize-handler" />{/if}
+    {#if resizable && resizableHandler}
+      <span class="resize-handler"></span>
+    {/if}
   </p>
 {/if}

@@ -1,20 +1,15 @@
 /* eslint-disable no-nested-ternary */
-import { getWindow, getDocument } from 'ssr-window';
-import $ from '../../shared/dom7.js';
-import { getSupport } from '../../shared/get-support.js';
-import { getDevice } from '../../shared/get-device.js';
-import { extend } from '../../shared/utils.js';
+import { window, document } from 'ssr-window';
+import $ from 'dom7';
+import Support from '../../utils/support';
+import Device from '../../utils/device';
 
 function initTouch() {
   const app = this;
-  const device = getDevice();
-  const support = getSupport();
-  const window = getWindow();
-  const document = getDocument();
   const params = app.params.touch;
   const useRipple = params[`${app.theme}TouchRipple`];
 
-  if (device.ios && device.webView) {
+  if (Device.ios && Device.webView) {
     // Strange hack required for iOS 8 webview to work on inputs
     window.addEventListener('touchstart', () => {});
   }
@@ -53,9 +48,8 @@ function initTouch() {
       for (let i = 0; i < activable.length; i += 1) {
         if (!preventPropagation) {
           newActivable.push(activable[i]);
-          if (
-            activable.eq(i).hasClass('prevent-active-state-propagation') ||
-            activable.eq(i).hasClass('no-active-state-propagation')
+          if (activable.eq(i).hasClass('prevent-active-state-propagation')
+            || activable.eq(i).hasClass('no-active-state-propagation')
           ) {
             preventPropagation = true;
           }
@@ -102,7 +96,7 @@ function initTouch() {
   }
   function createRipple($el, x, y) {
     if (!$el) return;
-    rippleWave = app.touchRipple.create(app, $el, x, y);
+    rippleWave = app.touchRipple.create($el, x, y);
   }
 
   function removeRipple() {
@@ -193,19 +187,10 @@ function initTouch() {
     }
   }
 
-  let isScrolling;
-  let isSegmentedStrong = false;
-  let segmentedStrongEl = null;
-
-  const touchMoveActivableIos = '.dialog-button, .actions-button';
-  let isTouchMoveActivable = false;
-  let touchmoveActivableEl = null;
-
   function handleTouchStart(e) {
     isMoved = false;
     tapHoldFired = false;
     preventClick = false;
-    isScrolling = undefined;
     if (e.targetTouches.length > 1) {
       if (activableElement) removeActive();
       return true;
@@ -227,13 +212,6 @@ function initTouch() {
     targetElement = e.target;
     touchStartX = e.targetTouches[0].pageX;
     touchStartY = e.targetTouches[0].pageY;
-    isSegmentedStrong = e.target.closest(
-      '.segmented-strong .button-active, .segmented-strong .tab-link-active',
-    );
-    isTouchMoveActivable = app.theme === 'ios' && e.target.closest(touchMoveActivableIos);
-    if (isSegmentedStrong) {
-      segmentedStrongEl = isSegmentedStrong.closest('.segmented-strong');
-    }
 
     if (params.activeState) {
       activableElement = findActivableElement(targetElement);
@@ -251,38 +229,9 @@ function initTouch() {
   function handleTouchMove(e) {
     let touch;
     let distance;
-    let shouldRemoveActive = true;
-
     if (e.type === 'touchmove') {
       touch = e.targetTouches[0];
       distance = params.touchClicksDistanceThreshold;
-    }
-
-    const touchCurrentX = e.targetTouches[0].pageX;
-    const touchCurrentY = e.targetTouches[0].pageY;
-
-    if (typeof isScrolling === 'undefined') {
-      isScrolling = !!(
-        isScrolling || Math.abs(touchCurrentY - touchStartY) > Math.abs(touchCurrentX - touchStartX)
-      );
-    }
-
-    if (isTouchMoveActivable || (!isScrolling && isSegmentedStrong && segmentedStrongEl)) {
-      if (e.cancelable) e.preventDefault();
-    }
-
-    if (!isScrolling && isSegmentedStrong && segmentedStrongEl) {
-      const elementFromPoint = document.elementFromPoint(
-        e.targetTouches[0].clientX,
-        e.targetTouches[0].clientY,
-      );
-      const buttonEl = elementFromPoint.closest(
-        '.segmented-strong .button:not(.button-active):not(.tab-link-active)',
-      );
-      if (buttonEl && segmentedStrongEl.contains(buttonEl)) {
-        $(buttonEl).trigger('click', 'f7Segmented');
-        targetElement = buttonEl;
-      }
     }
 
     if (distance && touch) {
@@ -296,30 +245,10 @@ function initTouch() {
     }
     if (isMoved) {
       preventClick = true;
-      // Keep active state on touchMove (for dialog and actions buttons)
-      if (isTouchMoveActivable) {
-        const elementFromPoint = document.elementFromPoint(
-          e.targetTouches[0].clientX,
-          e.targetTouches[0].clientY,
-        );
-        touchmoveActivableEl = elementFromPoint.closest(touchMoveActivableIos);
-        if (
-          touchmoveActivableEl &&
-          activableElement &&
-          activableElement[0] === touchmoveActivableEl
-        ) {
-          shouldRemoveActive = false;
-        } else if (touchmoveActivableEl) {
-          setTimeout(() => {
-            activableElement = findActivableElement(touchmoveActivableEl);
-            addActive();
-          });
-        }
-      }
       if (params.tapHold) {
         clearTimeout(tapHoldTimeout);
       }
-      if (params.activeState && shouldRemoveActive) {
+      if (params.activeState) {
         clearTimeout(activeTimeout);
         removeActive();
       }
@@ -329,16 +258,8 @@ function initTouch() {
     }
   }
   function handleTouchEnd(e) {
-    isScrolling = undefined;
-    isSegmentedStrong = false;
-    segmentedStrongEl = null;
-    isTouchMoveActivable = false;
     clearTimeout(activeTimeout);
     clearTimeout(tapHoldTimeout);
-    if (touchmoveActivableEl) {
-      $(touchmoveActivableEl).trigger('click', 'f7TouchMoveActivable');
-      touchmoveActivableEl = null;
-    }
     if (document.activeElement === e.target) {
       if (params.activeState) removeActive();
       if (useRipple) {
@@ -362,18 +283,13 @@ function initTouch() {
   }
   function handleClick(e) {
     const isOverswipe = e && e.detail && e.detail === 'f7Overswipe';
-    const isSegmented = e && e.detail && e.detail === 'f7Segmented';
-    // eslint-disable-next-line
-    const isTouchMoveActivable = e && e.detail && e.detail === 'f7TouchMoveActivable';
     let localPreventClick = preventClick;
     if (targetElement && e.target !== targetElement) {
-      if (isOverswipe || isSegmented || isTouchMoveActivable) {
+      if (isOverswipe) {
         localPreventClick = false;
       } else {
         localPreventClick = true;
       }
-    } else if (isTouchMoveActivable) {
-      localPreventClick = false;
     }
     if (params.tapHold && params.tapHoldPreventClicks && tapHoldFired) {
       localPreventClick = true;
@@ -389,7 +305,7 @@ function initTouch() {
         () => {
           tapHoldFired = false;
         },
-        device.ios || device.androidChrome ? 100 : 400,
+        (Device.ios || Device.androidChrome ? 100 : 400)
       );
     }
     preventClick = false;
@@ -425,15 +341,22 @@ function initTouch() {
   function appTouchEndPassive(e) {
     emitAppTouchEvent('touchend:passive', e);
   }
+  function appGestureActive(e) {
+    emitAppTouchEvent(`${e.type} ${e.type}:active`, e);
+  }
+  function appGesturePassive(e) {
+    emitAppTouchEvent(`${e.type}:passive`, e);
+  }
 
-  const passiveListener = support.passiveListener ? { passive: true } : false;
-  const passiveListenerCapture = support.passiveListener ? { passive: true, capture: true } : true;
-  const activeListener = support.passiveListener ? { passive: false } : false;
-  const activeListenerCapture = support.passiveListener ? { passive: false, capture: true } : true;
+
+  const passiveListener = Support.passiveListener ? { passive: true } : false;
+  const passiveListenerCapture = Support.passiveListener ? { passive: true, capture: true } : true;
+  const activeListener = Support.passiveListener ? { passive: false } : false;
+  const activeListenerCapture = Support.passiveListener ? { passive: false, capture: true } : true;
 
   document.addEventListener('click', appClick, true);
 
-  if (support.passiveListener) {
+  if (Support.passiveListener) {
     document.addEventListener(app.touchEvents.start, appTouchStartActive, activeListenerCapture);
     document.addEventListener(app.touchEvents.move, appTouchMoveActive, activeListener);
     document.addEventListener(app.touchEvents.end, appTouchEndActive, activeListener);
@@ -441,34 +364,45 @@ function initTouch() {
     document.addEventListener(app.touchEvents.start, appTouchStartPassive, passiveListenerCapture);
     document.addEventListener(app.touchEvents.move, appTouchMovePassive, passiveListener);
     document.addEventListener(app.touchEvents.end, appTouchEndPassive, passiveListener);
+    if (Support.touch && Support.gestures) {
+      document.addEventListener('gesturestart', appGestureActive, activeListener);
+      document.addEventListener('gesturechange', appGestureActive, activeListener);
+      document.addEventListener('gestureend', appGestureActive, activeListener);
+
+      document.addEventListener('gesturestart', appGesturePassive, passiveListener);
+      document.addEventListener('gesturechange', appGesturePassive, passiveListener);
+      document.addEventListener('gestureend', appGesturePassive, passiveListener);
+    }
   } else {
-    document.addEventListener(
-      app.touchEvents.start,
-      (e) => {
-        appTouchStartActive(e);
-        appTouchStartPassive(e);
-      },
-      true,
-    );
-    document.addEventListener(
-      app.touchEvents.move,
-      (e) => {
-        appTouchMoveActive(e);
-        appTouchMovePassive(e);
-      },
-      false,
-    );
-    document.addEventListener(
-      app.touchEvents.end,
-      (e) => {
-        appTouchEndActive(e);
-        appTouchEndPassive(e);
-      },
-      false,
-    );
+    document.addEventListener(app.touchEvents.start, (e) => {
+      appTouchStartActive(e);
+      appTouchStartPassive(e);
+    }, true);
+    document.addEventListener(app.touchEvents.move, (e) => {
+      appTouchMoveActive(e);
+      appTouchMovePassive(e);
+    }, false);
+    document.addEventListener(app.touchEvents.end, (e) => {
+      appTouchEndActive(e);
+      appTouchEndPassive(e);
+    }, false);
+    if (Support.touch && Support.gestures) {
+      document.addEventListener('gesturestart', (e) => {
+        appGestureActive(e);
+        appGesturePassive(e);
+      }, false);
+      document.addEventListener('gesturechange', (e) => {
+        appGestureActive(e);
+        appGesturePassive(e);
+      }, false);
+      document.addEventListener('gestureend', (e) => {
+        appGestureActive(e);
+        appGesturePassive(e);
+      }, false);
+    }
   }
 
-  if (support.touch) {
+  if (Support.touch) {
     app.on('click', handleClick);
     app.on('touchstart', handleTouchStart);
     app.on('touchmove', handleTouchMove);
@@ -481,13 +415,7 @@ function initTouch() {
     document.addEventListener('pointercancel', handleMouseUp, { passive: true });
   }
   document.addEventListener('contextmenu', (e) => {
-    if (
-      params.disableContextMenu &&
-      (device.ios ||
-        device.android ||
-        device.cordova ||
-        (window.Capacitor && window.Capacitor.isNative))
-    ) {
+    if (params.disableContextMenu && (Device.ios || Device.android || Device.cordova)) {
       e.preventDefault();
     }
     if (useRipple) {
@@ -511,28 +439,20 @@ export default {
       tapHoldPreventClicks: true,
       // Active State
       activeState: true,
-      activeStateElements:
-        'a, button, label, span, .actions-button, .stepper-button, .stepper-button-plus, .stepper-button-minus, .card-expandable, .menu-item, .link, .item-link, .accordion-item-toggle',
+      activeStateElements: 'a, button, label, span, .actions-button, .stepper-button, .stepper-button-plus, .stepper-button-minus, .card-expandable, .menu-item, .link, .item-link, .accordion-item-toggle',
       activeStateOnMouseMove: false,
       mdTouchRipple: true,
       iosTouchRipple: false,
       auroraTouchRipple: false,
-      touchRippleElements:
-        '.ripple, .link, .item-link, .list-button, .links-list a, .button, button, .input-clear-button, .dialog-button, .tab-link, .item-radio, .item-checkbox, .actions-button, .searchbar-disable-button, .fab a, .checkbox, .radio, .data-table .sortable-cell:not(.input-cell), .notification-close-button, .stepper-button, .stepper-button-minus, .stepper-button-plus, .menu-item-content, .list.accordion-list .accordion-item-toggle',
-      touchRippleInsetElements:
-        '.ripple-inset, .icon-only, .searchbar-disable-button, .input-clear-button, .notification-close-button, .md .navbar .link.back',
+      touchRippleElements: '.ripple, .link, .item-link, .list-button, .links-list a, .button, button, .input-clear-button, .dialog-button, .tab-link, .item-radio, .item-checkbox, .actions-button, .searchbar-disable-button, .fab a, .checkbox, .radio, .data-table .sortable-cell:not(.input-cell), .notification-close-button, .stepper-button, .stepper-button-minus, .stepper-button-plus, .menu-item-content, .list.accordion-list .accordion-item-toggle',
     },
   },
-  create() {
-    const app = this;
-    const support = getSupport();
-    extend(app, {
-      touchEvents: {
-        start: support.touch ? 'touchstart' : support.pointerEvents ? 'pointerdown' : 'mousedown',
-        move: support.touch ? 'touchmove' : support.pointerEvents ? 'pointermove' : 'mousemove',
-        end: support.touch ? 'touchend' : support.pointerEvents ? 'pointerup' : 'mouseup',
-      },
-    });
+  instance: {
+    touchEvents: {
+      start: Support.touch ? 'touchstart' : (Support.pointerEvents ? 'pointerdown' : 'mousedown'),
+      move: Support.touch ? 'touchmove' : (Support.pointerEvents ? 'pointermove' : 'mousemove'),
+      end: Support.touch ? 'touchend' : (Support.pointerEvents ? 'pointerup' : 'mouseup'),
+    },
   },
   on: {
     init: initTouch,

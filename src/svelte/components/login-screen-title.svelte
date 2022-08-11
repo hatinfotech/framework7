@@ -1,14 +1,20 @@
 <script>
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
 
   let className = undefined;
   export { className as class };
 
-  $: classes = classNames(className, 'login-screen-title', colorClasses($$props));
+  $: classes = Utils.classNames(
+    className,
+    'login-screen-title',
+    Mixins.colorClasses($$props),
+  );
 </script>
-
-<div class={classes} {...restProps($$restProps)}>
+<div
+  class={classes}
+  {...restProps($$restProps)}
+>
   <slot />
 </div>

@@ -1,15 +1,16 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, plainText, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
+  import hasSlots from '../utils/has-slots';
 
   import CardHeader from './card-header.svelte';
   import CardContent from './card-content.svelte';
   import CardFooter from './card-footer.svelte';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -36,7 +37,7 @@
 
   let el;
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'card',
     {
@@ -46,21 +47,21 @@
       'no-shadow': noShadow,
       'no-border': noBorder,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   /* eslint-disable no-undef */
-  $: hasHeaderSlots = $$slots.header;
-  $: hasContentSlots = $$slots.content;
-  $: hasFooterSlots = $$slots.footer;
+  $: hasHeaderSlots = hasSlots(arguments, 'header');
+  $: hasContentSlots = hasSlots(arguments, 'content');
+  $: hasFooterSlots = hasSlots(arguments, 'footer');
   /* eslint-enable no-undef */
 
   function open() {
-    app.f7.card.open(el);
+    f7.instance.card.open(el);
   }
 
   function close() {
-    app.f7.card.close(el);
+    f7.instance.card.close(el);
   }
 
   let initialWatched = false;
@@ -80,89 +81,85 @@
 
   function onBeforeOpen(cardEl, prevent) {
     if (cardEl !== el) return;
-    emit('cardBeforeOpen', [el, prevent]);
+    dispatch('cardBeforeOpen', [el, prevent]);
+    if (typeof $$props.onCardBeforeOpen === 'function') $$props.onCardBeforeOpen(el, prevent);
   }
   function onOpen(cardEl) {
     if (cardEl !== el) return;
-    emit('cardOpen', [el]);
-    expandableOpened = true;
+    dispatch('cardOpen', [el]);
+    if (typeof $$props.onCardOpen === 'function') $$props.onCardOpen(el);
   }
   function onOpened(cardEl, pageEl) {
     if (cardEl !== el) return;
-    emit('cardOpened', [el, pageEl]);
+    dispatch('cardOpened', [el, pageEl]);
+    if (typeof $$props.onCardOpened === 'function') $$props.onCardOpened(el, pageEl);
   }
   function onClose(cardEl) {
     if (cardEl !== el) return;
-    emit('cardClose', [el]);
+    dispatch('cardClose', [el]);
+    if (typeof $$props.onCardClose === 'function') $$props.onCardClose(el);
   }
   function onClosed(cardEl, pageEl) {
     if (cardEl !== el) return;
-    emit('cardClosed', [el, pageEl]);
-    expandableOpened = false;
+    dispatch('cardClosed', [el, pageEl]);
+    if (typeof $$props.onCardClosed === 'function') $$props.onCardClosed(el, pageEl);
   }
 
   onMount(() => {
     if (!expandable) return;
-    f7ready(() => {
-      app.f7.on('cardBeforeOpen', onBeforeOpen);
-      app.f7.on('cardOpen', onOpen);
-      app.f7.on('cardOpened', onOpened);
-      app.f7.on('cardClose', onClose);
-      app.f7.on('cardClosed', onClosed);
+    f7.ready(() => {
+      f7.instance.on('cardBeforeOpen', onBeforeOpen);
+      f7.instance.on('cardOpen', onOpen);
+      f7.instance.on('cardOpened', onOpened);
+      f7.instance.on('cardClose', onClose);
+      f7.instance.on('cardClosed', onClosed);
       if (expandable && expandableOpened && el) {
-        app.f7.card.open(el, false);
+        f7.instance.card.open(el, false);
       }
     });
   });
 
   onDestroy(() => {
     if (!expandable) return;
-    if (!app.f7 || !el) return;
-    app.f7.off('cardBeforeOpen', onBeforeOpen);
-    app.f7.off('cardOpen', onOpen);
-    app.f7.off('cardOpened', onOpened);
-    app.f7.off('cardClose', onClose);
-    app.f7.off('cardClosed', onClosed);
+    if (!f7.instance || !el) return;
+    f7.instance.off('cardBeforeOpen', onBeforeOpen);
+    f7.instance.off('cardOpen', onOpen);
+    f7.instance.off('cardOpened', onOpened);
+    f7.instance.off('cardClose', onClose);
+    f7.instance.off('cardClosed', onClosed);
   });
+
 </script>
 
 <div
   bind:this={el}
   class={classes}
   data-animate={typeof animate === 'undefined' ? animate : animate.toString()}
-  data-hide-navbar-on-open={typeof hideNavbarOnOpen === 'undefined'
-    ? hideNavbarOnOpen
-    : hideNavbarOnOpen.toString()}
-  data-hide-toolbar-on-open={typeof hideToolbarOnOpen === 'undefined'
-    ? hideToolbarOnOpen
-    : hideToolbarOnOpen.toString()}
-  data-hide-statusbar-on-open={typeof hideStatusbarOnOpen === 'undefined'
-    ? hideStatusbarOnOpen
-    : hideStatusbarOnOpen.toString()}
+  data-hide-navbar-on-open={typeof hideNavbarOnOpen === 'undefined' ? hideNavbarOnOpen : hideNavbarOnOpen.toString()}
+  data-hide-toolbar-on-open={typeof hideToolbarOnOpen === 'undefined' ? hideToolbarOnOpen : hideToolbarOnOpen.toString()}
+  data-hide-statusbar-on-open={typeof hideStatusbarOnOpen === 'undefined' ? hideStatusbarOnOpen : hideStatusbarOnOpen.toString()}
   data-scrollable-el={scrollableEl}
   data-swipe-to-close={typeof swipeToClose === 'undefined' ? swipeToClose : swipeToClose.toString()}
-  data-close-by-backdrop-click={typeof closeByBackdropClick === 'undefined'
-    ? closeByBackdropClick
-    : closeByBackdropClick.toString()}
+  data-close-by-backdrop-click={typeof closeByBackdropClick === 'undefined' ? closeByBackdropClick : closeByBackdropClick.toString()}
   data-backdrop={typeof backdrop === 'undefined' ? backdrop : backdrop.toString()}
   data-backdrop-el={backdropEl}
   {...restProps($$restProps)}
 >
   {#if typeof title !== 'undefined' || hasHeaderSlots}
     <CardHeader>
-      {plainText(title)}
+      {Utils.text(title)}
       <slot name="header" />
     </CardHeader>
   {/if}
   {#if typeof content !== 'undefined' || hasContentSlots}
-    <CardContent {padding}>
-      {plainText(content)}
+    <CardContent padding={padding}>
+      {Utils.text(content)}
       <slot name="content" />
     </CardContent>
   {/if}
   {#if typeof footer !== 'undefined' || hasFooterSlots}
     <CardFooter>
-      {plainText(footer)}
+      {Utils.text(footer)}
       <slot name="footer" />
     </CardFooter>
   {/if}

@@ -1,14 +1,15 @@
 <script>
   import { createEventDispatcher, onMount, afterUpdate, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
+  import hasSlots from '../utils/has-slots';
   import Toggle from './toggle.svelte';
   import Range from './range.svelte';
   import TextEditor from './text-editor.svelte';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -64,10 +65,11 @@
 
   // Datepicker
   export let calendarParams = undefined;
-  // Colorpicker
+  // Colorpciker
   export let colorPickerParams = undefined;
   // Text editor
   export let textEditorParams = undefined;
+
 
   // State
   let inputEl;
@@ -87,11 +89,13 @@
       return false;
     }
     const domV = domValue();
-    return typeof value === 'undefined' ? domV || domV === 0 : value || value === 0;
+    return typeof value === 'undefined'
+      ? (domV || domV === 0)
+      : (value || value === 0);
   }
 
   function validateInput() {
-    if (!app.f7 || !inputEl) return;
+    if (!f7.instance || !inputEl) return;
     const validity = inputEl.validity;
     if (!validity) return;
 
@@ -100,11 +104,9 @@
       if (inputInvalid !== true) {
         inputInvalid = true;
       }
-    } else {
+    } else if (inputInvalid !== false) {
       if (onValidate) onValidate(true);
-      if (inputInvalid !== false) {
-        inputInvalid = false;
-      }
+      inputInvalid = false;
     }
   }
 
@@ -115,7 +117,7 @@
       return;
     }
     if (type === 'range' || type === 'toggle') return;
-    if (!app.f7) return;
+    if (!f7.instance) return;
     updateInputOnDidUpdate = true;
     if (f7Calendar) {
       f7Calendar.setValue(value);
@@ -127,7 +129,9 @@
 
   $: watchValue(value);
 
-  $: inputType = type === 'datepicker' || type === 'colorpicker' ? 'text' : type;
+  $: inputType = type === 'datepicker' || type === 'colorpicker'
+    ? 'text'
+    : type;
 
   $: needsValue = type !== 'file' && type !== 'datepicker' && type !== 'colorpicker';
 
@@ -142,74 +146,78 @@
     return v;
   })();
 
-  $: classes = classNames(!wrap && className, {
-    resizable: inputType === 'textarea' && resizable,
-    'no-store-data': noFormStoreData || noStoreData || ignoreStoreData,
-    'input-invalid': (errorMessage && errorMessageForce) || inputInvalid,
-    'input-with-value': inputHasValue(),
-    'input-focused': inputFocused,
-  });
+  $: classes = Utils.classNames(
+    !wrap && className,
+    {
+      resizable: inputType === 'textarea' && resizable,
+      'no-store-data': (noFormStoreData || noStoreData || ignoreStoreData),
+      'input-invalid': (errorMessage && errorMessageForce) || inputInvalid,
+      'input-with-value': inputHasValue(),
+      'input-focused': inputFocused,
+    }
+  );
 
-  $: wrapClasses = classNames(
+  $: wrapClasses = Utils.classNames(
     className,
     'input',
     {
       'input-outline': outline,
       'input-dropdown': dropdown === 'auto' ? type === 'select' : dropdown,
-      'input-invalid': (errorMessage && errorMessageForce) || inputInvalid,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
-  $: inputClassName = classNames(!wrap && className, {
-    resizable: inputType === 'textarea' && resizable,
-    'no-store-data': noFormStoreData || noStoreData || ignoreStoreData,
-    'input-invalid': (errorMessage && errorMessageForce) || inputInvalid,
-    'input-with-value': inputHasValue(),
-    'input-focused': inputFocused,
-  });
+  $: inputClassName = Utils.classNames(
+    !wrap && className,
+    {
+      resizable: inputType === 'textarea' && resizable,
+      'no-store-data': (noFormStoreData || noStoreData || ignoreStoreData),
+      'input-invalid': (errorMessage && errorMessageForce) || inputInvalid,
+      'input-with-value': inputHasValue(),
+      'input-focused': inputFocused,
+    }
+  );
 
   // eslint-disable-next-line
-  $: hasInfoSlots = $$slots.info;
-  // eslint-disable-next-line
-  $: hasErrorSlots = $$slots['error-message'];
+  $: hasInfoSlots = hasSlots(arguments, 'info');
 
   function onTextareaResize(event) {
-    emit('textareaResize', [event]);
+    dispatch('textareaResize', [event]);
+    if (typeof $$props.onTextareaResize === 'function') $$props.onTextareaResize(event);
   }
 
   function onInputNotEmpty(event) {
-    emit('inputNotEmpty', [event]);
+    dispatch('inputNotEmpty', [event]);
+    if (typeof $$props.onInputNotEmpty === 'function') $$props.onInputNotEmpty(event);
   }
 
   function onInputEmpty(event) {
-    emit('inputEmpty', [event]);
+    dispatch('inputEmpty', [event]);
+    if (typeof $$props.onInputEmpty === 'function') $$props.onInputEmpty(event);
   }
 
   function onInputClear(event) {
-    emit('inputClear', [event]);
+    dispatch('inputClear', [event]);
+    if (typeof $$props.onInputClear === 'function') $$props.onInputClear(event);
   }
 
   function onInput(...args) {
-    emit('input', [...args]);
-
+    dispatch('input', [...args]);
+    if (typeof $$props.onInput === 'function') $$props.onInput(...args);
     if (!(validateOnBlur || validateOnBlur === '') && (validate || validate === '') && inputEl) {
       validateInput(inputEl);
-    }
-    if (inputEl && type !== 'texteditor' && type !== 'colorpicker' && type !== 'datepicker') {
-      value = inputEl.value;
     }
   }
 
   function onFocus(...args) {
-    emit('focus', [...args]);
-
+    dispatch('focus', [...args]);
+    if (typeof $$props.onFocus === 'function') $$props.onFocus(...args);
     inputFocused = true;
   }
 
   function onBlur(...args) {
-    emit('blur', [...args]);
-
+    dispatch('blur', [...args]);
+    if (typeof $$props.onBlur === 'function') $$props.onBlur(...args);
     if ((validate || validate === '' || validateOnBlur || validateOnBlur === '') && inputEl) {
       validateInput();
     }
@@ -217,16 +225,15 @@
   }
 
   function onChange(...args) {
-    emit('change', [...args]);
-
+    dispatch('change', [...args]);
+    if (typeof $$props.onChange === 'function') $$props.onChange(...args);
     if (type === 'texteditor') {
-      emit('textEditorChange', [args[1]]);
-      value = args[1];
+      dispatch('textEditorChange', [args[1]]);
     }
   }
 
   onMount(() => {
-    f7ready(() => {
+    f7.ready(() => {
       if (type === 'range' || type === 'toggle') return;
       if (!inputEl) return;
 
@@ -240,61 +247,59 @@
       }
 
       if (type === 'datepicker') {
-        f7Calendar = app.f7.calendar.create({
+        f7Calendar = f7.instance.calendar.create({
           inputEl,
           value,
           on: {
             change(calendar, calendarValue) {
-              emit('calendarChange', [calendarValue]);
-              value = calendarValue;
+              dispatch('calendarChange', [calendarValue]);
+              if (typeof $$props.onCalendarChange === 'function') $$props.onCalendarChange(calendarValue);
             },
           },
           ...(calendarParams || {}),
         });
       }
       if (type === 'colorpicker') {
-        f7ColorPicker = app.f7.colorPicker.create({
+        f7ColorPicker = f7.instance.colorPicker.create({
           inputEl,
           value,
           on: {
             change(colorPicker, colorPickerValue) {
-              emit('colorpickerChange', [colorPickerValue]);
-              value = colorPickerValue;
+              dispatch('colorpickerChange', [colorPickerValue]);
+              if (typeof $$props.onColorpickerChange === 'function') $$props.onColorpickerChange(colorPickerValue);
             },
           },
           ...(colorPickerParams || {}),
         });
       }
 
-      app.f7.input.checkEmptyState(inputEl);
+      f7.instance.input.checkEmptyState(inputEl);
       if (
-        !(validateOnBlur || validateOnBlur === '') &&
-        (validate || validate === '') &&
-        typeof value !== 'undefined' &&
-        value !== null &&
-        value !== ''
+        !(validateOnBlur || validateOnBlur === '')
+        && (validate || validate === '')
+        && (typeof value !== 'undefined' && value !== null && value !== '')
       ) {
         setTimeout(() => {
           validateInput();
         }, 0);
       }
       if (resizable) {
-        app.f7.input.resizeTextarea(inputEl);
+        f7.instance.input.resizeTextarea(inputEl);
       }
     });
   });
 
   afterUpdate(() => {
-    if (!app.f7) return;
+    if (!f7.instance) return;
     if (updateInputOnDidUpdate) {
       if (!inputEl) return;
       updateInputOnDidUpdate = false;
-      app.f7.input.checkEmptyState(inputEl);
+      f7.instance.input.checkEmptyState(inputEl);
       if (validate && !validateOnBlur) {
         validateInput();
       }
       if (resizable) {
-        app.f7.input.resizeTextarea(inputEl);
+        f7.instance.input.resizeTextarea(inputEl);
       }
     }
   });
@@ -320,8 +325,8 @@
     f7Calendar = null;
     f7ColorPicker = null;
   });
-</script>
 
+</script>
 <!-- svelte-ignore a11y-autofocus -->
 {#if wrap}
   <div class={wrapClasses} {...restProps($$restProps)}>
@@ -329,37 +334,32 @@
       <select
         bind:this={inputEl}
         style={inputStyle}
-        {name}
-        {placeholder}
+        name={name}
+        placeholder={placeholder}
         id={inputId}
-        {size}
-        {accept}
-        {autocomplete}
-        {autocorrect}
-        {autocapitalize}
-        {spellcheck}
-        {autofocus}
-        {autosave}
-        {checked}
-        {disabled}
-        {max}
-        {maxlength}
-        {min}
-        {minlength}
-        {step}
-        {multiple}
-        {readonly}
-        {required}
-        {pattern}
+        size={size}
+        accept={accept}
+        autocomplete={autocomplete}
+        autocorrect={autocorrect}
+        autocapitalize={autocapitalize}
+        spellcheck={spellcheck}
+        autofocus={autofocus}
+        autosave={autosave}
+        checked={checked}
+        disabled={disabled}
+        max={max}
+        maxlength={maxlength}
+        min={min}
+        minlength={minlength}
+        step={step}
+        multiple={multiple}
+        readonly={readonly}
+        required={required}
+        pattern={pattern}
         validate={typeof validate === 'string' && validate.length ? validate : undefined}
-        data-validate={validate === true ||
-        validate === '' ||
-        validateOnBlur === true ||
-        validateOnBlur === ''
-          ? true
-          : undefined}
+        data-validate={validate === true || validate === '' || validateOnBlur === true || validateOnBlur === '' ? true : undefined}
         data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
-        {tabindex}
+        tabindex={tabindex}
         data-error-message={errorMessageForce ? undefined : errorMessage}
         class={inputClassName}
         on:focus={onFocus}
@@ -374,37 +374,32 @@
       <textarea
         bind:this={inputEl}
         style={inputStyle}
-        {name}
-        {placeholder}
+        name={name}
+        placeholder={placeholder}
         id={inputId}
-        {size}
-        {accept}
-        {autocomplete}
-        {autocorrect}
-        {autocapitalize}
-        {spellcheck}
-        {autofocus}
-        {autosave}
-        {checked}
-        {disabled}
-        {max}
-        {maxlength}
-        {min}
-        {minlength}
-        {step}
-        {multiple}
-        {readonly}
-        {required}
-        {pattern}
+        size={size}
+        accept={accept}
+        autocomplete={autocomplete}
+        autocorrect={autocorrect}
+        autocapitalize={autocapitalize}
+        spellcheck={spellcheck}
+        autofocus={autofocus}
+        autosave={autosave}
+        checked={checked}
+        disabled={disabled}
+        max={max}
+        maxlength={maxlength}
+        min={min}
+        minlength={minlength}
+        step={step}
+        multiple={multiple}
+        readonly={readonly}
+        required={required}
+        pattern={pattern}
         validate={typeof validate === 'string' && validate.length ? validate : undefined}
-        data-validate={validate === true ||
-        validate === '' ||
-        validateOnBlur === true ||
-        validateOnBlur === ''
-          ? true
-          : undefined}
+        data-validate={validate === true || validate === '' || validateOnBlur === true || validateOnBlur === '' ? true : undefined}
         data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
-        {tabindex}
+        tabindex={tabindex}
         data-error-message={errorMessageForce ? undefined : errorMessage}
         class={inputClassName}
         on:focus={onFocus}
@@ -414,15 +409,23 @@
         value={inputValue}
       />
     {:else if type === 'toggle'}
-      <Toggle {checked} {readonly} {name} {value} {disabled} id={inputId} on:change={onChange} />
+      <Toggle
+        checked={checked}
+        readonly={readonly}
+        name={name}
+        value={value}
+        disabled={disabled}
+        id={inputId}
+        on:change={onChange}
+      />
     {:else if type === 'range'}
       <Range
-        {value}
-        {disabled}
-        {min}
-        {max}
-        {step}
-        {name}
+        value={value}
+        disabled={disabled}
+        min={min}
+        max={max}
+        step={step}
+        name={name}
         id={inputId}
         input={true}
         on:rangeChange={onChange}
@@ -430,8 +433,8 @@
     {:else if type === 'texteditor'}
       <TextEditor
         value={typeof value === 'undefined' ? '' : value}
-        {resizable}
-        {placeholder}
+        resizable={resizable}
+        placeholder={placeholder}
         onTextEditorFocus={onFocus}
         onTextEditorBlur={onBlur}
         onTextEditorInput={onInput}
@@ -442,36 +445,31 @@
       <input
         bind:this={inputEl}
         style={inputStyle}
-        {name}
+        name={name}
         type={inputType}
-        {placeholder}
+        placeholder={placeholder}
         id={inputId}
-        {size}
-        {accept}
-        {autocomplete}
-        {autocorrect}
-        {autocapitalize}
-        {spellcheck}
-        {autofocus}
-        {autosave}
-        {checked}
-        {disabled}
-        {max}
-        {maxlength}
-        {min}
-        {minlength}
-        {step}
-        {multiple}
-        {readonly}
-        {required}
-        {pattern}
+        size={size}
+        accept={accept}
+        autocomplete={autocomplete}
+        autocorrect={autocorrect}
+        autocapitalize={autocapitalize}
+        spellcheck={spellcheck}
+        autofocus={autofocus}
+        autosave={autosave}
+        checked={checked}
+        disabled={disabled}
+        max={max}
+        maxlength={maxlength}
+        min={min}
+        minlength={minlength}
+        step={step}
+        multiple={multiple}
+        readonly={readonly}
+        required={required}
+        pattern={pattern}
         validate={typeof validate === 'string' && validate.length ? validate : undefined}
-        data-validate={validate === true ||
-        validate === '' ||
-        validateOnBlur === true ||
-        validateOnBlur === ''
-          ? true
-          : undefined}
+        data-validate={validate === true || validate === '' || validateOnBlur === true || validateOnBlur === '' ? true : undefined}
         data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
         tabIndex={tabindex}
         data-error-message={errorMessageForce ? undefined : errorMessage}
@@ -483,189 +481,175 @@
         value={type === 'datepicker' || type === 'colorpicker' || type === 'file' ? '' : inputValue}
       />
     {/if}
-    {#if (errorMessage || hasErrorSlots) && errorMessageForce}
-      <div class="input-error-message">
-        {errorMessage}
-        <slot name="error-message" />
-      </div>
+    {#if errorMessage && errorMessageForce}
+      <div class="input-error-message">{errorMessage}</div>
     {/if}
-    {#if clearButton}<span class="input-clear-button" />{/if}
-    {#if info || hasInfoSlots}
+    {#if clearButton}
+      <span class="input-clear-button" />
+    {/if}
+    {#if (info || hasInfoSlots)}
       <div class="input-info">
         {info}
         <slot name="info" />
       </div>
     {/if}
   </div>
-{:else if type === 'select'}
-  <select
-    bind:this={inputEl}
-    style={inputStyle}
-    {name}
-    {placeholder}
-    id={inputId}
-    {size}
-    {accept}
-    {autocomplete}
-    {autocorrect}
-    {autocapitalize}
-    {spellcheck}
-    {autofocus}
-    {autosave}
-    {checked}
-    {disabled}
-    {max}
-    {maxlength}
-    {min}
-    {minlength}
-    {step}
-    {multiple}
-    {readonly}
-    {required}
-    {pattern}
-    validate={typeof validate === 'string' && validate.length ? validate : undefined}
-    data-validate={validate === true ||
-    validate === '' ||
-    validateOnBlur === true ||
-    validateOnBlur === ''
-      ? true
-      : undefined}
-    data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
-    {tabindex}
-    data-error-message={errorMessageForce ? undefined : errorMessage}
-    class={inputClassName}
-    on:focus={onFocus}
-    on:blur={onBlur}
-    on:input={onInput}
-    on:change={onChange}
-    value={inputValue}
-    {...restProps($$restProps)}
-  >
-    <slot />
-  </select>
-{:else if type === 'textarea'}
-  <textarea
-    bind:this={inputEl}
-    style={inputStyle}
-    {name}
-    {placeholder}
-    id={inputId}
-    {size}
-    {accept}
-    {autocomplete}
-    {autocorrect}
-    {autocapitalize}
-    {spellcheck}
-    {autofocus}
-    {autosave}
-    {checked}
-    {disabled}
-    {max}
-    {maxlength}
-    {min}
-    {minlength}
-    {step}
-    {multiple}
-    {readonly}
-    {required}
-    {pattern}
-    validate={typeof validate === 'string' && validate.length ? validate : undefined}
-    data-validate={validate === true ||
-    validate === '' ||
-    validateOnBlur === true ||
-    validateOnBlur === ''
-      ? true
-      : undefined}
-    data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
-    {tabindex}
-    data-error-message={errorMessageForce ? undefined : errorMessage}
-    class={inputClassName}
-    on:focus={onFocus}
-    on:blur={onBlur}
-    on:input={onInput}
-    on:change={onChange}
-    value={inputValue}
-    {...restProps($$restProps)}
-  />
-{:else if type === 'toggle'}
-  <Toggle
-    {checked}
-    {readonly}
-    {name}
-    {value}
-    {disabled}
-    id={inputId}
-    on:change={onChange}
-    {...restProps($$restProps)}
-  />
-{:else if type === 'range'}
-  <Range
-    {value}
-    {disabled}
-    {min}
-    {max}
-    {step}
-    {name}
-    id={inputId}
-    input={true}
-    on:rangeChange={onChange}
-    {...restProps($$restProps)}
-  />
-{:else if type === 'texteditor'}
-  <TextEditor
-    value={typeof value === 'undefined' ? '' : value}
-    {resizable}
-    {placeholder}
-    onTextEditorFocus={onFocus}
-    onTextEditorBlur={onBlur}
-    onTextEditorInput={onInput}
-    onTextEditorChange={onChange}
-    {...textEditorParams}
-    {...restProps($$restProps)}
-  />
 {:else}
-  <input
-    bind:this={inputEl}
-    style={inputStyle}
-    {name}
-    type={inputType}
-    {placeholder}
-    id={inputId}
-    {size}
-    {accept}
-    {autocomplete}
-    {autocorrect}
-    {autocapitalize}
-    {spellcheck}
-    {autofocus}
-    {autosave}
-    {checked}
-    {disabled}
-    {max}
-    {maxlength}
-    {min}
-    {minlength}
-    {step}
-    {multiple}
-    {readonly}
-    {required}
-    {pattern}
-    validate={typeof validate === 'string' && validate.length ? validate : undefined}
-    data-validate={validate === true ||
-    validate === '' ||
-    validateOnBlur === true ||
-    validateOnBlur === ''
-      ? true
-      : undefined}
-    data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
-    tabIndex={tabindex}
-    data-error-message={errorMessageForce ? undefined : errorMessage}
-    class={inputClassName}
-    on:focus={onFocus}
-    on:blur={onBlur}
-    on:input={onInput}
-    on:change={onChange}
-    value={type === 'datepicker' || type === 'colorpicker' || type === 'file' ? '' : inputValue}
-    {...restProps($$restProps)}
-  />
+  {#if type === 'select'}
+    <select
+      bind:this={inputEl}
+      style={inputStyle}
+      name={name}
+      placeholder={placeholder}
+      id={inputId}
+      size={size}
+      accept={accept}
+      autocomplete={autocomplete}
+      autocorrect={autocorrect}
+      autocapitalize={autocapitalize}
+      spellcheck={spellcheck}
+      autofocus={autofocus}
+      autosave={autosave}
+      checked={checked}
+      disabled={disabled}
+      max={max}
+      maxlength={maxlength}
+      min={min}
+      minlength={minlength}
+      step={step}
+      multiple={multiple}
+      readonly={readonly}
+      required={required}
+      pattern={pattern}
+      validate={typeof validate === 'string' && validate.length ? validate : undefined}
+      data-validate={validate === true || validate === '' || validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+      data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+      tabindex={tabindex}
+      data-error-message={errorMessageForce ? undefined : errorMessage}
+      class={inputClassName}
+      on:focus={onFocus}
+      on:blur={onBlur}
+      on:input={onInput}
+      on:change={onChange}
+      value={inputValue}
+      {...restProps($$restProps)}
+    >
+      <slot />
+    </select>
+  {:else if type === 'textarea'}
+    <textarea
+      bind:this={inputEl}
+      style={inputStyle}
+      name={name}
+      placeholder={placeholder}
+      id={inputId}
+      size={size}
+      accept={accept}
+      autocomplete={autocomplete}
+      autocorrect={autocorrect}
+      autocapitalize={autocapitalize}
+      spellcheck={spellcheck}
+      autofocus={autofocus}
+      autosave={autosave}
+      checked={checked}
+      disabled={disabled}
+      max={max}
+      maxlength={maxlength}
+      min={min}
+      minlength={minlength}
+      step={step}
+      multiple={multiple}
+      readonly={readonly}
+      required={required}
+      pattern={pattern}
+      validate={typeof validate === 'string' && validate.length ? validate : undefined}
+      data-validate={validate === true || validate === '' || validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+      data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+      tabindex={tabindex}
+      data-error-message={errorMessageForce ? undefined : errorMessage}
+      class={inputClassName}
+      on:focus={onFocus}
+      on:blur={onBlur}
+      on:input={onInput}
+      on:change={onChange}
+      value={inputValue}
+      {...restProps($$restProps)}
+    />
+  {:else if type === 'toggle'}
+    <Toggle
+      checked={checked}
+      readonly={readonly}
+      name={name}
+      value={value}
+      disabled={disabled}
+      id={inputId}
+      on:change={onChange}
+      {...restProps($$restProps)}
+    />
+  {:else if type === 'range'}
+    <Range
+      value={value}
+      disabled={disabled}
+      min={min}
+      max={max}
+      step={step}
+      name={name}
+      id={inputId}
+      input={true}
+      on:rangeChange={onChange}
+      {...restProps($$restProps)}
+    />
+  {:else if type === 'texteditor'}
+    <TextEditor
+      value={typeof value === 'undefined' ? '' : value}
+      resizable={resizable}
+      placeholder={placeholder}
+      onTextEditorFocus={onFocus}
+      onTextEditorBlur={onBlur}
+      onTextEditorInput={onInput}
+      onTextEditorChange={onChange}
+      {...textEditorParams}
+      {...restProps($$restProps)}
+    />
+  {:else}
+    <input
+      bind:this={inputEl}
+      style={inputStyle}
+      name={name}
+      type={inputType}
+      placeholder={placeholder}
+      id={inputId}
+      size={size}
+      accept={accept}
+      autocomplete={autocomplete}
+      autocorrect={autocorrect}
+      autocapitalize={autocapitalize}
+      spellcheck={spellcheck}
+      autofocus={autofocus}
+      autosave={autosave}
+      checked={checked}
+      disabled={disabled}
+      max={max}
+      maxlength={maxlength}
+      min={min}
+      minlength={minlength}
+      step={step}
+      multiple={multiple}
+      readonly={readonly}
+      required={required}
+      pattern={pattern}
+      validate={typeof validate === 'string' && validate.length ? validate : undefined}
+      data-validate={validate === true || validate === '' || validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+      data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+      tabIndex={tabindex}
+      data-error-message={errorMessageForce ? undefined : errorMessage}
+      class={inputClassName}
+      on:focus={onFocus}
+      on:blur={onBlur}
+      on:input={onInput}
+      on:change={onChange}
+      value={type === 'datepicker' || type === 'colorpicker' || type === 'file' ? '' : inputValue}
+      {...restProps($$restProps)}
+    />
+  {/if}
 {/if}

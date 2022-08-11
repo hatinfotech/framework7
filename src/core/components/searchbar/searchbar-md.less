@@ -1,6 +1,5 @@
 .md {
-  .searchbar-icon,
-  .searchbar-disable-button {
+  .searchbar-icon, .searchbar-disable-button {
     position: absolute;
     .ltr({
       left: calc(-4px + var(--f7-safe-area-left));
@@ -30,15 +29,14 @@
     margin-top: -24px;
     color: var(--f7-searchbar-link-color, var(--f7-bars-link-color, var(--f7-theme-color)));
     .link-highlight();
-
     &:after {
       .core-icons-font();
       line-height: 48px;
       .ltr({
-        content: 'arrow_left_md';
+        content: "arrow_left_md";
       });
       .rtl({
-        content: 'arrow_right_md';
+        content: "arrow_right_md";
       });
     }
   }
@@ -62,7 +60,6 @@
       .ltr({ right: 0; });
       .rtl({ left: 0; });
       .link-highlight();
-
       &:after {
         line-height: 48px;
         content: 'delete_md';
@@ -79,8 +76,7 @@
   .subnavbar .searchbar,
   .searchbar-expandable {
     --f7-searchbar-input-extra-padding-left: 24px;
-    .searchbar-icon,
-    .searchbar-disable-button {
+    .searchbar-icon, .searchbar-disable-button {
       .ltr({
         left: calc(-4px + 8px + var(--f7-safe-area-left));
       });
@@ -97,7 +93,6 @@
     width: calc(var(--f7-searchbar-expandable-size));
     margin-top: calc(var(--f7-searchbar-expandable-size) * -1 / 2);
     transform: translate3d(0px, 0px, 0px);
-    background-color: var(--f7-searchbar-input-bg-color);
     .ltr({
       left: 100%;
       margin-left: calc(var(--f7-searchbar-expandable-size) * -1);

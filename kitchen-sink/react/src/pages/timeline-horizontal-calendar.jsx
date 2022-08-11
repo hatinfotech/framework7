@@ -1,18 +1,14 @@
 import React from 'react';
-import { Navbar, Page } from 'framework7-react';
+import { Navbar, Page, BlockTitle } from 'framework7-react';
 
 export default () => (
   <Page>
     <Navbar noShadow title="Horizontal Timeline Calendar" backLink="Back"></Navbar>
     <div className="timeline timeline-horizontal col-33 tablet-15">
       <div className="timeline-year">
-        <div className="timeline-year-title">
-          <span>2016</span>
-        </div>
+        <div className="timeline-year-title"><span>2016</span></div>
         <div className="timeline-month">
-          <div className="timeline-month-title">
-            <span>December</span>
-          </div>
+          <div className="timeline-month-title"><span>December</span></div>
           <div className="timeline-item">
             <div className="timeline-item-date">20</div>
             <div className="timeline-item-content">
@@ -146,13 +142,9 @@ export default () => (
         </div>
       </div>
       <div className="timeline-year">
-        <div className="timeline-year-title">
-          <span>2017</span>
-        </div>
+        <div className="timeline-year-title"><span>2017</span></div>
         <div className="timeline-month">
-          <div className="timeline-month-title">
-            <span>January</span>
-          </div>
+          <div className="timeline-month-title"><span>January</span></div>
           <div className="timeline-item">
             <div className="timeline-item-date">1</div>
             <div className="timeline-item-content">
@@ -454,9 +446,7 @@ export default () => (
           </div>
         </div>
         <div className="timeline-month">
-          <div className="timeline-month-title">
-            <span>February</span>
-          </div>
+          <div className="timeline-month-title"><span>February</span></div>
           <div className="timeline-item">
             <div className="timeline-item-date">1</div>
             <div className="timeline-item-content">

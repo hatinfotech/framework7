@@ -1,6 +1,6 @@
-import { extend } from '../../shared/utils.js';
-import Autocomplete from './autocomplete-class.js';
-import ConstructorMethods from '../../shared/constructor-methods.js';
+import Utils from '../../utils/utils';
+import Autocomplete from './autocomplete-class';
+import ConstructorMethods from '../../utils/constructor-methods';
 
 export default {
   name: 'autocomplete',
@@ -55,7 +55,7 @@ export default {
       navbarColorTheme: undefined,
 
       // Routing
-      routableModals: false,
+      routableModals: true,
       url: 'select/',
 
       // Custom render functions
@@ -65,6 +65,7 @@ export default {
       renderItem: undefined,
       renderSearchbar: undefined,
       renderNavbar: undefined,
+
     },
   },
   static: {
@@ -72,7 +73,7 @@ export default {
   },
   create() {
     const app = this;
-    app.autocomplete = extend(
+    app.autocomplete = Utils.extend(
       ConstructorMethods({
         defaultSelector: undefined,
         constructor: Autocomplete,
@@ -90,7 +91,7 @@ export default {
           if (ac && ac.close) return ac.close();
           return undefined;
         },
-      },
+      }
     );
   },
 };

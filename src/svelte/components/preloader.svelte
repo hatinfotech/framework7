@@ -1,8 +1,9 @@
 <script>
-  import { restProps } from '../shared/rest-props.js';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames } from '../shared/utils.js';
-  import { useTheme } from '../shared/use-theme.js';
+  import { theme } from '../utils/plugin';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import Mixins from '../utils/mixins';
+  import f7 from '../utils/f7';
 
   export let style = undefined;
 
@@ -10,42 +11,60 @@
   export { className as class };
   export let size = undefined;
 
-  let theme = useTheme((t) => {
-    theme = t;
-  });
+  // eslint-disable-next-line
+  let _theme = f7.instance ? theme : null;
 
-  $: sizeComputed =
-    size && typeof size === 'string' && size.indexOf('px') >= 0 ? size.replace('px', '') : size;
+  if (!f7.instance) {
+    f7.ready(() => {
+      _theme = theme;
+    });
+  }
 
-  $: preloaderStyle = (
-    (style || '') +
-    (sizeComputed
-      ? `;width: ${sizeComputed}px; height: ${sizeComputed}px; --f7-preloader-size: ${sizeComputed}px`
-      : '')
-  ).replace(';;', ';');
+  $: sizeComputed = size && typeof size === 'string' && size.indexOf('px') >= 0
+    ? size.replace('px', '')
+    : size;
 
-  $: classes = classNames(className, 'preloader', colorClasses($$props));
+  $: preloaderStyle = ((style || '') + (sizeComputed ? `;width: ${sizeComputed}px; height: ${sizeComputed}px; --f7-preloader-size: ${sizeComputed}px` : '')).replace(';;', ';');
+
+  $: classes = Utils.classNames(
+    className,
+    'preloader',
+    Mixins.colorClasses($$props),
+  );
+
 </script>
 
 <span style={preloaderStyle} class={classes} {...restProps($$restProps)}>
-  {#if theme && theme.md}
-    <span class="preloader-inner">
-      <svg viewBox="0 0 36 36">
-        <circle cx="18" cy="18" r="16" />
-      </svg>
+  {#if _theme && _theme.md}
+  <span class="preloader-inner">
+    <span class="preloader-inner-gap" />
+    <span class="preloader-inner-left">
+      <span class="preloader-inner-half-circle" />
     </span>
-  {:else if theme && theme.ios}
-    <span class="preloader-inner">
-      <span class="preloader-inner-line" />
-      <span class="preloader-inner-line" />
-      <span class="preloader-inner-line" />
-      <span class="preloader-inner-line" />
-      <span class="preloader-inner-line" />
-      <span class="preloader-inner-line" />
-      <span class="preloader-inner-line" />
-      <span class="preloader-inner-line" />
+    <span class="preloader-inner-right">
+      <span class="preloader-inner-half-circle" />
     </span>
-  {:else if theme && theme.aurora}
-    <span class="preloader-inner"> <span class="preloader-inner-circle" /> </span>
-  {:else}<span class="preloader-inner" />{/if}
+  </span>
+  {:else if _theme && _theme.ios}
+  <span class="preloader-inner">
+    <span class="preloader-inner-line"></span>
+    <span class="preloader-inner-line"></span>
+    <span class="preloader-inner-line"></span>
+    <span class="preloader-inner-line"></span>
+    <span class="preloader-inner-line"></span>
+    <span class="preloader-inner-line"></span>
+    <span class="preloader-inner-line"></span>
+    <span class="preloader-inner-line"></span>
+    <span class="preloader-inner-line"></span>
+    <span class="preloader-inner-line"></span>
+    <span class="preloader-inner-line"></span>
+    <span class="preloader-inner-line"></span>
+  </span>
+  {:else if _theme && _theme.aurora}
+  <span class="preloader-inner">
+    <span class="preloader-inner-circle"></span>
+  </span>
+  {:else}
+  <span class="preloader-inner"></span>
+  {/if}
 </span>

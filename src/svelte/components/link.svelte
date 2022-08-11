@@ -1,24 +1,15 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
-  import {
-    colorClasses,
-    routerAttrs,
-    routerClasses,
-    actionsAttrs,
-    actionsClasses,
-  } from '../shared/mixins.js';
-  import { classNames, extend, isStringProp, plainText, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { useTooltip } from '../shared/use-tooltip.js';
-  import { useSmartSelect } from '../shared/use-smart-select.js';
-  import { useRouteProps } from '../shared/use-route-props.js';
-  import { useIcon } from '../shared/use-icon.js';
-  import { getReactiveContext } from '../shared/get-reactive-context.js';
+  import { createEventDispatcher, onMount, afterUpdate, onDestroy } from 'svelte';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
+  import hasSlots from '../utils/has-slots';
 
-  import UseIcon from './use-icon.svelte';
   import Badge from './badge.svelte';
+  import Icon from './icon.svelte';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -31,49 +22,41 @@
   export let iconOnly = false;
   export let badge = undefined;
   export let badgeColor = undefined;
+  export let iconBadge = undefined;
   export let href = '#';
   export let target = undefined;
   export let tooltip = undefined;
   export let tooltipTrigger = undefined;
-  export let routeProps = undefined;
 
   // Smart Select
   export let smartSelect = false;
   export let smartSelectParams = undefined;
 
   let el;
+  let f7Tooltip;
   let f7SmartSelect;
 
-  export function smartSelectInstance() {
-    return f7SmartSelect;
-  }
-
-  let TabbarContext =
-    getReactiveContext('TabbarContext', (newValue) => {
-      TabbarContext = newValue;
-    }) || {};
-
-  $: isTabbarLabel = tabbarLabel || TabbarContext.tabbarHasLabels;
+  let isTabbarLabel = tabbarLabel;
 
   $: hrefComputed = href === true ? '#' : href || undefined;
 
-  $: attrs = extend(
+  $: attrs = Utils.extend(
     {
       href: hrefComputed,
       target,
-      'data-tab': (isStringProp(tabLink) && tabLink) || undefined,
+      'data-tab': (Utils.isStringProp(tabLink) && tabLink) || undefined,
       ...restProps($$restProps),
     },
-    routerAttrs($$props),
-    actionsAttrs($$props),
+    Mixins.linkRouterAttrs($$props),
+    Mixins.linkActionsAttrs($$props),
   );
 
   // eslint-disable-next-line
-  $: hasDefaultSlots = $$slots.default;
+  $: hasDefaultSlots = hasSlots(arguments, 'default');
 
   $: iconOnlyComputed = iconOnly || (!text && !hasDefaultSlots);
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     {
       link: !(noLinkClass || isTabbarLabel),
@@ -82,43 +65,114 @@
       'tab-link-active': tabLinkActive,
       'smart-select': smartSelect,
     },
-    colorClasses($$props),
-    routerClasses($$props),
-    actionsClasses($$props),
+    Mixins.colorClasses($$props),
+    Mixins.linkRouterClasses($$props),
+    Mixins.linkActionsClasses($$props),
   );
 
-  $: icon = useIcon($$props);
+  $: hasIcon = $$props.icon || $$props.iconMaterial || $$props.iconF7 || $$props.iconMd || $$props.iconIos || $$props.iconAurora;
+
+  $: hasIconBadge = $$props.hasIconBadge;
+
+  let tooltipText = tooltip;
+  function watchTooltip(newText) {
+    const oldText = tooltipText;
+    if (oldText === newText) return;
+    tooltipText = newText;
+    if (!newText && f7Tooltip) {
+      f7Tooltip.destroy();
+      f7Tooltip = null;
+      return;
+    }
+    if (newText && !f7Tooltip && f7.instance) {
+      f7Tooltip = f7.instance.tooltip.create({
+        targetEl: el,
+        text: newText,
+        trigger: tooltipTrigger,
+      });
+      return;
+    }
+    if (!newText || !f7Tooltip) return;
+    f7Tooltip.setText(newText);
+  }
+  $: watchTooltip(tooltip);
 
   function onClick() {
-    emit('click');
+    dispatch('click');
+    if (typeof $$props.onClick === 'function') $$props.onClick();
   }
 
-  useSmartSelect(
-    { smartSelect, smartSelectParams },
-    (instance) => {
-      f7SmartSelect = instance;
-    },
-    () => el,
-  );
-</script>
+  onMount(() => {
+    if ($$props.routeProps) {
+      el.f7RouteProps = $$props.routeProps;
+    }
+    f7.ready(() => {
+      if (tabbarLabel
+        || (
+          (tabLink || tabLink === '')
+          && f7.instance.$(el).parents('.tabbar-labels').length
+        )
+      ) {
+        isTabbarLabel = true;
+      }
+      if (smartSelect) {
+        const ssParams = Utils.extend(
+          { el },
+          smartSelectParams || {},
+        );
+        f7SmartSelect = f7.instance.smartSelect.create(ssParams);
+      }
+      if (tooltip) {
+        f7Tooltip = f7.instance.tooltip.create({
+          targetEl: el,
+          text: tooltip,
+          trigger: tooltipTrigger,
+        });
+      }
+    });
+  });
+  afterUpdate(() => {
+    if ($$props.routeProps) {
+      el.f7RouteProps = $$props.routeProps;
+    }
+  });
+  onDestroy(() => {
+    if (el) delete el.f7RouteProps;
+    if (f7SmartSelect && f7SmartSelect.destroy) {
+      f7SmartSelect.destroy();
+      f7SmartSelect = null;
+    }
+    if (f7Tooltip && f7Tooltip.destroy) {
+      f7Tooltip.destroy();
+      f7Tooltip = null;
+    }
+  });
 
+</script>
 <!-- svelte-ignore a11y-missing-attribute -->
 <a
   bind:this={el}
   class={classes}
   on:click={onClick}
   {...attrs}
-  use:useTooltip={{ tooltip, tooltipTrigger }}
-  use:useRouteProps={routeProps}
 >
-  {#if icon}
-    <UseIcon {icon} />
+  {#if hasIcon}
+    <Icon
+      material={$$props.iconMaterial}
+      f7={$$props.iconF7}
+      icon={$$props.icon}
+      md={$$props.iconMd}
+      ios={$$props.iconIos}
+      aurora={$$props.iconAurora}
+      color={$$props.iconColor}
+      size={$$props.iconSize}
+    >{#if iconBadge}<Badge color={badgeColor}>{iconBadge}</Badge>{/if}</Icon>
   {/if}
   <slot />
   {#if typeof text !== 'undefined' || typeof badge !== 'undefined'}
     <span class:tabbar-label={isTabbarLabel}>
-      {plainText(text)}
-      {#if typeof badge !== 'undefined'}<Badge color={badgeColor}>{plainText(badge)}</Badge>{/if}
+      {Utils.text(text)}
+      {#if typeof badge !== 'undefined'}<Badge color={badgeColor}>{Utils.text(badge)}</Badge>{/if}
     </span>
   {/if}
 </a>

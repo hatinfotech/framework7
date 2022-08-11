@@ -1,87 +1,151 @@
 /* eslint import/no-extraneous-dependencies: ["error", {"devDependencies": true}] */
 /* eslint no-console: "off" */
 /* eslint global-require: "off" */
-/* eslint no-param-reassign: ["off"] */
+/* eslint no-param-reassign: ["error", { "props": false }] */
 
-const exec = require('exec-sh');
-const glob = require('glob');
-const path = require('path');
-const bannerReact = require('./banners/react.js');
+
+const rollup = require('rollup');
+const buble = require('@rollup/plugin-buble');
+const replace = require('@rollup/plugin-replace');
+const commonjs = require('@rollup/plugin-commonjs');
+const resolve = require('@rollup/plugin-node-resolve');
+
+const Terser = require('terser');
+const bannerReact = require('./banners/react');
 const getOutput = require('./get-output.js');
-const fs = require('./utils/fs-extra.js');
+const fs = require('./utils/fs-extra');
 
-const removeDtsComments = (buildPath) => {
-  glob(
-    '*.js',
-    { cwd: path.resolve(__dirname, `${buildPath}/react/components`) },
-    (err, componentFiles) => {
-      componentFiles.forEach((file) => {
-        let fileContent = fs.readFileSync(
-          path.resolve(__dirname, `${buildPath}/react/components`, file),
-        );
-        if (fileContent.indexOf('/* dts-imports') >= 0) {
-          const imports = fileContent.split('/* dts-imports')[1].split('*/')[0] || '';
-          fileContent = fileContent.replace(imports, '');
-        }
-        if (fileContent.indexOf('/* dts-props') >= 0) {
-          const props = fileContent.split('/* dts-props')[1].split('*/')[0] || '';
-          fileContent = fileContent.replace(props, '');
-        }
-        if (fileContent.indexOf('/* dts-extends') >= 0) {
-          const propsExtends = fileContent.split('/* dts-extends')[1].split('*/')[0] || '';
-          fileContent = fileContent.replace(propsExtends, '');
-        }
-        fileContent = fileContent
-          .replace('/* dts-imports*/\n', '')
-          .replace('/* dts-props*/\n', '')
-          .replace('/* dts-extends*/\n', '');
-        fs.writeFileSync(path.resolve(`${buildPath}/react/components`, file), fileContent);
-      });
-    },
-  );
-};
+function esm({ banner, componentImports, componentAliases, componentExports }) {
+  return `
+${banner}
+
+${componentImports.join('\n')}
+import Framework7React, { f7, f7ready, theme } from './utils/plugin';
+
+${componentAliases.join('\n')}
+
+export {\n${componentExports.join(',\n')}\n};
+
+export { f7, f7ready, theme };
+
+export default Framework7React;
+  `.trim();
+}
 
 // Build React
-async function buildReact(cb) {
+function buildReact(cb) {
+  const env = process.env.NODE_ENV || 'development';
   const buildPath = getOutput();
+  const pluginContent = fs.readFileSync(`${buildPath}/react/utils/plugin.js`);
 
-  const files = fs.readdirSync('src/react/components').filter((file) => file.indexOf('.d.ts') < 0);
+  /* Replace plugin vars: utils/plugin.js */
+  const newPluginContent = pluginContent
+    .replace('// IMPORT_LIBRARY', 'import React from \'react\';')
+    .replace('// IMPORT_COMPONENTS\n', '')
+    .replace('// REGISTER_COMPONENTS\n', '')
+    .replace(/EXTEND/g, 'params.React ? params.React.Component : React.Component')
+    .replace(/COMPILER/g, '\'react\'');
+
+  fs.writeFileSync(`${buildPath}/react/utils/plugin.js`, newPluginContent);
+
+  /* Build main components esm module: framework7-react.esm.js */
+  const files = fs.readdirSync(`${buildPath}/react/components`).filter(file => file.indexOf('.d.ts') < 0);
+  const components = [];
   const componentImports = [];
+  const componentAliases = [];
   const componentExports = [];
 
   files.forEach((fileName) => {
     const componentName = fileName
-      .replace('.jsx', '')
+      .replace('.js', '')
       .split('-')
-      .map((word) => word[0].toUpperCase() + word.substr(1))
+      .map(word => word[0].toUpperCase() + word.substr(1))
       .join('');
-    const fileBase = fileName.replace('.jsx', '');
-    componentImports.push(`import ${componentName} from './components/${fileBase}.js';`);
-    componentExports.push(componentName);
+    components.push({
+      name: `${componentName}`,
+      importName: `F7${componentName}`,
+    });
+    componentImports.push(`import F7${componentName} from './components/${fileName.replace('.js', '')}';`);
+    componentAliases.push(`const ${componentName} = F7${componentName};`);
+    componentExports.push(`  F7${componentName}`, `  ${componentName}`);
   });
 
-  const pluginContent = fs
-    .readFileSync('src/react/framework7-react.js', 'utf-8')
-    .replace('// IMPORT_COMPONENTS', componentImports.join('\n'))
-    .replace('// EXPORT_COMPONENTS', `export { ${componentExports.join(', ')} }`);
+  const componentsContent = esm({
+    banner: bannerReact.trim(),
+    componentImports,
+    componentAliases,
+    componentExports,
+  });
 
-  fs.writeFileSync(`${buildPath}/react/framework7-react.js`, pluginContent);
+  fs.writeFileSync(`${buildPath}/react/framework7-react.esm.js`, componentsContent);
 
-  await exec.promise(
-    `MODULES=esm npx babel --config-file ./babel-react.config.js src/react --out-dir ${buildPath}/react --ignore "src/react/framework7-react.js","*.ts"`,
-  );
+  /* Build esm module bundle for rollup UMD: components + plugin -> framework7-react.esm.bundle.js */
+  const registerComponents = components
+    .map(c => `window.${c.name} = ${c.importName};`)
+    .join('\n    ');
 
-  const esmContent = fs.readFileSync(`${buildPath}/react/framework7-react.js`, 'utf-8');
+  const esmBundlePluginContent = pluginContent
+    .replace(/ from '\.\//g, ' from \'./utils/')
+    .replace('// IMPORT_LIBRARY', 'import React from \'react\';')
+    .replace('// IMPORT_COMPONENTS', `${componentImports.join('\n')}\n`)
+    .replace('// REGISTER_COMPONENTS', registerComponents)
+    .replace(/EXTEND/g, 'params.React ? params.React.Component : React.Component')
+    .replace(/COMPILER/g, '\'react\'');
 
-  fs.writeFileSync(
-    `${buildPath}/react/framework7-react.js`,
-    `${bannerReact.trim()}\n${esmContent}`,
-  );
+  fs.writeFileSync(`${buildPath}/react/framework7-react.esm.bundle.js`, bannerReact + esmBundlePluginContent);
 
-  // remove dts-comments
-  removeDtsComments(buildPath);
+  /* Build UMD from esm bundle: framework7-react.esm.bundle.js -> framework7-react.js */
+  rollup.rollup({
+    input: `${buildPath}/react/framework7-react.esm.bundle.js`,
+    external: ['react'],
+    plugins: [
+      replace({
+        'export { f7ready, f7Instance as f7, f7Theme as theme };': '',
+        delimiters: ['', ''],
+        'process.env.NODE_ENV': JSON.stringify(env), // or 'production'
+      }),
+      resolve({ mainFields: ['module', 'main', 'jsnext'] }),
+      commonjs(),
+      buble({
+        objectAssign: 'Object.assign',
+      }),
+    ],
+  }).then(bundle => bundle.write({
+    globals: {
+      react: 'React',
+    },
+    strict: true,
+    file: `${buildPath}/react/framework7-react.bundle.js`,
+    format: 'umd',
+    name: 'Framework7React',
+    sourcemap: env === 'development',
+    sourcemapFile: `${buildPath}/react/framework7-react.bundle.js.map`,
+    banner: bannerReact,
+  })).then((bundle) => {
+    // Remove esm.bundle
+    fs.unlinkSync(`${buildPath}/react/framework7-react.esm.bundle.js`);
 
-  if (cb) cb();
+    if (env === 'development') {
+      if (cb) cb();
+      return;
+    }
+    const result = bundle.output[0];
+    const minified = Terser.minify(result.code, {
+      sourceMap: {
+        filename: 'framework7-react.bundle.min.js',
+        url: 'framework7-react.bundle.min.js.map',
+      },
+      output: {
+        preamble: bannerReact,
+      },
+    });
+    fs.writeFileSync(`${buildPath}/react/framework7-react.bundle.min.js`, minified.code);
+    fs.writeFileSync(`${buildPath}/react/framework7-react.bundle.min.js.map`, minified.map);
+    if (cb) cb();
+  }).catch((err) => {
+    if (cb) cb();
+    console.log(err);
+  });
 }
 
 module.exports = buildReact;

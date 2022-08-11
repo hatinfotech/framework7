@@ -1,11 +1,11 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -14,60 +14,67 @@
 
   let el;
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'accordion-item',
     {
       'accordion-item-opened': opened,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function onBeforeOpen(accEl, prevent) {
     if (accEl !== el) return;
-    emit('accordionBeforeOpen', [prevent]);
+    dispatch('accordionBeforeOpen', [prevent]);
+    if (typeof $$props.onAccordionBeforeOpen === 'function') $$props.onAccordionBeforeOpen(prevent);
   }
   function onOpen(accEl) {
     if (accEl !== el) return;
-    emit('accordionOpen');
+    dispatch('accordionOpen');
+    if (typeof $$props.onAccordionOpen === 'function') $$props.onAccordionOpen();
   }
   function onOpened(accEl) {
     if (accEl !== el) return;
-    emit('accordionOpened');
+    dispatch('accordionOpened');
+    if (typeof $$props.onAccordionOpened === 'function') $$props.onAccordionOpened();
   }
   function onBeforeClose(accEl, prevent) {
     if (accEl !== el) return;
-    emit('accordionBeforeClose', [prevent]);
+    dispatch('accordionBeforeClose', [prevent]);
+    if (typeof $$props.onAccordionBeforeClose === 'function') $$props.onAccordionBeforeClose(prevent);
   }
   function onClose(accEl) {
     if (accEl !== el) return;
-    emit('accordionClose');
+    dispatch('accordionClose');
+    if (typeof $$props.onAccordionClose === 'function') $$props.onAccordionClose();
   }
   function onClosed(accEl) {
     if (accEl !== el) return;
-    emit('accordionClosed');
+    dispatch('accordionClosed');
+    if (typeof $$props.onAccordionClosed === 'function') $$props.onAccordionClosed();
   }
 
   onMount(() => {
-    f7ready(() => {
-      app.f7.on('accordionBeforeOpen', onBeforeOpen);
-      app.f7.on('accordionOpen', onOpen);
-      app.f7.on('accordionOpened', onOpened);
-      app.f7.on('accordionBeforeClose', onBeforeClose);
-      app.f7.on('accordionClose', onClose);
-      app.f7.on('accordionClosed', onClosed);
+    f7.ready(() => {
+      f7.instance.on('accordionBeforeOpen', onBeforeOpen);
+      f7.instance.on('accordionOpen', onOpen);
+      f7.instance.on('accordionOpened', onOpened);
+      f7.instance.on('accordionBeforeClose', onBeforeClose);
+      f7.instance.on('accordionClose', onClose);
+      f7.instance.on('accordionClosed', onClosed);
     });
   });
 
   onDestroy(() => {
-    if (!app.f7 || !el) return;
-    app.f7.off('accordionBeforeOpen', onBeforeOpen);
-    app.f7.off('accordionOpen', onOpen);
-    app.f7.off('accordionOpened', onOpened);
-    app.f7.off('accordionBeforeClose', onBeforeClose);
-    app.f7.off('accordionClose', onClose);
-    app.f7.off('accordionClosed', onClosed);
+    if (!f7.instance || !el) return;
+    f7.instance.off('accordionBeforeOpen', onBeforeOpen);
+    f7.instance.off('accordionOpen', onOpen);
+    f7.instance.off('accordionOpened', onOpened);
+    f7.instance.off('accordionBeforeClose', onBeforeClose);
+    f7.instance.off('accordionClose', onClose);
+    f7.instance.off('accordionClosed', onClosed);
   });
+
 </script>
 
 <div bind:this={el} class={classes} {...restProps($$restProps)}>

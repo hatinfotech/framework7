@@ -1,31 +1,36 @@
 <script>
   import { createEventDispatcher } from 'svelte';
 
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
 
   export let bold = false;
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'actions-label',
     {
       'actions-button-bold': bold,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function onClick() {
-    emit('click');
+    dispatch('click');
+    if (typeof $$props.onClick === 'function') $$props.onClick();
   }
 </script>
 
-<div class={classes} on:click={onClick} {...restProps($$restProps)}>
+<div
+  class={classes}
+  on:click={onClick}
+  {...restProps($$restProps)}
+>
   <slot />
 </div>

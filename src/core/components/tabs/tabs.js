@@ -1,5 +1,5 @@
-import $ from '../../shared/dom7.js';
-import { extend } from '../../shared/utils.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
 
 const Tab = {
   show(...args) {
@@ -93,9 +93,10 @@ const Tab = {
           .slideTo($newTabEl.index(), animate ? undefined : 0);
       } else if (swiper && swiper.animating) {
         animated = true;
-        swiper.once('slideChangeTransitionEnd', () => {
-          tabsChanged();
-        });
+        swiper
+          .once('slideChangeTransitionEnd', () => {
+            tabsChanged();
+          });
       }
     }
 
@@ -104,7 +105,7 @@ const Tab = {
     $oldTabEl.removeClass('tab-active');
     if (!animatedInit && (!swiper || (swiper && !swiper.animating) || (swiper && tabRoute))) {
       if ($oldTabEl.hasClass('view') && $oldTabEl.children('.page').length) {
-        $oldTabEl.children('.page').each((pageEl) => {
+        $oldTabEl.children('.page').each((pageIndex, pageEl) => {
           $(pageEl).trigger('page:tabhide');
           app.emit('pageTabHide', pageEl);
         });
@@ -117,7 +118,7 @@ const Tab = {
     $newTabEl.addClass('tab-active');
     if (!animatedInit && (!swiper || (swiper && !swiper.animating) || (swiper && tabRoute))) {
       if ($newTabEl.hasClass('view') && $newTabEl.children('.page').length) {
-        $newTabEl.children('.page').each((pageEl) => {
+        $newTabEl.children('.page').each((pageIndex, pageEl) => {
           $(pageEl).trigger('page:tabshow');
           app.emit('pageTabShow', pageEl);
         });
@@ -133,7 +134,7 @@ const Tab = {
       else $tabLinkEl = $(`.tab-link[href="#${$newTabEl.attr('id')}"]`);
       // Search by data-tab
       if (!$tabLinkEl || ($tabLinkEl && $tabLinkEl.length === 0)) {
-        $('[data-tab]').each((el) => {
+        $('[data-tab]').each((index, el) => {
           if ($newTabEl.is($(el).attr('data-tab'))) $tabLinkEl = $(el);
         });
       }
@@ -145,7 +146,7 @@ const Tab = {
       }
       if ($tabLinkEl.length > 1 && $newTabEl.parents('.page').length) {
         // eslint-disable-next-line
-        $tabLinkEl = $tabLinkEl.filter((tabLinkElement) => {
+        $tabLinkEl = $tabLinkEl.filter((index, tabLinkElement) => {
           return $(tabLinkElement).parents('.page')[0] === $newTabEl.parents('.page')[0];
         });
         if (app.theme === 'ios' && $tabLinkEl.length === 0 && tabRoute) {
@@ -173,7 +174,7 @@ const Tab = {
         }
         // Search by data-tab
         if (!$oldTabLinkEl || ($oldTabLinkEl && $oldTabLinkEl.length === 0)) {
-          $('[data-tab]').each((tabLinkElement) => {
+          $('[data-tab]').each((index, tabLinkElement) => {
             if ($oldTabEl.is($(tabLinkElement).attr('data-tab'))) $oldTabLinkEl = $(tabLinkElement);
           });
         }
@@ -184,14 +185,9 @@ const Tab = {
         $oldTabLinkEl = $tabLinkEl.siblings('.tab-link-active');
       }
 
-      if (
-        $oldTabLinkEl &&
-        $oldTabLinkEl.length > 1 &&
-        $oldTabEl &&
-        $oldTabEl.parents('.page').length
-      ) {
+      if ($oldTabLinkEl && $oldTabLinkEl.length > 1 && $oldTabEl && $oldTabEl.parents('.page').length) {
         // eslint-disable-next-line
-        $oldTabLinkEl = $oldTabLinkEl.filter((tabLinkElement) => {
+        $oldTabLinkEl = $oldTabLinkEl.filter((index, tabLinkElement) => {
           return $(tabLinkElement).parents('.page')[0] === $oldTabEl.parents('.page')[0];
         });
       }
@@ -202,13 +198,11 @@ const Tab = {
       if ($tabLinkEl && $tabLinkEl.length > 0) {
         $tabLinkEl.addClass('tab-link-active');
         // Material Highlight
-        const $tabbarEl = $tabLinkEl.parents('.tabbar, .tabbar-labels');
-        const hasHighlight =
-          app.toolbar &&
-          $tabbarEl.length > 0 &&
-          ($tabbarEl.hasClass('tabbar-highlight') || app.theme !== 'ios');
-        if (hasHighlight) {
-          app.toolbar.setHighlight($tabbarEl);
+        if (app.theme === 'md' && app.toolbar) {
+          const $tabbarEl = $tabLinkEl.parents('.tabbar, .tabbar-labels');
+          if ($tabbarEl.length > 0) {
+            app.toolbar.setHighlight($tabbarEl);
+          }
         }
       }
     }
@@ -226,7 +220,7 @@ export default {
   name: 'tabs',
   create() {
     const app = this;
-    extend(app, {
+    Utils.extend(app, {
       tab: {
         show: Tab.show.bind(app),
       },
@@ -243,10 +237,7 @@ export default {
   },
   clicks: {
     '.tab-link': function tabLinkClick($clickedEl, data = {}) {
-      if (
-        ($clickedEl.attr('href') && $clickedEl.attr('href').indexOf('#') === 0) ||
-        $clickedEl.attr('data-tab')
-      ) {
+      if (($clickedEl.attr('href') && $clickedEl.attr('href').indexOf('#') === 0) || $clickedEl.attr('data-tab')) {
         const app = this;
         app.tab.show({
           tabEl: data.tab || $clickedEl.attr('href'),

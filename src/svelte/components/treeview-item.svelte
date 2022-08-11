@@ -1,20 +1,14 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import {
-    colorClasses,
-    routerAttrs,
-    routerClasses,
-    actionsClasses,
-    actionsAttrs,
-  } from '../shared/mixins.js';
-  import { classNames, extend, plainText, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
-  import { useIcon } from '../shared/use-icon.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
+  import hasSlots from '../utils/has-slots';
 
-  import UseIcon from './use-icon.svelte';
+  import Icon from './icon.svelte';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -30,95 +24,113 @@
 
   let el;
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'treeview-item',
     {
       'treeview-item-opened': opened,
       'treeview-load-children': loadChildren,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
-  $: itemRootClasses = classNames(
+  $: itemRootClasses = Utils.classNames(
     'treeview-item-root',
     {
       'treeview-item-selectable': selectable,
       'treeview-item-selected': selected,
       'treeview-item-toggle': itemToggle,
     },
-    routerClasses($$props),
-    actionsClasses($$props),
+    Mixins.linkRouterClasses($$props),
+    Mixins.linkActionsClasses($$props),
   );
 
-  $: itemRootAttrs = extend(
+  $: itemRootAttrs = Utils.extend(
     {
       href: link === true ? '#' : link || undefined,
     },
-    routerAttrs($$props),
-    actionsAttrs($$props),
+    Mixins.linkRouterAttrs($$props),
+    Mixins.linkActionsAttrs($$props),
   );
 
   /* eslint-disable no-undef */
-  $: hasChildren = $$slots.default || $$slots.children || $$slots['children-start'];
+  $: hasChildren = hasSlots(arguments, 'default')
+    || hasSlots(arguments, 'children')
+    || hasSlots(arguments, 'children-start');
   /* eslint-enable no-undef */
 
   $: needToggle = typeof toggle === 'undefined' ? hasChildren : toggle;
 
-  $: icon = useIcon($$props);
+  $: hasIcon = $$props.icon || $$props.iconMaterial || $$props.iconF7 || $$props.iconMd || $$props.iconIos || $$props.iconAurora;
 
   $: treeviewRootTag = link || link === '' ? 'a' : 'div';
 
   function onClick(e) {
-    emit('click', [e]);
+    dispatch('click', [e]);
+    if (typeof $$props.onClick === 'function') $$props.onClick(e);
   }
   function onOpen(itemEl) {
     if (itemEl !== el) return;
-    emit('treeviewOpen', [el]);
+    dispatch('treeviewOpen', [el]);
+    if (typeof $$props.onTreeviewOpen === 'function') $$props.onTreeviewOpen(el);
   }
   function onClose(itemEl) {
     if (itemEl !== el) return;
-    emit('treeviewClose', [el]);
+    dispatch('treeviewClose', [el]);
+    if (typeof $$props.onTreeviewClose === 'function') $$props.onTreeviewClose(el);
   }
   function onLoadChildren(itemEl, done) {
     if (itemEl !== el) return;
-    emit('treeviewLoadChildren', [el, done]);
+    dispatch('treeviewLoadChildren', [el, done]);
+    if (typeof $$props.onTreeviewLoadChildren === 'function') $$props.onTreeviewLoadChildren(el, done);
   }
 
   onMount(() => {
     if (!el) return;
-    f7ready(() => {
-      app.f7.on('treeviewOpen', onOpen);
-      app.f7.on('treeviewClose', onClose);
-      app.f7.on('treeviewLoadChildren', onLoadChildren);
+    f7.ready(() => {
+      f7.instance.on('treeviewOpen', onOpen);
+      f7.instance.on('treeviewClose', onClose);
+      f7.instance.on('treeviewLoadChildren', onLoadChildren);
     });
   });
 
   onDestroy(() => {
-    if (!el || !app.f7) return;
-    app.f7.off('treeviewOpen', onOpen);
-    app.f7.off('treeviewClose', onClose);
-    app.f7.off('treeviewLoadChildren', onLoadChildren);
+    if (!el || !f7.instance) return;
+    f7.instance.off('treeviewOpen', onOpen);
+    f7.instance.off('treeviewClose', onClose);
+    f7.instance.off('treeviewLoadChildren', onLoadChildren);
   });
 </script>
-
 <!-- svelte-ignore a11y-missing-attribute -->
 <div bind:this={el} class={classes} {...restProps($$restProps)}>
   {#if treeviewRootTag === 'div'}
-    <div on:click={onClick} class={itemRootClasses} {...itemRootAttrs}>
+    <div
+      on:click={onClick}
+      class={itemRootClasses}
+      {...itemRootAttrs}
+    >
       <slot name="root-start" />
       {#if needToggle}
-        <div class="treeview-toggle" />
+        <div class="treeview-toggle"></div>
       {/if}
       <div class="treeview-item-content">
         <slot name="content-start" />
-        {#if icon}
-          <UseIcon {icon} />
+        {#if hasIcon}
+          <Icon
+            material={$$props.iconMaterial}
+            f7={$$props.iconF7}
+            icon={$$props.icon}
+            md={$$props.iconMd}
+            ios={$$props.iconIos}
+            aurora={$$props.iconAurora}
+            color={$$props.iconColor}
+            size={$$props.iconSize}
+          />
         {/if}
         <slot name="media" />
         <div class="treeview-item-label">
           <slot name="label-start" />
-          {plainText(label)}
+          {Utils.text(label)}
           <slot name="label" />
         </div>
         <slot name="content" />
@@ -128,20 +140,33 @@
       <slot name="root-end" />
     </div>
   {:else}
-    <a on:click={onClick} class={itemRootClasses} {...itemRootAttrs}>
+    <a
+      on:click={onClick}
+      class={itemRootClasses}
+      {...itemRootAttrs}
+    >
       <slot name="root-start" />
       {#if needToggle}
-        <div class="treeview-toggle" />
+        <div class="treeview-toggle"></div>
       {/if}
       <div class="treeview-item-content">
         <slot name="content-start" />
-        {#if icon}
-          <UseIcon {icon} />
+        {#if hasIcon}
+          <Icon
+            material={$$props.iconMaterial}
+            f7={$$props.iconF7}
+            icon={$$props.icon}
+            md={$$props.iconMd}
+            ios={$$props.iconIos}
+            aurora={$$props.iconAurora}
+            color={$$props.iconColor}
+            size={$$props.iconSize}
+          />
         {/if}
         <slot name="media" />
         <div class="treeview-item-label">
           <slot name="label-start" />
-          {plainText(label)}
+          {Utils.text(label)}
           <slot name="label" />
         </div>
         <slot name="content" />

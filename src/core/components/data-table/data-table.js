@@ -1,6 +1,6 @@
-import $ from '../../shared/dom7.js';
-import DataTable from './data-table-class.js';
-import ConstructorMethods from '../../shared/constructor-methods.js';
+import $ from 'dom7';
+import DataTable from './data-table-class';
+import ConstructorMethods from '../../utils/constructor-methods';
 
 export default {
   name: 'dataTable',
@@ -19,29 +19,25 @@ export default {
   on: {
     tabBeforeRemove(tabEl) {
       const app = this;
-      $(tabEl)
-        .find('.data-table-init')
-        .each((tableEl) => {
-          app.dataTable.destroy(tableEl);
-        });
+      $(tabEl).find('.data-table-init').each((index, tableEl) => {
+        app.dataTable.destroy(tableEl);
+      });
     },
     tabMounted(tabEl) {
       const app = this;
-      $(tabEl)
-        .find('.data-table-init')
-        .each((tableEl) => {
-          app.dataTable.create({ el: tableEl });
-        });
+      $(tabEl).find('.data-table-init').each((index, tableEl) => {
+        app.dataTable.create({ el: tableEl });
+      });
     },
     pageBeforeRemove(page) {
       const app = this;
-      page.$el.find('.data-table-init').each((tableEl) => {
+      page.$el.find('.data-table-init').each((index, tableEl) => {
         app.dataTable.destroy(tableEl);
       });
     },
     pageInit(page) {
       const app = this;
-      page.$el.find('.data-table-init').each((tableEl) => {
+      page.$el.find('.data-table-init').each((index, tableEl) => {
         app.dataTable.create({ el: tableEl });
       });
     },

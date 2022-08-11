@@ -1,75 +1,57 @@
-import $ from '../../../shared/dom7.js';
-/** @jsx $jsx */
-import $jsx from '../../../shared/$jsx.js';
+import $ from 'dom7';
 
 export default {
   render(self) {
-    const { barLabel, barValue, barValueEditable, redLabelText, greenLabelText, blueLabelText } =
-      self.params;
-    return (
+    const { barLabel, barValue, barValueEditable, redLabelText, greenLabelText, blueLabelText } = self.params;
+    return `
       <div class="color-picker-module color-picker-module-rgb-bars">
         <div class="color-picker-bar-wrap">
-          {barLabel && <div class="color-picker-bar-label">{redLabelText}</div>}
+          ${barLabel ? `
+            <div class="color-picker-bar-label">${redLabelText}</div>
+          ` : ''}
           <div class="range-slider color-picker-bar color-picker-bar-red"></div>
-          {barValue && (
+          ${barValue ? `
             <div class="color-picker-bar-value">
-              {barValueEditable ? (
-                <input
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="255"
-                  class="color-picker-value-bar-red"
-                  data-color-index="0"
-                />
-              ) : (
+              ${barValueEditable ? `
+                <input type="number" step="1" min="0" max="255" class="color-picker-value-bar-red" data-color-index="0">
+              ` : `
                 <span class="color-picker-value-bar-red"></span>
-              )}
+              `}
             </div>
-          )}
+          ` : ''}
         </div>
         <div class="color-picker-bar-wrap">
-          {barLabel && <div class="color-picker-bar-label">{greenLabelText}</div>}
+          ${barLabel ? `
+            <div class="color-picker-bar-label">${greenLabelText}</div>
+          ` : ''}
           <div class="range-slider color-picker-bar color-picker-bar-green"></div>
-          {barValue && (
+          ${barValue ? `
             <div class="color-picker-bar-value">
-              {barValueEditable ? (
-                <input
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="255"
-                  class="color-picker-value-bar-green"
-                  data-color-index="1"
-                />
-              ) : (
+              ${barValueEditable ? `
+                <input type="number" step="1" min="0" max="255" class="color-picker-value-bar-green" data-color-index="1">
+              ` : `
                 <span class="color-picker-value-bar-green"></span>
-              )}
+              `}
             </div>
-          )}
+          ` : ''}
         </div>
         <div class="color-picker-bar-wrap">
-          {barLabel && <div class="color-picker-bar-label">{blueLabelText}</div>}
+          ${barLabel ? `
+            <div class="color-picker-bar-label">${blueLabelText}</div>
+          ` : ''}
           <div class="range-slider color-picker-bar color-picker-bar-blue"></div>
-          {barValue && (
+          ${barValue ? `
             <div class="color-picker-bar-value">
-              {barValueEditable ? (
-                <input
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="255"
-                  class="color-picker-value-bar-blue"
-                  data-color-index="2"
-                />
-              ) : (
+              ${barValueEditable ? `
+                <input type="number" step="1" min="0" max="255" class="color-picker-value-bar-blue" data-color-index="2">
+              ` : `
                 <span class="color-picker-value-bar-blue"></span>
-              )}
+              `}
             </div>
-          )}
+          ` : ''}
         </div>
       </div>
-    );
+    `;
   },
   init(self) {
     self.redBar = self.app.range.create({
@@ -132,7 +114,12 @@ export default {
     };
   },
   update(self) {
-    const { value, redBar, greenBar, blueBar } = self;
+    const {
+      value,
+      redBar,
+      greenBar,
+      blueBar,
+    } = self;
 
     const { barValue, barValueEditable } = self.params;
 
@@ -146,24 +133,9 @@ export default {
     greenBar.layout();
     blueBar.layout();
 
-    redBar.$el
-      .find('.range-bar')
-      .css(
-        'background-image',
-        `linear-gradient(to top, rgb(0, ${rgb[1]}, ${rgb[2]}), rgb(255, ${rgb[1]}, ${rgb[2]}))`,
-      );
-    greenBar.$el
-      .find('.range-bar')
-      .css(
-        'background-image',
-        `linear-gradient(to top, rgb(${rgb[0]}, 0, ${rgb[2]}), rgb(${rgb[0]}, 255, ${rgb[2]}))`,
-      );
-    blueBar.$el
-      .find('.range-bar')
-      .css(
-        'background-image',
-        `linear-gradient(to top, rgb(${rgb[0]}, ${rgb[1]}, 0), rgb(${rgb[0]}, ${rgb[1]}, 255))`,
-      );
+    redBar.$el.find('.range-bar').css('background-image', `linear-gradient(to top, rgb(0, ${rgb[1]}, ${rgb[2]}), rgb(255, ${rgb[1]}, ${rgb[2]}))`);
+    greenBar.$el.find('.range-bar').css('background-image', `linear-gradient(to top, rgb(${rgb[0]}, 0, ${rgb[2]}), rgb(${rgb[0]}, 255, ${rgb[2]}))`);
+    blueBar.$el.find('.range-bar').css('background-image', `linear-gradient(to top, rgb(${rgb[0]}, ${rgb[1]}, 0), rgb(${rgb[0]}, ${rgb[1]}, 255))`);
 
     if (barValue && barValueEditable) {
       self.$el.find('input.color-picker-value-bar-red').val(rgb[0]);

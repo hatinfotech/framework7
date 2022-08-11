@@ -1,10 +1,10 @@
 <script>
   import { createEventDispatcher } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -12,24 +12,29 @@
   export let image = undefined;
   export let deletable = true;
 
-  $: classes = classNames(className, 'messagebar-attachment', colorClasses($$props));
+  $: classes = Utils.classNames(
+    className,
+    'messagebar-attachment',
+    Mixins.colorClasses($$props),
+  );
 
   function onClick(event) {
-    emit('attachmentClick', [event]);
+    dispatch('attachmentClick', [event]);
+    if (typeof $$props.onAttachmentClick === 'function') $$props.onAttachmentClick(event);
   }
 
   function onDeleteClick(event) {
-    emit('attachmentDelete', [event]);
+    dispatch('attachmentDelete', [event]);
+    if (typeof $$props.onAttachmentDelete === 'function') $$props.onAttachmentDelete(event);
   }
 </script>
-
 <!-- svelte-ignore a11y-missing-attribute -->
 <div on:click={onClick} class={classes} {...restProps($$restProps)}>
   {#if image}
     <img src={image} />
   {/if}
   {#if deletable}
-    <span on:click={onDeleteClick} class="messagebar-attachment-delete" />
+    <span on:click={onDeleteClick}  class="messagebar-attachment-delete" />
   {/if}
   <slot />
 </div>

@@ -1,22 +1,15 @@
-import $ from '../../shared/dom7.js';
-import { extend, deleteProps, id, nextTick } from '../../shared/utils.js';
-import Framework7Class from '../../shared/class.js';
-import removeDiacritics from '../searchbar/remove-diacritics.js';
-
-/** @jsx $jsx */
-import $jsx from '../../shared/$jsx.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
+import Framework7Class from '../../utils/class';
 
 class SmartSelect extends Framework7Class {
   constructor(app, params = {}) {
     super(params, [app]);
     const ss = this;
 
-    const defaults = extend(
-      {
-        on: {},
-      },
-      app.params.smartSelect,
-    );
+    const defaults = Utils.extend({
+      on: {},
+    }, app.params.smartSelect);
 
     if (typeof defaults.searchbarDisableButton === 'undefined') {
       defaults.searchbarDisableButton = app.theme !== 'aurora';
@@ -25,7 +18,7 @@ class SmartSelect extends Framework7Class {
     // Extend defaults with modules params
     ss.useModulesParams(defaults);
 
-    ss.params = extend({}, defaults, params);
+    ss.params = Utils.extend({}, defaults, params);
 
     ss.app = app;
 
@@ -59,9 +52,9 @@ class SmartSelect extends Framework7Class {
 
     const multiple = $selectEl[0].multiple;
     const inputType = multiple ? 'checkbox' : 'radio';
-    const selectId = id();
+    const id = Utils.id();
 
-    extend(ss, {
+    Utils.extend(ss, {
       $el,
       el: $el[0],
       $selectEl,
@@ -71,8 +64,8 @@ class SmartSelect extends Framework7Class {
       url,
       multiple,
       inputType,
-      id: selectId,
-      inputName: `${inputType}-${selectId}`,
+      id,
+      inputName: `${inputType}-${id}`,
       selectName: $selectEl.attr('name'),
       maxLength: $selectEl.attr('maxlength') || params.maxLength,
     });
@@ -115,9 +108,7 @@ class SmartSelect extends Framework7Class {
             optionEl.selected = inputEl.checked;
           }
           if (optionEl.selected) {
-            displayAs = optionEl.dataset
-              ? optionEl.dataset.displayAs
-              : $(optionEl).data('display-value-as');
+            displayAs = optionEl.dataset ? optionEl.dataset.displayAs : $(optionEl).data('display-value-as');
             text = displayAs && typeof displayAs !== 'undefined' ? displayAs : optionEl.textContent;
             optionText.push(text.trim());
           }
@@ -128,7 +119,7 @@ class SmartSelect extends Framework7Class {
       } else {
         optionEl = ss.$selectEl.find(`option[value="${value}"]`)[0];
         if (!optionEl) {
-          optionEl = ss.$selectEl.find('option').filter((optEl) => optEl.value === value)[0];
+          optionEl = ss.$selectEl.find('option').filter((index, optEl) => optEl.value === value)[0];
         }
         displayAs = optionEl.dataset ? optionEl.dataset.displayAs : $(optionEl).data('display-as');
         text = displayAs && typeof displayAs !== 'undefined' ? displayAs : optionEl.textContent;
@@ -146,18 +137,10 @@ class SmartSelect extends Framework7Class {
     }
 
     ss.attachInputsEvents = function attachInputsEvents() {
-      ss.$containerEl.on(
-        'change',
-        'input[type="checkbox"], input[type="radio"]',
-        handleInputChange,
-      );
+      ss.$containerEl.on('change', 'input[type="checkbox"], input[type="radio"]', handleInputChange);
     };
     ss.detachInputsEvents = function detachInputsEvents() {
-      ss.$containerEl.off(
-        'change',
-        'input[type="checkbox"], input[type="radio"]',
-        handleInputChange,
-      );
+      ss.$containerEl.off('change', 'input[type="checkbox"], input[type="radio"]', handleInputChange);
     };
 
     // Install Modules
@@ -186,9 +169,7 @@ class SmartSelect extends Framework7Class {
           optionEl.selected = false;
         }
         if (optionEl.selected) {
-          displayAs = optionEl.dataset
-            ? optionEl.dataset.displayAs
-            : $(optionEl).data('display-value-as');
+          displayAs = optionEl.dataset ? optionEl.dataset.displayAs : $(optionEl).data('display-value-as');
           text = displayAs && typeof displayAs !== 'undefined' ? displayAs : optionEl.textContent;
           optionText.push(text.trim());
         }
@@ -214,18 +195,14 @@ class SmartSelect extends Framework7Class {
     if (ss.params.setValueText) {
       ss.$valueEl.text(ss.formatValueText([]));
     }
-    ss.$selectEl.find('option').each((optionEl) => {
+    ss.$selectEl.find('option').each((optionIndex, optionEl) => {
       optionEl.selected = false;
       optionEl.checked = false;
     });
     ss.$selectEl[0].value = null;
 
     if (ss.$containerEl) {
-      ss.$containerEl
-        .find(
-          `input[name="${ss.inputName}"][type="checkbox"], input[name="${ss.inputName}"][type="radio"]`,
-        )
-        .prop('checked', false);
+      ss.$containerEl.find(`input[name="${ss.inputName}"][type="checkbox"], input[name="${ss.inputName}"][type="radio"]`).prop('checked', false);
     }
     ss.$selectEl.trigger('change');
   }
@@ -254,7 +231,7 @@ class SmartSelect extends Framework7Class {
     const ss = this;
     const $containerEl = ss.$containerEl;
     if (ss.selectEl.selectedOptions.length >= ss.maxLength) {
-      $containerEl.find('input[type="checkbox"]').each((inputEl) => {
+      $containerEl.find('input[type="checkbox"]').each((index, inputEl) => {
         if (!inputEl.checked) {
           $(inputEl).parents('li').addClass('disabled');
         } else {
@@ -287,12 +264,10 @@ class SmartSelect extends Framework7Class {
         valueArray = [value];
       }
     } else {
-      ss.$selectEl.find('option').each((optionEl) => {
+      ss.$selectEl.find('option').each((optionIndex, optionEl) => {
         const $optionEl = $(optionEl);
         if (optionEl.selected) {
-          const displayAs = optionEl.dataset
-            ? optionEl.dataset.displayAs
-            : $optionEl.data('display-value-as');
+          const displayAs = optionEl.dataset ? optionEl.dataset.displayAs : $optionEl.data('display-value-as');
           if (displayAs && typeof displayAs !== 'undefined') {
             valueArray.push(displayAs);
           } else {
@@ -311,18 +286,15 @@ class SmartSelect extends Framework7Class {
     const theme = ss.app.theme;
     const items = [];
     let previousGroupEl;
-    ss.$selectEl.find('option').each((optionEl) => {
+    ss.$selectEl.find('option').each((index, optionEl) => {
       const $optionEl = $(optionEl);
       const optionData = $optionEl.dataset();
       const optionImage = optionData.optionImage || ss.params.optionImage;
       const optionIcon = optionData.optionIcon || ss.params.optionIcon;
-      const optionIconIos =
-        theme === 'ios' && (optionData.optionIconIos || ss.params.optionIconIos);
+      const optionIconIos = theme === 'ios' && (optionData.optionIconIos || ss.params.optionIconIos);
       const optionIconMd = theme === 'md' && (optionData.optionIconMd || ss.params.optionIconMd);
-      const optionIconAurora =
-        theme === 'aurora' && (optionData.optionIconAurora || ss.params.optionIconAurora);
-      const optionHasMedia =
-        optionImage || optionIcon || optionIconIos || optionIconMd || optionIconAurora;
+      const optionIconAurora = theme === 'aurora' && (optionData.optionIconAurora || ss.params.optionIconAurora);
+      const optionHasMedia = optionImage || optionIcon || optionIconIos || optionIconMd || optionIconAurora;
       const optionColor = optionData.optionColor;
 
       let optionClassName = optionData.optionClass || '';
@@ -368,24 +340,21 @@ class SmartSelect extends Framework7Class {
   renderSearchbar() {
     const ss = this;
     if (ss.params.renderSearchbar) return ss.params.renderSearchbar.call(ss);
-    return (
+    const searchbarHTML = `
       <form class="searchbar">
         <div class="searchbar-inner">
           <div class="searchbar-input-wrap">
-            <input
-              type="search"
-              spellcheck={ss.params.searchbarSpellcheck || 'false'}
-              placeholder={ss.params.searchbarPlaceholder}
-            />
+            <input type="search" spellcheck="${ss.params.searchbarSpellcheck || 'false'}" placeholder="${ss.params.searchbarPlaceholder}"/>
             <i class="searchbar-icon"></i>
             <span class="input-clear-button"></span>
           </div>
-          {ss.params.searchbarDisableButton && (
-            <span class="searchbar-disable-button">{ss.params.searchbarDisableText}</span>
-          )}
+          ${ss.params.searchbarDisableButton ? `
+          <span class="searchbar-disable-button">${ss.params.searchbarDisableText}</span>
+          ` : ''}
         </div>
       </form>
-    );
+    `;
+    return searchbarHTML;
   }
 
   renderItem(item, index) {
@@ -427,30 +396,23 @@ class SmartSelect extends Framework7Class {
       const iconContent = getIconContent(icon || iconIos || iconMd || iconAurora || '');
       const iconClass = getIconClass(icon || iconIos || iconMd || iconAurora || '');
 
-      itemHtml = (
-        <li class={`${item.className || ''}${disabled ? ' disabled' : ''}`}>
-          <label class={`item-${item.inputType} item-content`}>
-            <input
-              type={item.inputType}
-              name={item.inputName}
-              value={item.value}
-              _checked={selected}
-            />
-            <i class={`icon icon-${item.inputType}`}></i>
-            {item.hasMedia && (
+      itemHtml = `
+        <li class="${item.className || ''}${disabled ? ' disabled' : ''}">
+          <label class="item-${item.inputType} item-content">
+            <input type="${item.inputType}" name="${item.inputName}" value="${item.value}" ${selected ? 'checked' : ''}/>
+            <i class="icon icon-${item.inputType}"></i>
+            ${item.hasMedia ? `
               <div class="item-media">
-                {hasIcon && <i class={`icon ${iconClass}`}>{iconContent}</i>}
-                {item.image && <img src={item.image} />}
+                ${hasIcon ? `<i class="icon ${iconClass}">${iconContent}</i>` : ''}
+                ${item.image ? `<img src="${item.image}">` : ''}
               </div>
-            )}
+            ` : ''}
             <div class="item-inner">
-              <div class={`item-title${item.color ? ` text-color-${item.color}` : ''}`}>
-                {item.text}
-              </div>
+              <div class="item-title${item.color ? ` text-color-${item.color}` : ''}">${item.text}</div>
             </div>
           </label>
         </li>
-      );
+      `;
     }
     return itemHtml;
   }
@@ -473,45 +435,30 @@ class SmartSelect extends Framework7Class {
       pageTitle = $itemTitleEl.length ? $itemTitleEl.text().trim() : '';
     }
     const cssClass = ss.params.cssClass;
-    return (
-      <div
-        class={`page smart-select-page ${cssClass}`}
-        data-name="smart-select-page"
-        data-select-name={ss.selectName}
-      >
-        <div
-          class={`navbar ${
-            ss.params.navbarColorTheme ? `color-${ss.params.navbarColorTheme}` : ''
-          }`}
-        >
+    const pageHtml = `
+      <div class="page smart-select-page ${cssClass}" data-name="smart-select-page" data-select-name="${ss.selectName}">
+        <div class="navbar ${ss.params.navbarColorTheme ? `color-${ss.params.navbarColorTheme}` : ''}">
           <div class="navbar-bg"></div>
-          <div
-            class={`navbar-inner sliding ${
-              ss.params.navbarColorTheme ? `color-${ss.params.navbarColorTheme}` : ''
-            }`}
-          >
+          <div class="navbar-inner sliding ${ss.params.navbarColorTheme ? `color-${ss.params.navbarColorTheme}` : ''}">
             <div class="left">
               <a class="link back">
                 <i class="icon icon-back"></i>
-                <span class="if-not-md">{ss.params.pageBackLinkText}</span>
+                <span class="if-not-md">${ss.params.pageBackLinkText}</span>
               </a>
             </div>
-            {pageTitle && <div class="title">{pageTitle}</div>}
-            {ss.params.searchbar && <div class="subnavbar">{ss.renderSearchbar()}</div>}
+            ${pageTitle ? `<div class="title">${pageTitle}</div>` : ''}
+            ${ss.params.searchbar ? `<div class="subnavbar">${ss.renderSearchbar()}</div>` : ''}
           </div>
         </div>
-        {ss.params.searchbar && <div class="searchbar-backdrop"></div>}
+        ${ss.params.searchbar ? '<div class="searchbar-backdrop"></div>' : ''}
         <div class="page-content">
-          <div
-            class={`list smart-select-list-${ss.id} ${
-              ss.params.virtualList ? ' virtual-list' : ''
-            } ${ss.params.formColorTheme ? `color-${ss.params.formColorTheme}` : ''}`}
-          >
-            <ul>{!ss.params.virtualList && ss.renderItems(ss.items)}</ul>
+          <div class="list smart-select-list-${ss.id} ${ss.params.virtualList ? ' virtual-list' : ''} ${ss.params.formColorTheme ? `color-${ss.params.formColorTheme}` : ''}">
+            <ul>${!ss.params.virtualList && ss.renderItems(ss.items)}</ul>
           </div>
         </div>
       </div>
-    );
+    `;
+    return pageHtml;
   }
 
   renderPopup() {
@@ -523,94 +470,73 @@ class SmartSelect extends Framework7Class {
       pageTitle = $itemTitleEl.length ? $itemTitleEl.text().trim() : '';
     }
     const cssClass = ss.params.cssClass || '';
-    return (
-      <div
-        class={`popup smart-select-popup ${cssClass} ${
-          ss.params.popupTabletFullscreen ? 'popup-tablet-fullscreen' : ''
-        }`}
-        data-select-name={ss.selectName}
-      >
+    const popupHtml = `
+      <div class="popup smart-select-popup ${cssClass} ${ss.params.popupTabletFullscreen ? 'popup-tablet-fullscreen' : ''}" data-select-name="${ss.selectName}">
         <div class="view">
-          <div
-            class={`page smart-select-page ${ss.params.searchbar ? 'page-with-subnavbar' : ''}`}
-            data-name="smart-select-page"
-          >
-            <div
-              class={`navbar ${
-                ss.params.navbarColorTheme ? `color-${ss.params.navbarColorTheme}` : ''
-              }`}
-            >
+          <div class="page smart-select-page ${ss.params.searchbar ? 'page-with-subnavbar' : ''}" data-name="smart-select-page">
+            <div class="navbar ${ss.params.navbarColorTheme ? `color-${ss.params.navbarColorTheme}` : ''}">
               <div class="navbar-bg"></div>
               <div class="navbar-inner sliding">
-                {pageTitle && <div class="title">{pageTitle}</div>}
+                ${pageTitle ? `<div class="title">${pageTitle}</div>` : ''}
                 <div class="right">
-                  <a
-                    class="link popup-close"
-                    data-popup={`.smart-select-popup[data-select-name='${ss.selectName}']`}
-                  >
-                    {ss.params.popupCloseLinkText}
-                  </a>
+                  <a class="link popup-close" data-popup=".smart-select-popup[data-select-name='${ss.selectName}']">${ss.params.popupCloseLinkText}</span></a>
                 </div>
-                {ss.params.searchbar && <div class="subnavbar">{ss.renderSearchbar()}</div>}
+                ${ss.params.searchbar ? `<div class="subnavbar">${ss.renderSearchbar()}</div>` : ''}
               </div>
             </div>
-            {ss.params.searchbar && <div class="searchbar-backdrop"></div>}
+            ${ss.params.searchbar ? '<div class="searchbar-backdrop"></div>' : ''}
             <div class="page-content">
-              <div
-                class={`list smart-select-list-${ss.id} ${
-                  ss.params.virtualList ? ' virtual-list' : ''
-                } ${ss.params.formColorTheme ? `color-${ss.params.formColorTheme}` : ''}`}
-              >
-                <ul>{!ss.params.virtualList && ss.renderItems(ss.items)}</ul>
+              <div class="list smart-select-list-${ss.id} ${ss.params.virtualList ? ' virtual-list' : ''} ${ss.params.formColorTheme ? `color-${ss.params.formColorTheme}` : ''}">
+                <ul>${!ss.params.virtualList && ss.renderItems(ss.items)}</ul>
               </div>
             </div>
           </div>
         </div>
       </div>
-    );
+    `;
+    return popupHtml;
   }
 
   renderSheet() {
     const ss = this;
     if (ss.params.renderSheet) return ss.params.renderSheet.call(ss, ss.items);
     const cssClass = ss.params.cssClass;
-    // prettier-ignore
-    return (
-      <div class={`sheet-modal smart-select-sheet ${cssClass}`} data-select-name={ss.selectName}>
-        <div class={`toolbar toolbar-top ${ss.params.toolbarColorTheme ? `color-${ss.params.toolbarColorTheme}` : ''}`}>
+    const sheetHtml = `
+      <div class="sheet-modal smart-select-sheet ${cssClass}" data-select-name="${ss.selectName}">
+        <div class="toolbar toolbar-top ${ss.params.toolbarColorTheme ? `color-${ss.params.toolbarColorTheme}` : ''}">
           <div class="toolbar-inner">
             <div class="left"></div>
             <div class="right">
-              <a class="link sheet-close">{ss.params.sheetCloseLinkText}</a>
+              <a class="link sheet-close">${ss.params.sheetCloseLinkText}</a>
             </div>
           </div>
         </div>
         <div class="sheet-modal-inner">
           <div class="page-content">
-            <div class={`list smart-select-list-${ss.id} ${ss.params.virtualList ? ' virtual-list' : ''} ${ss.params.formColorTheme ? `color-${ss.params.formColorTheme}` : ''}`}>
-              <ul>{!ss.params.virtualList && ss.renderItems(ss.items)}</ul>
+            <div class="list smart-select-list-${ss.id} ${ss.params.virtualList ? ' virtual-list' : ''} ${ss.params.formColorTheme ? `color-${ss.params.formColorTheme}` : ''}">
+              <ul>${!ss.params.virtualList && ss.renderItems(ss.items)}</ul>
             </div>
           </div>
         </div>
       </div>
-    )
+    `;
+    return sheetHtml;
   }
 
   renderPopover() {
     const ss = this;
     if (ss.params.renderPopover) return ss.params.renderPopover.call(ss, ss.items);
     const cssClass = ss.params.cssClass;
-    // prettier-ignore
-    return (
-      <div class={`popover smart-select-popover ${cssClass}`} data-select-name={ss.selectName}>
+    const popoverHtml = `
+      <div class="popover smart-select-popover ${cssClass}" data-select-name="${ss.selectName}">
         <div class="popover-inner">
-          <div class={`list smart-select-list-${ss.id} ${ss.params.virtualList ? ' virtual-list' : ''} ${ss.params.formColorTheme ? `color-${ss.params.formColorTheme}` : ''}`}>
-            <ul>{!ss.params.virtualList && ss.renderItems(ss.items)}</ul>
+          <div class="list smart-select-list-${ss.id} ${ss.params.virtualList ? ' virtual-list' : ''} ${ss.params.formColorTheme ? `color-${ss.params.formColorTheme}` : ''}">
+            <ul>${!ss.params.virtualList && ss.renderItems(ss.items)}</ul>
           </div>
         </div>
       </div>
-
-    )
+    `;
+    return popoverHtml;
   }
 
   scrollToSelectedItem() {
@@ -630,13 +556,8 @@ class SmartSelect extends Framework7Class {
     } else {
       const $selectedItemEl = $containerEl.find('input:checked').parents('li');
       if (!$selectedItemEl.length) return ss;
-      const $scrollableEl = $containerEl.find('.page-content, .popover-inner');
-      if (!$scrollableEl.length) return ss;
-      $scrollableEl.scrollTop(
-        $selectedItemEl.offset().top -
-          $scrollableEl.offset().top -
-          parseInt($scrollableEl.css('padding-top'), 10),
-      );
+      const $pageContentEl = $containerEl.find('.page-content');
+      $pageContentEl.scrollTop($selectedItemEl.offset().top - $pageContentEl.offset().top - parseInt($pageContentEl.css('padding-top'), 10));
     }
     return ss;
   }
@@ -657,12 +578,9 @@ class SmartSelect extends Framework7Class {
         renderItem: ss.renderItem.bind(ss),
         height: ss.params.virtualListHeight,
         searchByItem(query, item) {
-          if (
-            item.text &&
-            removeDiacritics(item.text).toLowerCase().indexOf(query.trim().toLowerCase()) >= 0
-          )
-            return true;
-          return false;
+          // if (item.text && item.text.toLowerCase().indexOf(query.trim().toLowerCase()) >= 0) return true;
+          // return false;
+          return item.text ? (new RegExp(Utils.removeDiacritics(query).toLowerCase().replace(/\s+/g, '.*'), 'ig')).test(Utils.removeDiacritics(item.text)) : false;
         },
       });
     }
@@ -681,9 +599,7 @@ class SmartSelect extends Framework7Class {
         let $notFoundEl = null;
 
         if (typeof ss.params.appendSearchbarNotFound === 'string') {
-          $notFoundEl = $(
-            `<div class="block searchbar-not-found">${ss.params.appendSearchbarNotFound}</div>`,
-          );
+          $notFoundEl = $(`<div class="block searchbar-not-found">${ss.params.appendSearchbarNotFound}</div>`);
         } else if (typeof ss.params.appendSearchbarNotFound === 'boolean') {
           $notFoundEl = $('<div class="block searchbar-not-found">Nothing found</div>');
         } else {
@@ -695,15 +611,12 @@ class SmartSelect extends Framework7Class {
         }
       }
 
-      const searchbarParams = extend(
-        {
-          el: $searchbarEl,
-          backdropEl: $containerEl.find('.searchbar-backdrop'),
-          searchContainer: `.smart-select-list-${ss.id}`,
-          searchIn: '.item-title',
-        },
-        typeof ss.params.searchbar === 'object' ? ss.params.searchbar : {},
-      );
+      const searchbarParams = Utils.extend({
+        el: $searchbarEl,
+        backdropEl: $containerEl.find('.searchbar-backdrop'),
+        searchContainer: `.smart-select-list-${ss.id}`,
+        searchIn: '.item-title',
+      }, typeof ss.params.searchbar === 'object' ? ss.params.searchbar : {});
 
       ss.searchbar = app.searchbar.create(searchbarParams);
     }
@@ -715,12 +628,9 @@ class SmartSelect extends Framework7Class {
 
     // Close on select
     if (ss.params.closeOnSelect) {
-      ss.$containerEl
-        .find(`input[type="radio"][name="${ss.inputName}"]:checked`)
-        .parents('label')
-        .once('click', () => {
-          ss.close();
-        });
+      ss.$containerEl.find(`input[type="radio"][name="${ss.inputName}"]:checked`).parents('label').once('click', () => {
+        ss.close();
+      });
     }
 
     // Attach input events
@@ -850,7 +760,7 @@ class SmartSelect extends Framework7Class {
 
     const sheetParams = {
       content: sheetHtml,
-      backdrop: ss.params.sheetBackdrop,
+      backdrop: false,
       scrollToEl: ss.$el,
       closeByOutsideClick: true,
       push: ss.params.sheetPush,
@@ -935,15 +845,10 @@ class SmartSelect extends Framework7Class {
     ss.emit('local::beforeOpen smartSelectBeforeOpen', ss, prevent);
     if (prevented) return ss;
     const openIn = type || ss.params.openIn;
-    ss[
-      `open${openIn
-        .split('')
-        .map((el, index) => {
-          if (index === 0) return el.toUpperCase();
-          return el;
-        })
-        .join('')}`
-    ]();
+    ss[`open${openIn.split('').map((el, index) => {
+      if (index === 0) return el.toUpperCase();
+      return el;
+    }).join('')}`]();
     return ss;
   }
 
@@ -954,7 +859,7 @@ class SmartSelect extends Framework7Class {
       ss.view.router.back();
     } else {
       ss.modal.once('modalClosed', () => {
-        nextTick(() => {
+        Utils.nextTick(() => {
           if (ss.destroyed) return;
           ss.modal.destroy();
           delete ss.modal;
@@ -977,7 +882,7 @@ class SmartSelect extends Framework7Class {
     ss.$el.trigger('smartselect:beforedestroy');
     ss.detachEvents();
     delete ss.$el[0].f7SmartSelect;
-    deleteProps(ss);
+    Utils.deleteProps(ss);
     ss.destroyed = true;
   }
 }

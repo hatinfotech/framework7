@@ -1,13 +1,17 @@
-import { Device } from '../../shared/get-device.js';
-import Framework7, { Framework7Plugin } from '../../components/app/app-class.js';
+import { Device } from '../../utils/device';
+import Framework7, { Framework7Plugin } from '../../components/app/app-class';
 
 export namespace Device {
   interface AppMethods {
     /** Object with properties about device */
-    device: Device;
+    device: Device
   }
-  interface AppParams {}
-  interface AppEvents {}
+  interface AppParams {
+
+  }
+  interface AppEvents {
+
+  }
 }
 declare const DeviceModule: Framework7Plugin;
 

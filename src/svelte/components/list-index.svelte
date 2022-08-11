@@ -1,11 +1,11 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -28,7 +28,11 @@
     return f7ListIndex;
   }
 
-  $: classes = classNames(className, 'list-index', colorClasses($$props));
+  $: classes = Utils.classNames(
+    className,
+    'list-index',
+    Mixins.colorClasses($$props),
+  );
 
   export function update() {
     if (!f7ListIndex) return;
@@ -55,8 +59,8 @@
 
   onMount(() => {
     if (!init || !el) return;
-    f7ready(() => {
-      f7ListIndex = app.f7.listIndex.create({
+    f7.ready(() => {
+      f7ListIndex = f7.instance.listIndex.create({
         el,
         listEl,
         indexes,
@@ -67,7 +71,8 @@
         label,
         on: {
           select(index, itemContent, itemIndex) {
-            emit('listIndexSelect', [itemContent, itemIndex]);
+            dispatch('listIndexSelect', [itemContent, itemIndex]);
+            if (typeof $$props.onListIndexSelect === 'function') $$props.onListIndexSelect(itemContent, itemIndex);
           },
         },
       });
@@ -77,8 +82,9 @@
   onDestroy(() => {
     if (f7ListIndex && f7ListIndex.destroy) f7ListIndex.destroy();
   });
+
 </script>
 
 <div bind:this={el} class={classes} data-f7-slot={f7Slot} {...restProps($$restProps)}>
-  <slot listIndex={f7ListIndex} />
+  <slot />
 </div>

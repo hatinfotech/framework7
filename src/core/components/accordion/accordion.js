@@ -1,5 +1,5 @@
-import $ from '../../shared/dom7.js';
-import { nextFrame, bindMethods } from '../../shared/utils.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
 
 const Accordion = {
   toggleClicked($clickedEl) {
@@ -12,8 +12,7 @@ const Accordion = {
       if ($accordionContent.parents($accordionItemEl).length) return;
     }
 
-    if ($clickedEl.parents('li').length > 1 && $clickedEl.parents('li')[0] !== $accordionItemEl[0])
-      return;
+    if ($clickedEl.parents('li').length > 1 && $clickedEl.parents('li')[0] !== $accordionItemEl[0]) return;
     app.accordion.toggle($accordionItemEl);
   },
   open(el) {
@@ -39,7 +38,7 @@ const Accordion = {
       if ($el.hasClass('accordion-item-opened')) {
         $contentEl.transition(0);
         $contentEl.css('height', 'auto');
-        nextFrame(() => {
+        Utils.nextFrame(() => {
           $contentEl.transition('');
           $el.trigger('accordion:opened');
           app.emit('accordionOpened', $el[0]);
@@ -76,7 +75,7 @@ const Accordion = {
       if ($el.hasClass('accordion-item-opened')) {
         $contentEl.transition(0);
         $contentEl.css('height', 'auto');
-        nextFrame(() => {
+        Utils.nextFrame(() => {
           $contentEl.transition('');
           $el.trigger('accordion:opened');
           app.emit('accordionOpened', $el[0]);
@@ -87,7 +86,7 @@ const Accordion = {
         app.emit('accordionClosed', $el[0]);
       }
     });
-    nextFrame(() => {
+    Utils.nextFrame(() => {
       $contentEl.transition('');
       $contentEl.css('height', '');
       $el.trigger('accordion:close');
@@ -107,15 +106,18 @@ export default {
   name: 'accordion',
   create() {
     const app = this;
-    bindMethods(app, {
-      accordion: Accordion,
+    Utils.extend(app, {
+      accordion: {
+        open: Accordion.open.bind(app),
+        close: Accordion.close.bind(app),
+        toggle: Accordion.toggle.bind(app),
+      },
     });
   },
   clicks: {
-    '.accordion-item .item-link, .accordion-item-toggle, .links-list.accordion-list > ul > li > a':
-      function open($clickedEl) {
-        const app = this;
-        Accordion.toggleClicked.call(app, $clickedEl);
-      },
+    '.accordion-item .item-link, .accordion-item-toggle, .links-list.accordion-list > ul > li > a': function open($clickedEl) {
+      const app = this;
+      Accordion.toggleClicked.call(app, $clickedEl);
+    },
   },
 };

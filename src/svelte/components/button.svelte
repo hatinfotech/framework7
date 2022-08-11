@@ -1,22 +1,13 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
-  import {
-    colorClasses,
-    routerAttrs,
-    routerClasses,
-    actionsAttrs,
-    actionsClasses,
-  } from '../shared/mixins.js';
-  import { classNames, extend, isStringProp, plainText, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { useTooltip } from '../shared/use-tooltip.js';
-  import { useRouteProps } from '../shared/use-route-props.js';
-  import { useIcon } from '../shared/use-icon.js';
+  import { createEventDispatcher, onMount, afterUpdate, onDestroy } from 'svelte';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  import UseIcon from './use-icon.svelte';
-  import Preloader from './preloader.svelte';
+  import Icon from './icon.svelte';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -55,29 +46,25 @@
   export let disabled = false;
   export let tooltip = undefined;
   export let tooltipTrigger = undefined;
-  export let routeProps = undefined;
-  export let preloader = false;
-  export let preloaderSize = undefined;
-  export let preloaderColor = undefined;
-  export let loading = false;
 
   let el;
+  let f7Tooltip;
 
   $: hrefComputed = href === true ? '#' : href || undefined;
 
-  $: attrs = extend(
+  $: attrs = Utils.extend(
     {
       href: hrefComputed,
       target,
       type,
-      'data-tab': (isStringProp(tabLink) && tabLink) || undefined,
+      'data-tab': (Utils.isStringProp(tabLink) && tabLink) || undefined,
       ...restProps($$restProps),
     },
-    routerAttrs($$props),
-    actionsAttrs($$props),
+    Mixins.linkRouterAttrs($$props),
+    Mixins.linkActionsAttrs($$props),
   );
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'button',
     {
@@ -109,84 +96,122 @@
       'button-outline-ios': outlineIos,
       'button-outline-aurora': outlineAurora,
       'button-outline-md': outlineMd,
-      'button-preloader': preloader,
-      'button-loading': loading,
 
       disabled,
     },
-    colorClasses($$props),
-    routerClasses($$props),
-    actionsClasses($$props),
+    Mixins.colorClasses($$props),
+    Mixins.linkRouterClasses($$props),
+    Mixins.linkActionsClasses($$props),
   );
 
   $: tagName = type === 'submit' || type === 'reset' || type === 'button' ? 'button' : 'a';
 
-  $: icon = useIcon($$props);
+  $: hasIcon = $$props.icon || $$props.iconMaterial || $$props.iconF7 || $$props.iconMd || $$props.iconIos || $$props.iconAurora;
+
+  let tooltipText = tooltip;
+  function watchTooltip(newText) {
+    const oldText = tooltipText;
+    if (oldText === newText) return;
+    tooltipText = newText;
+    if (!newText && f7Tooltip) {
+      f7Tooltip.destroy();
+      f7Tooltip = null;
+      return;
+    }
+    if (newText && !f7Tooltip && f7.instance) {
+      f7Tooltip = f7.instance.tooltip.create({
+        targetEl: el,
+        text: newText,
+        trigger: tooltipTrigger,
+      });
+      return;
+    }
+    if (!newText || !f7Tooltip) return;
+    f7Tooltip.setText(newText);
+  }
+  $: watchTooltip(tooltip);
 
   function onClick() {
-    emit('click');
+    dispatch('click');
+    if (typeof $$props.onClick === 'function') $$props.onClick();
   }
-</script>
 
+  onMount(() => {
+    if ($$props.routeProps) {
+      el.f7RouteProps = $$props.routeProps;
+    }
+    if (!tooltip) return;
+    f7.ready(() => {
+      f7Tooltip = f7.instance.tooltip.create({
+        targetEl: el,
+        text: tooltip,
+        trigger: tooltipTrigger,
+      });
+    });
+  });
+  afterUpdate(() => {
+    if ($$props.routeProps) {
+      el.f7RouteProps = $$props.routeProps;
+    }
+  });
+  onDestroy(() => {
+    if (el) delete el.f7RouteProps;
+    if (f7Tooltip && f7Tooltip.destroy) {
+      f7Tooltip.destroy();
+      f7Tooltip = null;
+    }
+  });
+
+</script>
 <!-- svelte-ignore a11y-missing-attribute -->
 {#if tagName === 'button'}
   <button
     bind:this={el}
-    use:useRouteProps={routeProps}
     class={classes}
     on:click={onClick}
-    use:useTooltip={{ tooltip, tooltipTrigger }}
     {...attrs}
   >
-    {#if preloader}
-      <Preloader size={preloaderSize} color={preloaderColor} />
-      <span>
-        {#if icon}
-          <UseIcon {icon} />
-        {/if}
-        {#if typeof text !== 'undefined'}
-          <span>{plainText(text)}</span>
-        {/if}
-        <slot />
-      </span>
-    {:else}
-      {#if icon}
-        <UseIcon {icon} />
-      {/if}
-      {#if typeof text !== 'undefined'}
-        <span>{plainText(text)}</span>
-      {/if}
-      <slot />
+    {#if hasIcon}
+      <Icon
+        material={$$props.iconMaterial}
+        f7={$$props.iconF7}
+        icon={$$props.icon}
+        md={$$props.iconMd}
+        ios={$$props.iconIos}
+        aurora={$$props.iconAurora}
+        color={$$props.iconColor}
+        size={$$props.iconSize}
+      />
     {/if}
+    {#if typeof text !== 'undefined'}
+      <span>{Utils.text(text)}</span>
+    {/if}
+    <slot />
   </button>
 {:else}
   <a
     bind:this={el}
-    use:useRouteProps={routeProps}
     class={classes}
     on:click={onClick}
-    use:useTooltip={{ tooltip, tooltipTrigger }}
     {...attrs}
   >
-    {#if preloader}
-      <Preloader size={preloaderSize} color={preloaderColor} />
-      <span>
-        {#if icon}
-          <UseIcon {icon} />
-        {/if}
-        {#if typeof text !== 'undefined'}
-          <span>{plainText(text)}</span>
-        {/if}
-        <slot />
-      </span>
-    {:else}
-      {#if icon}
-        <UseIcon {icon} />
-      {/if}
-      {#if typeof text !== 'undefined'}
-        <span>{plainText(text)}</span>
-      {/if}
-      <slot />
+    {#if hasIcon}
+      <Icon
+        material={$$props.iconMaterial}
+        f7={$$props.iconF7}
+        icon={$$props.icon}
+        md={$$props.iconMd}
+        ios={$$props.iconIos}
+        aurora={$$props.iconAurora}
+        color={$$props.iconColor}
+        size={$$props.iconSize}
+      />
     {/if}
+    {#if typeof text !== 'undefined'}
+      <span>{Utils.text(text)}</span>
+    {/if}
+    <slot />
   </a>
 {/if}
+
+

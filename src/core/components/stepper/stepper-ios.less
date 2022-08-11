@@ -8,10 +8,7 @@
   }
   .stepper-fill,
   .stepper-fill-ios {
-    --f7-stepper-button-pressed-bg-color: var(
-      --f7-stepper-fill-button-pressed-bg-color,
-      var(--f7-theme-color-tint)
-    );
+    --f7-stepper-button-pressed-bg-color: var(--f7-stepper-fill-button-pressed-bg-color, var(--f7-theme-color-tint));
   }
 
   .stepper-small,
@@ -25,8 +22,7 @@
     .stepper-button-plus {
       transition-duration: 200ms;
       &.active-state {
-        &:after,
-        &:before {
+        &:after, &:before {
           transition-duration: 200ms;
           background-color: var(--f7-theme-color);
         }

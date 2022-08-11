@@ -1,13 +1,12 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy, afterUpdate } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
-  import { useTheme } from '../shared/use-theme.js';
-  import { setReactiveContext } from '../shared/set-reactive-context.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import { theme } from '../utils/plugin';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -33,67 +32,60 @@
   export let f7Slot = 'fixed';
 
   let el;
-  let theme = useTheme((t) => {
-    theme = t;
-  });
+  // eslint-disable-next-line
+  let _theme = f7.instance ? theme : null;
 
-  setReactiveContext('TabbarContext', () => ({
-    tabbarHasLabels: labels,
-  }));
+  if (!f7.instance) {
+    f7.ready(() => {
+      _theme = theme;
+    });
+  }
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'toolbar',
     {
       tabbar,
-      'toolbar-bottom':
-        (theme && theme.md && bottomMd) ||
-        (theme && theme.ios && bottomIos) ||
-        (theme && theme.aurora && bottomAurora) ||
-        bottom ||
-        position === 'bottom',
-      'toolbar-top':
-        (theme && theme.md && topMd) ||
-        (theme && theme.ios && topIos) ||
-        (theme && theme.aurora && topAurora) ||
-        top ||
-        position === 'top',
+      'toolbar-bottom': (_theme && _theme.md && bottomMd) || (_theme && _theme.ios && bottomIos) || (_theme && _theme.aurora && bottomAurora) || bottom || position === 'bottom',
+      'toolbar-top': (_theme && _theme.md && topMd) || (_theme && _theme.ios && topIos) || (_theme && _theme.aurora && topAurora) || top || position === 'top',
       'tabbar-labels': labels,
       'tabbar-scrollable': scrollable,
       'toolbar-hidden': hidden,
       'no-shadow': noShadow,
       'no-hairline': noHairline || noBorder,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function onShow(toolbarEl) {
     if (el !== toolbarEl) return;
-    emit('toolbarShow');
+    dispatch('toolbarShow');
+    if (typeof $$props.onToolbarShow === 'function') $$props.onToolbarShow();
   }
   function onHide(toolbarEl) {
     if (el !== toolbarEl) return;
-    emit('toolbarHide');
+    dispatch('toolbarHide');
+    if (typeof $$props.onToolbarHide === 'function') $$props.onToolbarHide();
   }
 
   onMount(() => {
-    f7ready(() => {
-      if (tabbar) app.f7.toolbar.setHighlight(el);
-      app.f7.on('toolbarShow', onShow);
-      app.f7.on('toolbarHide', onHide);
+    f7.ready(() => {
+      if (tabbar) f7.instance.toolbar.setHighlight(el);
+      f7.instance.on('toolbarShow', onShow);
+      f7.instance.on('toolbarHide', onHide);
     });
   });
 
   afterUpdate(() => {
-    if (tabbar && app.f7 && el) {
-      app.f7.toolbar.setHighlight(el);
+    if (tabbar && f7.instance && el) {
+      f7.instance.toolbar.setHighlight(el);
     }
   });
 
   onDestroy(() => {
-    if (!app.f7) return;
-    app.f7.off('toolbarShow', onShow);
-    app.f7.off('toolbarHide', onHide);
+    if (!f7.instance) return;
+    f7.instance.off('toolbarShow', onShow);
+    f7.instance.off('toolbarHide', onHide);
   });
 </script>
 

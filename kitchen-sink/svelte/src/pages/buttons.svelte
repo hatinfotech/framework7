@@ -1,27 +1,3 @@
-<script>
-  import { Page, Navbar, BlockTitle, Block, Row, Col, Segmented, Button } from 'framework7-svelte';
-
-  let activeStrongButton = 0;
-  let isLoading1 = false;
-  let isLoading2 = false;
-
-  const load1 = () => {
-    if (isLoading1) return;
-    isLoading1 = true;
-    setTimeout(() => {
-      isLoading1 = false;
-    }, 4000);
-  };
-
-  const load2 = () => {
-    if (isLoading2) return;
-    isLoading2 = true;
-    setTimeout(() => {
-      isLoading2 = false;
-    }, 4000);
-  };
-</script>
-
 <!-- svelte-ignore a11y-invalid-attribute -->
 <Page>
   <Navbar title="Buttons" backLink="Back" />
@@ -163,40 +139,24 @@
   <Block strong>
     <Row tag="p">
       <Col tag="span">
-        <Button small>Button</Button>
+        <Button large small>Button</Button>
       </Col>
       <Col tag="span">
-        <Button small outline>Outline</Button>
+        <Button large small outline>Outline</Button>
       </Col>
       <Col tag="span">
-        <Button small fill>Fill</Button>
+        <Button large small fill>Fill</Button>
       </Col>
     </Row>
     <Row tag="p">
       <Col tag="span">
-        <Button small round>Button</Button>
+        <Button large small round>Button</Button>
       </Col>
       <Col tag="span">
-        <Button small outline round>Outline</Button>
+        <Button large small outline round>Outline</Button>
       </Col>
       <Col tag="span">
-        <Button small fill round>Fill</Button>
-      </Col>
-    </Row>
-  </Block>
-
-  <BlockTitle>Preloader Buttons</BlockTitle>
-  <Block strong>
-    <Row tag="p">
-      <Col tag="span">
-        <Button preloader loading={isLoading1} onClick={load1} large>
-          Load
-        </Button>
-      </Col>
-      <Col tag="span">
-        <Button preloader loading={isLoading2} onClick={load2} large fill>
-          Load
-        </Button>
+        <Button large small fill round>Fill</Button>
       </Col>
     </Row>
   </Block>
@@ -283,3 +243,9 @@
     </ul>
   </div>
 </Page>
+
+<script>
+  import { Page, Navbar, BlockTitle, Block, Row, Col, Segmented, Button, } from 'framework7-svelte';
+
+  let activeStrongButton = 0;
+</script>

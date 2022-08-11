@@ -1,7 +1,7 @@
-import $ from '../../shared/dom7.js';
-import Gauge from './gauge-class.js';
-import ConstructorMethods from '../../shared/constructor-methods.js';
-import { extend } from '../../shared/utils.js';
+import $ from 'dom7';
+import Gauge from './gauge-class';
+import ConstructorMethods from '../../utils/constructor-methods';
+import Utils from '../../utils/utils';
 
 export default {
   name: 'gauge',
@@ -48,27 +48,23 @@ export default {
   on: {
     tabMounted(tabEl) {
       const app = this;
-      $(tabEl)
-        .find('.gauge-init')
-        .each((el) => {
-          app.gauge.create(extend({ el }, $(el).dataset() || {}));
-        });
+      $(tabEl).find('.gauge-init').each((index, el) => {
+        app.gauge.create(Utils.extend({ el }, $(el).dataset() || {}));
+      });
     },
     tabBeforeRemove(tabEl) {
-      $(tabEl)
-        .find('.gauge-init')
-        .each((el) => {
-          if (el.f7Gauge) el.f7Gauge.destroy();
-        });
+      $(tabEl).find('.gauge-init').each((index, el) => {
+        if (el.f7Gauge) el.f7Gauge.destroy();
+      });
     },
     pageInit(page) {
       const app = this;
-      page.$el.find('.gauge-init').each((el) => {
-        app.gauge.create(extend({ el }, $(el).dataset() || {}));
+      page.$el.find('.gauge-init').each((index, el) => {
+        app.gauge.create(Utils.extend({ el }, $(el).dataset() || {}));
       });
     },
     pageBeforeRemove(page) {
-      page.$el.find('.gauge-init').each((el) => {
+      page.$el.find('.gauge-init').each((index, el) => {
         if (el.f7Gauge) el.f7Gauge.destroy();
       });
     },
@@ -78,7 +74,7 @@ export default {
       insert(vnode) {
         const app = this;
         const el = vnode.elm;
-        app.gauge.create(extend({ el }, $(el).dataset() || {}));
+        app.gauge.create(Utils.extend({ el }, $(el).dataset() || {}));
       },
       destroy(vnode) {
         const el = vnode.elm;

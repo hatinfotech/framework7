@@ -1,18 +1,16 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
-  import { modalStateClasses } from '../shared/modal-state-classes.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
 
   export let opened = undefined;
-  export let animate = undefined;
   export let grid = undefined;
   export let convertToPopover = undefined;
   export let forceToPopover = undefined;
@@ -22,54 +20,47 @@
   export let closeByBackdropClick = undefined;
   export let closeByOutsideClick = undefined;
   export let closeOnEscape = undefined;
-  export let containerEl = undefined;
 
   let el;
   let f7Actions;
-
-  const state = {
-    isOpened: opened,
-    isClosing: false,
-  };
 
   export function instance() {
     return f7Actions;
   }
 
-  $: classes = classNames(
+  export function open(anim) {
+    if (!f7Actions) return undefined;
+    return f7Actions.open(anim);
+  }
+  export function close(anim) {
+    if (!f7Actions) return undefined;
+    return f7Actions.close(anim);
+  }
+
+  $: classes = Utils.classNames(
     className,
     'actions-modal',
     {
       'actions-grid': grid,
     },
-    modalStateClasses(state),
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function onOpen(instance) {
-    Object.assign(state, {
-      isOpened: true,
-      isClosing: false,
-    });
-    emit('actionsOpen', [instance]);
-    opened = true;
+    dispatch('actionsOpen', [instance]);
+    if (typeof $$props.onActionsOpen === 'function') $$props.onActionsOpen(instance);
   }
   function onOpened(instance) {
-    emit('actionsOpened', [instance]);
+    dispatch('actionsOpened', [instance]);
+    if (typeof $$props.onActionsOpened === 'function') $$props.onActionsOpened(instance);
   }
   function onClose(instance) {
-    Object.assign(state, {
-      isOpened: false,
-      isClosing: true,
-    });
-    emit('actionsClose', [instance]);
+    dispatch('actionsClose', [instance]);
+    if (typeof $$props.onActionsClose === 'function') $$props.onActionsClose(instance);
   }
   function onClosed(instance) {
-    Object.assign(state, {
-      isClosing: false,
-    });
-    emit('actionsClosed', [instance]);
-    opened = false;
+    dispatch('actionsClosed', [instance]);
+    if (typeof $$props.onActionsClosed === 'function') $$props.onActionsClosed(instance);
   }
 
   let initialWatched = false;
@@ -101,16 +92,12 @@
     if (typeof forceToPopover !== 'undefined') params.forceToPopover = forceToPopover;
     if (typeof backdrop !== 'undefined') params.backdrop = backdrop;
     if (typeof backdropEl !== 'undefined') params.backdropEl = backdropEl;
-    if (typeof closeByBackdropClick !== 'undefined')
-      params.closeByBackdropClick = closeByBackdropClick;
-    if (typeof closeByOutsideClick !== 'undefined')
-      params.closeByOutsideClick = closeByOutsideClick;
+    if (typeof closeByBackdropClick !== 'undefined') params.closeByBackdropClick = closeByBackdropClick;
+    if (typeof closeByOutsideClick !== 'undefined') params.closeByOutsideClick = closeByOutsideClick;
     if (typeof closeOnEscape !== 'undefined') params.closeOnEscape = closeOnEscape;
-    if (typeof animate !== 'undefined') params.animate = animate;
-    if (typeof containerEl !== 'undefined') params.containerEl = containerEl;
 
-    f7ready(() => {
-      f7Actions = app.f7.actions.create(params);
+    f7.ready(() => {
+      f7Actions = f7.instance.actions.create(params);
       if (opened) {
         f7Actions.open(false);
       }
@@ -119,10 +106,13 @@
 
   onDestroy(() => {
     if (f7Actions) f7Actions.destroy();
-    f7Actions = null;
+    f7Actions = undefined;
   });
 </script>
-
-<div class={classes} bind:this={el} {...restProps($$restProps)}>
-  <slot actions={f7Actions} />
+<div
+  class={classes}
+  bind:this={el}
+  {...restProps($$restProps)}
+>
+  <slot />
 </div>

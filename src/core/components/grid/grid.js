@@ -1,6 +1,5 @@
-import { getDocument } from 'ssr-window';
-import $ from '../../shared/dom7.js';
-import { extend } from '../../shared/utils.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
 
 function getElMinSize(dimension, $el) {
   let minSize = $el.css(`min-${dimension}`);
@@ -9,10 +8,7 @@ function getElMinSize(dimension, $el) {
   } else if (minSize.indexOf('px') >= 0) {
     minSize = parseFloat(minSize);
   } else if (minSize.indexOf('%') >= 0) {
-    minSize =
-      ($el.parent()[0][dimension === 'height' ? 'offsetHeight' : 'offsetWidth'] *
-        parseFloat(minSize)) /
-      100;
+    minSize = $el.parent()[0][dimension === 'height' ? 'offsetHeight' : 'offsetWidth'] * parseFloat(minSize) / 100;
   }
   return minSize;
 }
@@ -23,10 +19,7 @@ function getElMaxSize(dimension, $el) {
   } else if (maxSize.indexOf('px') >= 0) {
     maxSize = parseFloat(maxSize);
   } else if (maxSize.indexOf('%') >= 0) {
-    maxSize =
-      ($el.parent()[0][dimension === 'height' ? 'offsetHeight' : 'offsetWidth'] *
-        parseFloat(maxSize)) /
-      100;
+    maxSize = $el.parent()[0][dimension === 'height' ? 'offsetHeight' : 'offsetWidth'] * parseFloat(maxSize) / 100;
   }
   return maxSize;
 }
@@ -70,17 +63,11 @@ const Grid = {
       const getSizeProp = isRow ? 'offsetHeight' : 'offsetWidth';
       if (!isMoved) {
         $prevResizableEl = $resizeHandlerEl.parent(isRow ? '.row' : '.col');
-        if (
-          $prevResizableEl.length &&
-          (!$prevResizableEl.hasClass('resizable') || $prevResizableEl.hasClass('resizable-fixed'))
-        ) {
+        if ($prevResizableEl.length && (!$prevResizableEl.hasClass('resizable') || $prevResizableEl.hasClass('resizable-fixed'))) {
           $prevResizableEl = $prevResizableEl.prevAll('.resizable:not(.resizable-fixed)').eq(0);
         }
         $nextResizableEl = $prevResizableEl.next(isRow ? '.row' : '.col');
-        if (
-          $nextResizableEl.length &&
-          (!$nextResizableEl.hasClass('resizable') || $nextResizableEl.hasClass('resizable-fixed'))
-        ) {
+        if ($nextResizableEl.length && (!$nextResizableEl.hasClass('resizable') || $nextResizableEl.hasClass('resizable-fixed'))) {
           $nextResizableEl = $nextResizableEl.nextAll('.resizable:not(.resizable-fixed)').eq(0);
         }
 
@@ -89,9 +76,7 @@ const Grid = {
           prevElMinSize = getElMinSize(sizeProp, $prevResizableEl);
           prevElMaxSize = getElMaxSize(sizeProp, $prevResizableEl);
           parentSize = $prevResizableEl.parent()[0][getSizeProp];
-          itemsInFlow = $prevResizableEl
-            .parent()
-            .children(isRow ? '.row' : '[class*="col-"], .col').length;
+          itemsInFlow = $prevResizableEl.parent().children(isRow ? '.row' : '[class*="col-"], .col').length;
           gapSize = parseFloat($prevResizableEl.css(isRow ? '--f7-grid-row-gap' : '--f7-grid-gap'));
         }
         if ($nextResizableEl.length) {
@@ -100,12 +85,8 @@ const Grid = {
           nextElMaxSize = getElMaxSize(sizeProp, $nextResizableEl);
           if (!$prevResizableEl.length) {
             parentSize = $nextResizableEl.parent()[0][getSizeProp];
-            itemsInFlow = $nextResizableEl
-              .parent()
-              .children(isRow ? '.row' : '[class*="col-"], .col').length;
-            gapSize = parseFloat(
-              $nextResizableEl.css(isRow ? '--f7-grid-row-gap' : '--f7-grid-gap'),
-            );
+            itemsInFlow = $nextResizableEl.parent().children(isRow ? '.row' : '[class*="col-"], .col').length;
+            gapSize = parseFloat($nextResizableEl.css(isRow ? '--f7-grid-row-gap' : '--f7-grid-gap'));
           }
         }
       }
@@ -114,10 +95,7 @@ const Grid = {
       const touchCurrentX = e.type === 'touchmove' ? e.targetTouches[0].pageX : e.pageX;
       const touchCurrentY = e.type === 'touchmove' ? e.targetTouches[0].pageY : e.pageY;
       if (typeof isScrolling === 'undefined' && !isRow) {
-        isScrolling = !!(
-          isScrolling ||
-          Math.abs(touchCurrentY - touchStartY) > Math.abs(touchCurrentX - touchStartX)
-        );
+        isScrolling = !!(isScrolling || Math.abs(touchCurrentY - touchStartY) > Math.abs(touchCurrentX - touchStartX));
       }
       if (isScrolling) {
         isTouched = false;
@@ -125,9 +103,7 @@ const Grid = {
         return;
       }
 
-      const isAbsolute =
-        $prevResizableEl.hasClass('resizable-absolute') ||
-        $nextResizableEl.hasClass('resizable-absolute');
+      const isAbsolute = $prevResizableEl.hasClass('resizable-absolute') || $nextResizableEl.hasClass('resizable-absolute');
       const resizeNextEl = !isRow || (isRow && !isAbsolute);
 
       if ((resizeNextEl && !$nextResizableEl.length) || !$prevResizableEl.length) {
@@ -138,7 +114,9 @@ const Grid = {
 
       e.preventDefault();
 
-      let diff = isRow ? touchCurrentY - touchStartY : touchCurrentX - touchStartX;
+      let diff = isRow
+        ? touchCurrentY - touchStartY
+        : touchCurrentX - touchStartX;
 
       let prevElNewSize;
       let nextElNewSize;
@@ -179,18 +157,14 @@ const Grid = {
         return;
       }
 
-      const gapAddSize = ((itemsInFlow - 1) * gapSize) / itemsInFlow;
+      const gapAddSize = (itemsInFlow - 1) * gapSize / itemsInFlow;
       const gapAddSizeCSS = isRow
         ? `${itemsInFlow - 1} * var(--f7-grid-row-gap) / ${itemsInFlow}`
         : '(var(--f7-cols-per-row) - 1) * var(--f7-grid-gap) / var(--f7-cols-per-row)';
       const prevElNewSizeNormalized = prevElNewSize + gapAddSize;
       const nextElNewSizeNormalized = nextElNewSize + gapAddSize;
-      $prevResizableEl[0].style[sizeProp] = `calc(${
-        (prevElNewSizeNormalized / parentSize) * 100
-      }% - ${gapAddSizeCSS})`;
-      $nextResizableEl[0].style[sizeProp] = `calc(${
-        (nextElNewSizeNormalized / parentSize) * 100
-      }% - ${gapAddSizeCSS})`;
+      $prevResizableEl[0].style[sizeProp] = `calc(${prevElNewSizeNormalized / parentSize * 100}% - ${gapAddSizeCSS})`;
+      $nextResizableEl[0].style[sizeProp] = `calc(${nextElNewSizeNormalized / parentSize * 100}% - ${gapAddSizeCSS})`;
       $prevResizableEl.trigger('grid:resize');
       $nextResizableEl.trigger('grid:resize');
       app.emit('gridResize', $prevResizableEl[0]);
@@ -205,12 +179,8 @@ const Grid = {
       isTouched = false;
       isMoved = false;
     }
-    const document = getDocument();
-    $(document).on(
-      app.touchEvents.start,
-      '.col > .resize-handler, .row > .resize-handler',
-      handleTouchStart,
-    );
+
+    $(document).on(app.touchEvents.start, '.col > .resize-handler, .row > .resize-handler', handleTouchStart);
     app.on('touchmove', handleTouchMove);
     app.on('touchend', handleTouchEnd);
   },
@@ -220,7 +190,7 @@ export default {
   name: 'grid',
   create() {
     const app = this;
-    extend(app, {
+    Utils.extend(app, {
       grid: {
         init: Grid.init.bind(app),
       },

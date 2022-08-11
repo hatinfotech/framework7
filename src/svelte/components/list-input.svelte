@@ -1,14 +1,13 @@
 <script>
-  import { createEventDispatcher, onMount, afterUpdate, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, extend, plainText, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
-  import { getReactiveContext } from '../shared/get-reactive-context.js';
-
+  import { createEventDispatcher, onMount, afterUpdate, onDestroy, getContext } from 'svelte';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
+  import hasSlots from '../utils/has-slots';
   import TextEditor from './text-editor.svelte';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -78,6 +77,7 @@
   // Text editor
   export let textEditorParams = undefined;
 
+
   // State
   let inputEl;
   let inputFocused = false;
@@ -94,13 +94,8 @@
     return f7ColorPicker;
   }
 
-  let ListContext =
-    getReactiveContext('ListContext', (newValue) => {
-      ListContext = newValue || {};
-    }) || {};
-
-  $: isSortable = sortable === true || sortable === false ? sortable : ListContext.listIsSortable;
-  $: isSortableOpposite = sortableOpposite || ListContext.listIsSortableOpposite;
+  $: isSortable = sortable || getContext('f7ListSortable');
+  $: isSortableOpposite = sortableOpposite || getContext('f7ListSortableOpposite');
 
   function domValue() {
     if (!inputEl) return undefined;
@@ -112,11 +107,13 @@
       return false;
     }
     const domV = domValue();
-    return typeof value === 'undefined' ? domV || domV === 0 : value || value === 0;
+    return typeof value === 'undefined'
+      ? (domV || domV === 0)
+      : (value || value === 0);
   }
 
   function validateInput() {
-    if (!app.f7 || !inputEl) return;
+    if (!f7.instance || !inputEl) return;
     const validity = inputEl.validity;
     if (!validity) return;
 
@@ -125,11 +122,9 @@
       if (inputInvalid !== true) {
         inputInvalid = true;
       }
-    } else {
+    } else if (inputInvalid !== false) {
       if (onValidate) onValidate(true);
-      if (inputInvalid !== false) {
-        inputInvalid = false;
-      }
+      inputInvalid = false;
     }
   }
 
@@ -140,7 +135,7 @@
       return;
     }
     if (type === 'range' || type === 'toggle') return;
-    if (!app.f7) return;
+    if (!f7.instance) return;
     updateInputOnDidUpdate = true;
     if (f7Calendar) {
       f7Calendar.setValue(value);
@@ -151,20 +146,22 @@
   }
 
   function watchColorPickerParams() {
-    if (!app.f7 || !f7ColorPicker) return;
-    extend(f7ColorPicker.params, colorPickerParams || {});
+    if (!f7.instance || !f7ColorPicker) return;
+    Utils.extend(f7ColorPicker.params, colorPickerParams || {});
   }
 
   function watchCalendarParams() {
-    if (!app.f7 || !f7Calendar) return;
-    extend(f7Calendar.params, calendarParams || {});
+    if (!f7.instance || !f7Calendar) return;
+    Utils.extend(f7Calendar.params, calendarParams || {});
   }
 
   $: watchValue(value);
   $: watchColorPickerParams(colorPickerParams);
   $: watchCalendarParams(calendarParams);
 
-  $: inputType = type === 'datepicker' || type === 'colorpicker' ? 'text' : type;
+  $: inputType = type === 'datepicker' || type === 'colorpicker'
+    ? 'text'
+    : type;
 
   $: needsValue = type !== 'file' && type !== 'datepicker' && type !== 'colorpicker';
 
@@ -179,26 +176,32 @@
     return v;
   })();
 
-  $: hasInfoSlots = $$slots.info;
-  $: hasErrorSlots = $$slots['error-message'];
-  $: hasMediaSlots = $$slots.media;
-  $: hasLabelSlots = $$slots.label;
+  // eslint-disable-next-line
+  $: hasInfoSlots = hasSlots(arguments, 'info');
+  // eslint-disable-next-line
+  $: hasErrorSlots = hasSlots(arguments, 'error-message');
+  // eslint-disable-next-line
+  $: hasMediaSlots = hasSlots(arguments, 'media');
+  // eslint-disable-next-line
+  $: hasLabelSlots = hasSlots(arguments, 'label');
 
   $: hasErrorMessage = !!errorMessage || hasErrorSlots;
 
-  $: inputClasses = classNames({
-    resizable: inputType === 'textarea' && resizable,
-    'no-store-data': noFormStoreData || noStoreData || ignoreStoreData,
-    'input-invalid': (errorMessage && errorMessageForce) || inputInvalid,
-    'input-with-value': inputHasValue(),
-    'input-focused': inputFocused,
-  });
+  $: inputClasses = Utils.classNames(
+    {
+      resizable: inputType === 'textarea' && resizable,
+      'no-store-data': (noFormStoreData || noStoreData || ignoreStoreData),
+      'input-invalid': (errorMessage && errorMessageForce) || inputInvalid,
+      'input-with-value': inputHasValue(),
+      'input-focused': inputFocused,
+    }
+  );
 
-  $: itemContentClasses = classNames(
+  $: itemContentClasses = Utils.classNames(
     'item-content item-input',
     !wrap && className,
     !wrap && { disabled },
-    !wrap && colorClasses($$props),
+    !wrap && Mixins.colorClasses($$props),
     {
       'inline-label': inlineLabel,
       'item-input-outline': outline,
@@ -207,55 +210,59 @@
       'item-input-with-value': inputHasValue(),
       'item-input-with-error-message': (hasErrorMessage && errorMessageForce) || inputInvalid,
       'item-input-invalid': (hasErrorMessage && errorMessageForce) || inputInvalid,
-    },
+    }
   );
 
-  $: labelClasses = classNames('item-title item-label', {
-    'item-floating-label': floatingLabel,
-  });
+  $: labelClasses = Utils.classNames('item-title item-label', { 'item-floating-label': floatingLabel });
 
-  $: inputWrapClasses = classNames('item-input-wrap', {
+  $: inputWrapClasses = Utils.classNames('item-input-wrap', {
     'input-dropdown': dropdown === 'auto' ? type === 'select' : dropdown,
   });
 
-  $: classes = classNames(className, { disabled }, colorClasses($$props));
+  $: classes = Utils.classNames(
+    className,
+    { disabled },
+    Mixins.colorClasses($$props),
+  );
+
 
   function onTextareaResize(event) {
-    emit('textareaResize', [event]);
+    dispatch('textareaResize', [event]);
+    if (typeof $$props.onTextareaResize === 'function') $$props.onTextareaResize(event);
   }
 
   function onInputNotEmpty(event) {
-    emit('inputNotEmpty', [event]);
+    dispatch('inputNotEmpty', [event]);
+    if (typeof $$props.onInputNotEmpty === 'function') $$props.onInputNotEmpty(event);
   }
 
   function onInputEmpty(event) {
-    emit('inputEmpty', [event]);
+    dispatch('inputEmpty', [event]);
+    if (typeof $$props.onInputEmpty === 'function') $$props.onInputEmpty(event);
   }
 
   function onInputClear(event) {
-    emit('inputClear', [event]);
+    dispatch('inputClear', [event]);
+    if (typeof $$props.onInputClear === 'function') $$props.onInputClear(event);
   }
 
   function onInput(...args) {
-    emit('input', [...args]);
-
+    dispatch('input', [...args]);
+    if (typeof $$props.onInput === 'function') $$props.onInput(...args);
     if (!(validateOnBlur || validateOnBlur === '') && (validate || validate === '') && inputEl) {
       validateInput(inputEl);
-    }
-    if (inputEl && type !== 'texteditor' && type !== 'colorpicker' && type !== 'datepicker') {
-      value = inputEl.value;
     }
   }
 
   function onFocus(...args) {
-    emit('focus', [...args]);
-
+    dispatch('focus', [...args]);
+    if (typeof $$props.onFocus === 'function') $$props.onFocus(...args);
     inputFocused = true;
   }
 
   function onBlur(...args) {
-    emit('blur', [...args]);
-
+    dispatch('blur', [...args]);
+    if (typeof $$props.onBlur === 'function') $$props.onBlur(...args);
     if ((validate || validate === '' || validateOnBlur || validateOnBlur === '') && inputEl) {
       validateInput();
     }
@@ -263,16 +270,16 @@
   }
 
   function onChange(...args) {
-    emit('change', [...args]);
-
+    dispatch('change', [...args]);
+    if (typeof $$props.onChange === 'function') $$props.onChange(...args);
     if (type === 'texteditor') {
-      emit('textEditorChange', [args[0]]);
-      value = args[0];
+      dispatch('textEditorChange', [args[1]]);
+      if (typeof $$props.onTextEditorChange === 'function') $$props.onTextEditorChange(...args);
     }
   }
 
   onMount(() => {
-    f7ready(() => {
+    f7.ready(() => {
       if (type === 'range' || type === 'toggle') return;
       if (!inputEl) return;
 
@@ -286,61 +293,59 @@
       }
 
       if (type === 'datepicker') {
-        f7Calendar = app.f7.calendar.create({
+        f7Calendar = f7.instance.calendar.create({
           inputEl,
           value,
           on: {
             change(calendar, calendarValue) {
-              emit('calendarChange', [calendarValue]);
-              value = calendarValue;
+              dispatch('calendarChange', [calendarValue]);
+              if (typeof $$props.onCalendarChange === 'function') $$props.onCalendarChange(calendarValue);
             },
           },
           ...(calendarParams || {}),
         });
       }
       if (type === 'colorpicker') {
-        f7ColorPicker = app.f7.colorPicker.create({
+        f7ColorPicker = f7.instance.colorPicker.create({
           inputEl,
           value,
           on: {
             change(colorPicker, colorPickerValue) {
-              emit('colorPickerChange', [colorPickerValue]);
-              value = colorPickerValue;
+              dispatch('colorPickerChange', [colorPickerValue]);
+              if (typeof $$props.onColorPickerChange === 'function') $$props.onColorPickerChange(colorPickerValue);
             },
           },
           ...(colorPickerParams || {}),
         });
       }
 
-      app.f7.input.checkEmptyState(inputEl);
+      f7.instance.input.checkEmptyState(inputEl);
       if (
-        !(validateOnBlur || validateOnBlur === '') &&
-        (validate || validate === '') &&
-        typeof value !== 'undefined' &&
-        value !== null &&
-        value !== ''
+        !(validateOnBlur || validateOnBlur === '')
+        && (validate || validate === '')
+        && (typeof value !== 'undefined' && value !== null && value !== '')
       ) {
         setTimeout(() => {
           validateInput();
         }, 0);
       }
       if (resizable) {
-        app.f7.input.resizeTextarea(inputEl);
+        f7.instance.input.resizeTextarea(inputEl);
       }
     });
   });
 
   afterUpdate(() => {
-    if (!app.f7) return;
+    if (!f7.instance) return;
     if (updateInputOnDidUpdate) {
       if (!inputEl) return;
       updateInputOnDidUpdate = false;
-      app.f7.input.checkEmptyState(inputEl);
+      f7.instance.input.checkEmptyState(inputEl);
       if (validate && !validateOnBlur) {
         validateInput();
       }
       if (resizable) {
-        app.f7.input.resizeTextarea(inputEl);
+        f7.instance.input.resizeTextarea(inputEl);
       }
     }
   });
@@ -366,8 +371,8 @@
     f7Calendar = null;
     f7ColorPicker = null;
   });
-</script>
 
+</script>
 <!-- svelte-ignore a11y-autofocus -->
 <!-- svelte-ignore a11y-missing-attribute -->
 {#if wrap}
@@ -379,18 +384,20 @@
         <div class="sortable-handler" />
       {/if}
 
-      {#if media || hasMediaSlots}
+      {#if (media || hasMediaSlots)}
         <div class="item-media">
-          {#if typeof media !== 'undefined'}<img src={media} />{/if}
-          <slot name="media" />
+          {#if typeof media !== 'undefined'}
+            <img src={media} />
+          {/if}
+          <slot name="media"/>
         </div>
       {/if}
       <div class="item-inner">
-        <slot name="inner-start" />
-        {#if typeof label !== 'undefined' || hasLabelSlots}
+        <slot name="inner-start"/>
+        {#if (typeof label !== 'undefined' || hasLabelSlots)}
           <div class={labelClasses}>
-            {plainText(label)}
-            <slot name="label" />
+            {Utils.text(label)}
+            <slot name="label"/>
           </div>
         {/if}
         <div class={inputWrapClasses}>
@@ -399,38 +406,31 @@
               <select
                 bind:this={inputEl}
                 style={inputStyle}
-                {name}
-                {placeholder}
+                name={name}
+                placeholder={placeholder}
                 id={inputId}
-                {size}
-                {accept}
-                {autocomplete}
-                {autocorrect}
-                {autocapitalize}
-                {spellcheck}
-                {autofocus}
-                {autosave}
-                {disabled}
-                {max}
-                {maxlength}
-                {min}
-                {minlength}
-                {step}
-                {multiple}
-                {readonly}
-                {required}
-                {pattern}
+                size={size}
+                accept={accept}
+                autocomplete={autocomplete}
+                autocorrect={autocorrect}
+                autocapitalize={autocapitalize}
+                spellcheck={spellcheck}
+                autofocus={autofocus}
+                autosave={autosave}
+                disabled={disabled}
+                max={max}
+                maxlength={maxlength}
+                min={min}
+                minlength={minlength}
+                step={step}
+                multiple={multiple}
+                readonly={readonly}
+                required={required}
+                pattern={pattern}
                 validate={typeof validate === 'string' && validate.length ? validate : undefined}
-                data-validate={validate === true ||
-                validate === '' ||
-                validateOnBlur === true ||
-                validateOnBlur === ''
-                  ? true
-                  : undefined}
-                data-validate-on-blur={validateOnBlur === true || validateOnBlur === ''
-                  ? true
-                  : undefined}
-                {tabindex}
+                data-validate={validate === true || validate === '' || validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+                data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+                tabindex={tabindex}
                 data-error-message={errorMessageForce ? undefined : errorMessage}
                 class={inputClasses}
                 on:focus={onFocus}
@@ -445,39 +445,32 @@
               <textarea
                 bind:this={inputEl}
                 style={inputStyle}
-                {name}
-                {placeholder}
+                name={name}
+                placeholder={placeholder}
                 id={inputId}
-                {size}
-                {inputmode}
-                {accept}
-                {autocomplete}
-                {autocorrect}
-                {autocapitalize}
-                {spellcheck}
-                {autofocus}
-                {autosave}
-                {disabled}
-                {max}
-                {maxlength}
-                {min}
-                {minlength}
-                {step}
-                {multiple}
-                {readonly}
-                {required}
-                {pattern}
+                size={size}
+                inputmode={inputmode}
+                accept={accept}
+                autocomplete={autocomplete}
+                autocorrect={autocorrect}
+                autocapitalize={autocapitalize}
+                spellcheck={spellcheck}
+                autofocus={autofocus}
+                autosave={autosave}
+                disabled={disabled}
+                max={max}
+                maxlength={maxlength}
+                min={min}
+                minlength={minlength}
+                step={step}
+                multiple={multiple}
+                readonly={readonly}
+                required={required}
+                pattern={pattern}
                 validate={typeof validate === 'string' && validate.length ? validate : undefined}
-                data-validate={validate === true ||
-                validate === '' ||
-                validateOnBlur === true ||
-                validateOnBlur === ''
-                  ? true
-                  : undefined}
-                data-validate-on-blur={validateOnBlur === true || validateOnBlur === ''
-                  ? true
-                  : undefined}
-                {tabindex}
+                data-validate={validate === true || validate === '' || validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+                data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+                tabindex={tabindex}
                 data-error-message={errorMessageForce ? undefined : errorMessage}
                 class={inputClasses}
                 on:focus={onFocus}
@@ -489,8 +482,8 @@
             {:else if type === 'texteditor'}
               <TextEditor
                 value={typeof value === 'undefined' ? '' : value}
-                {resizable}
-                {placeholder}
+                resizable={resizable}
+                placeholder={placeholder}
                 onTextEditorFocus={onFocus}
                 onTextEditorBlur={onBlur}
                 onTextEditorInput={onInput}
@@ -501,39 +494,32 @@
               <input
                 bind:this={inputEl}
                 style={inputStyle}
-                {name}
+                name={name}
                 type={inputType}
-                {inputmode}
-                {placeholder}
+                inputmode={inputmode}
+                placeholder={placeholder}
                 id={inputId}
-                {size}
-                {accept}
-                {autocomplete}
-                {autocorrect}
-                {autocapitalize}
-                {spellcheck}
-                {autofocus}
-                {autosave}
-                {disabled}
-                {max}
-                {maxlength}
-                {min}
-                {minlength}
-                {step}
-                {multiple}
-                {readonly}
-                {required}
-                {pattern}
+                size={size}
+                accept={accept}
+                autocomplete={autocomplete}
+                autocorrect={autocorrect}
+                autocapitalize={autocapitalize}
+                spellcheck={spellcheck}
+                autofocus={autofocus}
+                autosave={autosave}
+                disabled={disabled}
+                max={max}
+                maxlength={maxlength}
+                min={min}
+                minlength={minlength}
+                step={step}
+                multiple={multiple}
+                readonly={readonly}
+                required={required}
+                pattern={pattern}
                 validate={typeof validate === 'string' && validate.length ? validate : undefined}
-                data-validate={validate === true ||
-                validate === '' ||
-                validateOnBlur === true ||
-                validateOnBlur === ''
-                  ? true
-                  : undefined}
-                data-validate-on-blur={validateOnBlur === true || validateOnBlur === ''
-                  ? true
-                  : undefined}
+                data-validate={validate === true || validate === '' || validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+                data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
                 tabIndex={tabindex}
                 data-error-message={errorMessageForce ? undefined : errorMessage}
                 class={inputClasses}
@@ -541,29 +527,29 @@
                 on:blur={onBlur}
                 on:input={onInput}
                 on:change={onChange}
-                value={type === 'datepicker' || type === 'colorpicker' || type === 'file'
-                  ? ''
-                  : inputValue}
+                value={type === 'datepicker' || type === 'colorpicker' || type === 'file' ? '' : inputValue}
               />
             {/if}
           {/if}
           <slot name="input" />
           {#if hasErrorMessage && errorMessageForce}
             <div class="item-input-error-message">
-              {plainText(errorMessage)}
-              <slot name="error-message" />
+              {Utils.text(errorMessage)}
+              <slot name="error-message"/>
             </div>
           {/if}
-          {#if clearButton}<span class="input-clear-button" />{/if}
-          {#if typeof info !== 'undefined' || hasInfoSlots}
+          {#if clearButton}
+            <span class="input-clear-button" />
+          {/if}
+          {#if (typeof info !== 'undefined' || hasInfoSlots)}
             <div class="item-input-info">
-              {plainText(info)}
-              <slot name="info" />
+              {Utils.text(info)}
+              <slot name="info"/>
             </div>
           {/if}
         </div>
-        <slot name="inner" />
-        <slot name="inner-end" />
+        <slot name="inner"/>
+        <slot name="inner-end"/>
       </div>
       <slot name="content" />
       <slot name="content-end" />
@@ -581,18 +567,20 @@
       <div class="sortable-handler" />
     {/if}
 
-    {#if media || hasMediaSlots}
+    {#if (media || hasMediaSlots)}
       <div class="item-media">
-        {#if typeof media !== 'undefined'}<img src={media} />{/if}
-        <slot name="media" />
+        {#if typeof media !== 'undefined'}
+          <img src={media} />
+        {/if}
+        <slot name="media"/>
       </div>
     {/if}
     <div class="item-inner">
-      <slot name="inner-start" />
-      {#if typeof label !== 'undefined' || hasLabelSlots}
+      <slot name="inner-start"/>
+      {#if (typeof label !== 'undefined' || hasLabelSlots)}
         <div class={labelClasses}>
-          {plainText(label)}
-          <slot name="label" />
+          {Utils.text(label)}
+          <slot name="label"/>
         </div>
       {/if}
       <div class={inputWrapClasses}>
@@ -601,38 +589,31 @@
             <select
               bind:this={inputEl}
               style={inputStyle}
-              {name}
-              {placeholder}
+              name={name}
+              placeholder={placeholder}
               id={inputId}
-              {size}
-              {accept}
-              {autocomplete}
-              {autocorrect}
-              {autocapitalize}
-              {spellcheck}
-              {autofocus}
-              {autosave}
-              {disabled}
-              {max}
-              {maxlength}
-              {min}
-              {minlength}
-              {step}
-              {multiple}
-              {readonly}
-              {required}
-              {pattern}
+              size={size}
+              accept={accept}
+              autocomplete={autocomplete}
+              autocorrect={autocorrect}
+              autocapitalize={autocapitalize}
+              spellcheck={spellcheck}
+              autofocus={autofocus}
+              autosave={autosave}
+              disabled={disabled}
+              max={max}
+              maxlength={maxlength}
+              min={min}
+              minlength={minlength}
+              step={step}
+              multiple={multiple}
+              readonly={readonly}
+              required={required}
+              pattern={pattern}
               validate={typeof validate === 'string' && validate.length ? validate : undefined}
-              data-validate={validate === true ||
-              validate === '' ||
-              validateOnBlur === true ||
-              validateOnBlur === ''
-                ? true
-                : undefined}
-              data-validate-on-blur={validateOnBlur === true || validateOnBlur === ''
-                ? true
-                : undefined}
-              {tabindex}
+              data-validate={validate === true || validate === '' || validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+              data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+              tabindex={tabindex}
               data-error-message={errorMessageForce ? undefined : errorMessage}
               class={inputClasses}
               on:focus={onFocus}
@@ -647,39 +628,32 @@
             <textarea
               bind:this={inputEl}
               style={inputStyle}
-              {name}
-              {placeholder}
+              name={name}
+              placeholder={placeholder}
               id={inputId}
-              {size}
-              {inputmode}
-              {accept}
-              {autocomplete}
-              {autocorrect}
-              {autocapitalize}
-              {spellcheck}
-              {autofocus}
-              {autosave}
-              {disabled}
-              {max}
-              {maxlength}
-              {min}
-              {minlength}
-              {step}
-              {multiple}
-              {readonly}
-              {required}
-              {pattern}
+              size={size}
+              inputmode={inputmode}
+              accept={accept}
+              autocomplete={autocomplete}
+              autocorrect={autocorrect}
+              autocapitalize={autocapitalize}
+              spellcheck={spellcheck}
+              autofocus={autofocus}
+              autosave={autosave}
+              disabled={disabled}
+              max={max}
+              maxlength={maxlength}
+              min={min}
+              minlength={minlength}
+              step={step}
+              multiple={multiple}
+              readonly={readonly}
+              required={required}
+              pattern={pattern}
               validate={typeof validate === 'string' && validate.length ? validate : undefined}
-              data-validate={validate === true ||
-              validate === '' ||
-              validateOnBlur === true ||
-              validateOnBlur === ''
-                ? true
-                : undefined}
-              data-validate-on-blur={validateOnBlur === true || validateOnBlur === ''
-                ? true
-                : undefined}
-              {tabindex}
+              data-validate={validate === true || validate === '' || validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+              data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+              tabindex={tabindex}
               data-error-message={errorMessageForce ? undefined : errorMessage}
               class={inputClasses}
               on:focus={onFocus}
@@ -691,8 +665,8 @@
           {:else if type === 'texteditor'}
             <TextEditor
               value={typeof value === 'undefined' ? '' : value}
-              {resizable}
-              {placeholder}
+              resizable={resizable}
+              placeholder={placeholder}
               onTextEditorFocus={onFocus}
               onTextEditorBlur={onBlur}
               onTextEditorInput={onInput}
@@ -703,39 +677,32 @@
             <input
               bind:this={inputEl}
               style={inputStyle}
-              {name}
+              name={name}
               type={inputType}
-              {inputmode}
-              {placeholder}
+              inputmode={inputmode}
+              placeholder={placeholder}
               id={inputId}
-              {size}
-              {accept}
-              {autocomplete}
-              {autocorrect}
-              {autocapitalize}
-              {spellcheck}
-              {autofocus}
-              {autosave}
-              {disabled}
-              {max}
-              {maxlength}
-              {min}
-              {minlength}
-              {step}
-              {multiple}
-              {readonly}
-              {required}
-              {pattern}
+              size={size}
+              accept={accept}
+              autocomplete={autocomplete}
+              autocorrect={autocorrect}
+              autocapitalize={autocapitalize}
+              spellcheck={spellcheck}
+              autofocus={autofocus}
+              autosave={autosave}
+              disabled={disabled}
+              max={max}
+              maxlength={maxlength}
+              min={min}
+              minlength={minlength}
+              step={step}
+              multiple={multiple}
+              readonly={readonly}
+              required={required}
+              pattern={pattern}
               validate={typeof validate === 'string' && validate.length ? validate : undefined}
-              data-validate={validate === true ||
-              validate === '' ||
-              validateOnBlur === true ||
-              validateOnBlur === ''
-                ? true
-                : undefined}
-              data-validate-on-blur={validateOnBlur === true || validateOnBlur === ''
-                ? true
-                : undefined}
+              data-validate={validate === true || validate === '' || validateOnBlur === true || validateOnBlur === '' ? true : undefined}
+              data-validate-on-blur={validateOnBlur === true || validateOnBlur === '' ? true : undefined}
               tabIndex={tabindex}
               data-error-message={errorMessageForce ? undefined : errorMessage}
               class={inputClasses}
@@ -743,29 +710,29 @@
               on:blur={onBlur}
               on:input={onInput}
               on:change={onChange}
-              value={type === 'datepicker' || type === 'colorpicker' || type === 'file'
-                ? ''
-                : inputValue}
+              value={type === 'datepicker' || type === 'colorpicker' || type === 'file' ? '' : inputValue}
             />
           {/if}
         {/if}
         <slot name="input" />
         {#if hasErrorMessage && errorMessageForce}
           <div class="item-input-error-message">
-            {plainText(errorMessage)}
-            <slot name="error-message" />
+            {Utils.text(errorMessage)}
+            <slot name="error-message"/>
           </div>
         {/if}
-        {#if clearButton}<span class="input-clear-button" />{/if}
-        {#if typeof info !== 'undefined' || hasInfoSlots}
+        {#if clearButton}
+          <span class="input-clear-button" />
+        {/if}
+        {#if (typeof info !== 'undefined' || hasInfoSlots)}
           <div class="item-input-info">
-            {plainText(info)}
-            <slot name="info" />
+            {Utils.text(info)}
+            <slot name="info"/>
           </div>
         {/if}
       </div>
-      <slot name="inner" />
-      <slot name="inner-end" />
+      <slot name="inner"/>
+      <slot name="inner-end"/>
     </div>
     <slot name="content" />
     <slot name="content-end" />

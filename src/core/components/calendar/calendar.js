@@ -1,6 +1,6 @@
-import ConstructorMethods from '../../shared/constructor-methods.js';
-import Calendar from './calendar-class.js';
-import $ from '../../shared/dom7.js';
+import $ from 'dom7';
+import ConstructorMethods from '../../utils/constructor-methods';
+import Calendar from './calendar-class';
 
 export default {
   name: 'calendar',
@@ -54,7 +54,6 @@ export default {
       yearPickerMin: undefined,
       yearPickerMax: undefined,
       timePicker: false,
-      timePickerLabel: 'Time',
       timePickerFormat: { hour: 'numeric', minute: 'numeric' },
       timePickerPlaceholder: 'Select time',
       weekHeader: true,
@@ -75,7 +74,7 @@ export default {
       toolbarCloseText: 'Done',
       footer: false,
       cssClass: null,
-      routableModals: false,
+      routableModals: true,
       view: null,
       url: 'date/',
       backdrop: null,

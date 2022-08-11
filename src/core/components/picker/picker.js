@@ -1,6 +1,6 @@
-import $ from '../../shared/dom7.js';
-import ConstructorMethods from '../../shared/constructor-methods.js';
-import Picker from './picker-class.js';
+import $ from 'dom7';
+import ConstructorMethods from '../../utils/constructor-methods';
+import Picker from './picker-class';
 
 export default {
   name: 'picker',
@@ -26,7 +26,12 @@ export default {
   params: {
     picker: {
       // Picker settings
+      updateValuesOnMomentum: false,
+      updateValuesOnTouchmove: true,
+      updateValuesOnMousewheel: true,
+      mousewheel: true,
       rotateEffect: false,
+      momentumRatio: 7,
       freeMode: false,
       cols: [],
       // Common opener settings
@@ -44,7 +49,7 @@ export default {
       toolbar: true,
       toolbarCloseText: 'Done',
       cssClass: null,
-      routableModals: false,
+      routableModals: true,
       view: null,
       url: 'select/',
       // Render functions

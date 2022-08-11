@@ -1,19 +1,3 @@
-<script>
-  import {
-    Navbar,
-    Page,
-    Block,
-    BlockTitle,
-    Card,
-    CardHeader,
-    CardContent,
-    CardFooter,
-    List,
-    ListItem,
-    Link,
-  } from 'framework7-svelte';
-</script>
-
 <!-- svelte-ignore a11y-missing-attribute -->
 <Page>
   <Navbar title="Cards" backLink="Back" />
@@ -156,3 +140,6 @@
     </CardFooter>
   </Card>
 </Page>
+<script>
+  import { Navbar, Page, Block, BlockTitle, Card, CardHeader, CardContent, CardFooter, List, ListItem, Link } from 'framework7-svelte';
+</script>

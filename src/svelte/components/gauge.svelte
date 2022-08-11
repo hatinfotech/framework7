@@ -1,6 +1,6 @@
 <script>
-  import { classNames } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
 
   let className = undefined;
   export { className as class };
@@ -21,14 +21,17 @@
   export let labelFontSize = 14;
   export let labelFontWeight = 400;
 
-  $: classes = classNames(className, 'gauge');
+  $: classes = Utils.classNames(
+    className,
+    'gauge',
+  );
 
   $: semiCircle = type === 'semicircle';
-  $: radius = size / 2 - borderWidth / 2;
+  $: radius = (size / 2) - (borderWidth / 2);
   $: length = 2 * Math.PI * radius;
   $: progress = Math.max(Math.min(value, 1), 0);
-</script>
 
+</script>
 <div class={classes} {...restProps($$restProps)}>
   <svg
     class="gauge-svg"
@@ -39,19 +42,19 @@
     {#if semiCircle}
       <path
         class="gauge-back-semi"
-        d={`M${size - borderWidth / 2},${size / 2} a1,1 0 0,0 -${size - borderWidth},0`}
+        d={`M${size - (borderWidth / 2)},${size / 2} a1,1 0 0,0 -${size - borderWidth},0`}
         stroke={borderBgColor}
         stroke-width={borderWidth}
         fill={bgColor || 'none'}
       />
       <path
         class="gauge-front-semi"
-        d={`M${size - borderWidth / 2},${size / 2} a1,1 0 0,0 -${size - borderWidth},0`}
+        d={`M${size - (borderWidth / 2)},${size / 2} a1,1 0 0,0 -${size - borderWidth},0`}
         stroke={borderColor}
         stroke-width={borderWidth}
         stroke-dasharray={length / 2}
         stroke-dashoffset={(length / 2) * (1 + progress)}
-        fill={borderBgColor ? 'none' : bgColor || 'none'}
+        fill={borderBgColor ? 'none' : (bgColor || 'none')}
       />
     {/if}
     {#if !semiCircle}
@@ -90,9 +93,7 @@
         dy={semiCircle ? (labelText ? -labelFontSize - 15 : -5) : 0}
         text-anchor="middle"
         dominant-baseline={!semiCircle ? 'middle' : null}
-      >
-        {valueText}
-      </text>
+      >{valueText}</text>
     {/if}
     {#if labelText}
       <text
@@ -102,12 +103,10 @@
         font-weight={labelFontWeight}
         font-size={labelFontSize}
         fill={labelTextColor}
-        dy={semiCircle ? -5 : valueText ? valueFontSize / 2 + 10 : 0}
+        dy={semiCircle ? -5 : (valueText ? ((valueFontSize / 2) + 10) : 0)}
         text-anchor="middle"
         dominant-baseline={!semiCircle ? 'middle' : null}
-      >
-        {labelText}
-      </text>
+      >{labelText}</text>
     {/if}
   </svg>
 </div>

@@ -1,16 +1,13 @@
-/** @jsx $jsx */
-import $jsx from '../../../shared/$jsx.js';
-
 export default {
   render() {
-    return (
+    return `
       <div class="color-picker-module color-picker-module-initial-current-colors">
         <div class="color-picker-initial-current-colors">
           <div class="color-picker-initial-color"></div>
           <div class="color-picker-current-color"></div>
         </div>
       </div>
-    );
+    `;
   },
   init(self) {
     function handleInitialColorClick() {
@@ -28,12 +25,14 @@ export default {
     };
   },
   update(self) {
-    self.$el
-      .find('.color-picker-module-initial-current-colors .color-picker-initial-color')
-      .css('background-color', self.initialValue.hex);
-    self.$el
-      .find('.color-picker-module-initial-current-colors .color-picker-current-color')
-      .css('background-color', self.value.hex);
+    self.$el.find('.color-picker-module-initial-current-colors .color-picker-initial-color').css(
+      'background-color',
+      self.initialValue.hex,
+    );
+    self.$el.find('.color-picker-module-initial-current-colors .color-picker-current-color').css(
+      'background-color',
+      self.value.hex,
+    );
   },
   destroy(self) {
     if (self.destroyInitialCurrentEvents) {

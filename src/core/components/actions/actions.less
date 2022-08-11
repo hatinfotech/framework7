@@ -1,10 +1,6 @@
 /* === Actions === */
-@import './actions-vars.less';
-.actions-backdrop {
-  &-unique {
-    z-index: 13500;
-  }
-}
+@import url('./actions-vars.less');
+.actions-backdrop {}
 .actions-modal {
   position: absolute;
   left: 0;
@@ -17,8 +13,7 @@
   .scrollable();
   transition-property: transform;
   will-change: transform;
-  &.modal-in,
-  &.modal-out {
+  &.modal-in, &.modal-out {
     transition-duration: 300ms;
   }
   &.not-animated {
@@ -46,7 +41,7 @@
   margin: var(--f7-actions-group-margin);
   border-radius: var(--f7-actions-border-radius);
   .hairline(bottom, var(--f7-actions-group-border-color));
-  transform: translate3d(0, 0, 0);
+  transform: translate3d(0,0,0);
   &:last-child {
     .hairline-remove(bottom);
   }
@@ -79,8 +74,7 @@
     color: inherit;
     display: block;
   }
-  b,
-  &.actions-button-bold {
+  b, &.actions-button-bold {
     font-weight: 600;
   }
 }
@@ -97,7 +91,7 @@
   &.active-state {
     background-color: var(--f7-actions-button-pressed-bg-color) !important;
   }
-  &[class*='color-'] {
+  &[class*="color-"] {
     color: var(--f7-theme-color);
   }
 }
@@ -115,8 +109,7 @@
     font-size: var(--f7-actions-button-icon-size);
   }
 }
-.actions-button a,
-.actions-button-text {
+.actions-button a, .actions-button-text {
   position: relative;
   overflow: hidden;
   white-space: nowrap;
@@ -137,7 +130,7 @@
   justify-content: var(--f7-actions-label-justify-content);
   min-height: var(--f7-actions-label-min-height, var(--f7-actions-button-height));
 }
-.actions-label[class*=' color-'] {
+.actions-label[class*=" color-"] {
   --f7-actions-label-text-color: var(--f7-theme-color);
 }
 .actions-grid {
@@ -161,13 +154,12 @@
       margin-bottom: 0;
     }
   }
-  .actions-button,
-  .actions-label {
+  .actions-button, .actions-label {
     border-radius: 0 !important;
     background: none;
   }
   .actions-button {
-    width: (100% / 3);
+    width: 100% / 3;
     display: block;
     color: var(--f7-actions-grid-button-text-color);
     height: auto;
@@ -199,11 +191,11 @@
   .ios-translucent-modals(var(--f7-actions-bg-color-rgb));
 }
 .if-ios-theme({
-  @import './actions-ios.less';
+  @import url('./actions-ios.less');
 });
 .if-md-theme({
-  @import './actions-md.less';
+  @import url('./actions-md.less');
 });
 .if-aurora-theme({
-  @import './actions-aurora.less';
+  @import url('./actions-aurora.less');
 });

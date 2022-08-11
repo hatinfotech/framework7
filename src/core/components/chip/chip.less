@@ -1,5 +1,5 @@
 /* === Chips === */
-@import './chip-vars.less';
+@import url('./chip-vars.less');
 
 .chip {
   padding-left: var(--f7-chip-padding-horizontal);
@@ -93,23 +93,23 @@
   border: 1px solid var(--f7-chip-outline-border-color);
   background: none;
 }
-.chip[class*='color-'] {
+.chip[class*="color-"] {
   --f7-chip-bg-color: var(--f7-theme-color);
   --f7-chip-text-color: #fff;
 }
-.chip-outline[class*='color-'],
-.ios .chip-outline-ios[class*='color-'],
-.md .chip-outline-md[class*='color-'],
-.aurora .chip-outline-aurora[class*='color-'] {
+.chip-outline[class*="color-"],
+.ios .chip-outline-ios[class*="color-"],
+.md .chip-outline-md[class*="color-"],
+.aurora .chip-outline-aurora[class*="color-"] {
   --f7-chip-outline-border-color: var(--f7-theme-color);
   --f7-chip-text-color: var(--f7-theme-color);
 }
 .if-ios-theme({
-  @import './chip-ios.less';
+  @import url('./chip-ios.less');
 });
 .if-md-theme({
-  @import './chip-md.less';
+  @import url('./chip-md.less');
 });
 .if-aurora-theme({
-  @import './chip-aurora.less';
+  @import url('./chip-aurora.less');
 });

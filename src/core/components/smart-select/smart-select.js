@@ -1,7 +1,7 @@
-import $ from '../../shared/dom7.js';
-import { extend } from '../../shared/utils.js';
-import SmartSelect from './smart-select-class.js';
-import ConstructorMethods from '../../shared/constructor-methods.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
+import SmartSelect from './smart-select-class';
+import ConstructorMethods from '../../utils/constructor-methods';
 
 export default {
   name: 'smartSelect',
@@ -16,7 +16,6 @@ export default {
       popupSwipeToClose: undefined, // defaults to app
       sheetPush: false,
       sheetSwipeToClose: undefined, // defaults to app
-      sheetBackdrop: false,
       pageTitle: undefined,
       pageBackLinkText: 'Back',
       popupCloseLinkText: 'Close',
@@ -28,12 +27,12 @@ export default {
       searchbarDisableButton: undefined,
       searchbarSpellcheck: false,
       closeOnSelect: false,
-      virtualList: false,
+      virtualList: true,
       virtualListHeight: undefined,
       scrollToSelectedItem: false,
       formColorTheme: undefined,
       navbarColorTheme: undefined,
-      routableModals: false,
+      routableModals: true,
       url: 'select/',
       cssClass: '',
       /*
@@ -53,7 +52,7 @@ export default {
   },
   create() {
     const app = this;
-    app.smartSelect = extend(
+    app.smartSelect = Utils.extend(
       ConstructorMethods({
         defaultSelector: '.smart-select',
         constructor: SmartSelect,
@@ -71,36 +70,32 @@ export default {
           if (ss && ss.close) return ss.close();
           return undefined;
         },
-      },
+      }
     );
   },
 
   on: {
     tabMounted(tabEl) {
       const app = this;
-      $(tabEl)
-        .find('.smart-select-init')
-        .each((smartSelectEl) => {
-          app.smartSelect.create(extend({ el: smartSelectEl }, $(smartSelectEl).dataset()));
-        });
+      $(tabEl).find('.smart-select-init').each((index, smartSelectEl) => {
+        app.smartSelect.create(Utils.extend({ el: smartSelectEl }, $(smartSelectEl).dataset()));
+      });
     },
     tabBeforeRemove(tabEl) {
-      $(tabEl)
-        .find('.smart-select-init')
-        .each((smartSelectEl) => {
-          if (smartSelectEl.f7SmartSelect && smartSelectEl.f7SmartSelect.destroy) {
-            smartSelectEl.f7SmartSelect.destroy();
-          }
-        });
+      $(tabEl).find('.smart-select-init').each((index, smartSelectEl) => {
+        if (smartSelectEl.f7SmartSelect && smartSelectEl.f7SmartSelect.destroy) {
+          smartSelectEl.f7SmartSelect.destroy();
+        }
+      });
     },
     pageInit(page) {
       const app = this;
-      page.$el.find('.smart-select-init').each((smartSelectEl) => {
-        app.smartSelect.create(extend({ el: smartSelectEl }, $(smartSelectEl).dataset()));
+      page.$el.find('.smart-select-init').each((index, smartSelectEl) => {
+        app.smartSelect.create(Utils.extend({ el: smartSelectEl }, $(smartSelectEl).dataset()));
       });
     },
     pageBeforeRemove(page) {
-      page.$el.find('.smart-select-init').each((smartSelectEl) => {
+      page.$el.find('.smart-select-init').each((index, smartSelectEl) => {
         if (smartSelectEl.f7SmartSelect && smartSelectEl.f7SmartSelect.destroy) {
           smartSelectEl.f7SmartSelect.destroy();
         }
@@ -111,7 +106,7 @@ export default {
     '.smart-select': function open($clickedEl, data) {
       const app = this;
       if (!$clickedEl[0].f7SmartSelect) {
-        const ss = app.smartSelect.create(extend({ el: $clickedEl }, data));
+        const ss = app.smartSelect.create(Utils.extend({ el: $clickedEl }, data));
         ss.open();
       }
     },
@@ -121,7 +116,7 @@ export default {
       insert(vnode) {
         const app = this;
         const smartSelectEl = vnode.elm;
-        app.smartSelect.create(extend({ el: smartSelectEl }, $(smartSelectEl).dataset()));
+        app.smartSelect.create(Utils.extend({ el: smartSelectEl }, $(smartSelectEl).dataset()));
       },
       destroy(vnode) {
         const smartSelectEl = vnode.elm;

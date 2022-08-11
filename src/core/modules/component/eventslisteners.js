@@ -1,4 +1,4 @@
-import $ from '../../shared/dom7.js';
+import $ from 'dom7';
 
 function invokeHandler(handler, event, args) {
   if (typeof handler === 'function') {
@@ -24,7 +24,7 @@ function updateEvents(oldVnode, vnode) {
   const oldListener = oldVnode.listener;
   const oldElm = oldVnode.elm;
   const on = vnode && vnode.data.on;
-  const elm = vnode && vnode.elm;
+  const elm = (vnode && vnode.elm);
   // optimization for reused immutable handlers
   if (oldOn === on) {
     return;

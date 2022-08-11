@@ -1,11 +1,11 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, noUndefinedProps, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -14,9 +14,6 @@
   export let noHairline = false;
   export let form = true;
   export let placeholder = 'Search';
-  export let autocomplete = undefined;
-  export let autocorrect = undefined;
-  export let autocapitalize = undefined;
   export let spellcheck = undefined;
   export let disableButton = true;
   export let disableButtonText = 'Cancel';
@@ -75,7 +72,7 @@
     return f7Searchbar.clear();
   }
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'searchbar',
     {
@@ -84,42 +81,46 @@
       'no-hairline': noHairline,
       'searchbar-expandable': expandable,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function onChange(event) {
-    emit('change', [event]);
+    dispatch('change', [event]);
+    if (typeof $$props.onChange === 'function') $$props.onChange(event);
   }
 
   function onInput(event) {
-    emit('input', [event]);
-    value = event.target.value;
+    dispatch('input', [event]);
+    if (typeof $$props.onInput === 'function') $$props.onInput(event);
   }
 
   function onFocus(event) {
-    emit('focus', [event]);
+    dispatch('focus', [event]);
+    if (typeof $$props.onFocus === 'function') $$props.onFocus(event);
   }
 
   function onBlur(event) {
-    emit('blur', [event]);
+    dispatch('blur', [event]);
+    if (typeof $$props.onBlur === 'function') $$props.onBlur(event);
   }
 
   function onSubmit(event) {
-    emit('submit', [event]);
+    dispatch('submit', [event]);
+    if (typeof $$props.onSubmit === 'function') $$props.onSubmit(event);
   }
 
   function onClearButtonClick(event) {
-    emit('click:clear', [event]);
+    dispatch('click:clear', [event]);
   }
 
   function onDisableButtonClick(event) {
-    emit('click:disable', [event]);
+    dispatch('click:disable', [event]);
   }
 
   onMount(() => {
     if (!init) return;
-    f7ready(() => {
-      const params = noUndefinedProps({
+    f7.ready(() => {
+      const params = Utils.noUndefinedProps({
         el,
         inputEvents,
         searchContainer,
@@ -143,16 +144,20 @@
         inline,
         on: {
           search(searchbar, query, previousQuery) {
-            emit('searchbarSearch', [searchbar, query, previousQuery]);
+            dispatch('searchbarSearch', [searchbar, query, previousQuery]);
+            if (typeof $$props.onSearchbarSearch === 'function') $$props.onSearchbarSearch(searchbar, query, previousQuery);
           },
           clear(searchbar, previousQuery) {
-            emit('searchbarClear', [searchbar, previousQuery]);
+            dispatch('searchbarClear', [searchbar, previousQuery]);
+            if (typeof $$props.onSearchbarClear === 'function') $$props.onSearchbarClear(searchbar, previousQuery);
           },
           enable(searchbar) {
-            emit('searchbarEnable', [searchbar]);
+            dispatch('searchbarEnable', [searchbar]);
+            if (typeof $$props.onSearchbarEnable === 'function') $$props.onSearchbarEnable(searchbar);
           },
           disable(searchbar) {
-            emit('searchbarDisable', [searchbar]);
+            dispatch('searchbarDisable', [searchbar]);
+            if (typeof $$props.onSearchbarDisable === 'function') $$props.onSearchbarDisable(searchbar);
           },
         },
       });
@@ -161,38 +166,27 @@
           delete params[key];
         }
       });
-      f7Searchbar = app.f7.searchbar.create(params);
+      f7Searchbar = f7.instance.searchbar.create(params);
     });
   });
 
   onDestroy(() => {
     if (f7Searchbar && f7Searchbar.destroy) {
       f7Searchbar.destroy();
-      f7Searchbar = null;
     }
   });
 </script>
-
 {#if form}
-  <form
-    bind:this={el}
-    class={classes}
-    on:submit={onSubmit}
-    data-f7-slot={f7Slot}
-    {...restProps($$restProps)}
-  >
-    <slot searchbar={f7Searchbar} name="before-inner" />
+  <form bind:this={el} class={classes} on:submit={onSubmit} data-f7-slot={f7Slot} {...restProps($$restProps)}>
+    <slot name="before-inner" />
     <div class="searchbar-inner">
-      <slot searchbar={f7Searchbar} name="inner-start" />
+      <slot name="inner-start" />
       <div class="searchbar-input-wrap">
-        <slot searchbar={f7Searchbar} name="input-wrap-start" />
+        <slot name="input-wrap-start" />
         <input
           value={typeof value === 'undefined' ? '' : value}
-          {placeholder}
-          {autocomplete}
-          {autocorrect}
-          {autocapitalize}
-          {spellcheck}
+          placeholder={placeholder}
+          spellcheck={spellcheck}
           type="search"
           on:input={onInput}
           on:change={onChange}
@@ -200,33 +194,30 @@
           on:blur={onBlur}
         />
         <i class="searchbar-icon" />
-        {#if clearButton}<span on:click={onClearButtonClick} class="input-clear-button" />{/if}
-        <slot searchbar={f7Searchbar} name="input-wrap-end" />
+        {#if clearButton}
+          <span on:click={onClearButtonClick} class="input-clear-button" />
+        {/if}
+        <slot name="input-wrap-end" />
       </div>
       {#if disableButton}
-        <span on:click={onDisableButtonClick} class="searchbar-disable-button"
-          >{disableButtonText}</span
-        >
+        <span on:click={onDisableButtonClick} class="searchbar-disable-button">{disableButtonText}</span>
       {/if}
-      <slot searchbar={f7Searchbar} name="inner-end" />
-      <slot searchbar={f7Searchbar} />
+      <slot name="inner-end" />
+      <slot />
     </div>
-    <slot searchbar={f7Searchbar} name="after-inner" />
+    <slot name="after-inner" />
   </form>
 {:else}
   <div bind:this={el} class={classes} data-f7-slot={f7Slot} {...restProps($$restProps)}>
-    <slot searchbar={f7Searchbar} name="before-inner" />
+    <slot name="before-inner" />
     <div class="searchbar-inner">
-      <slot searchbar={f7Searchbar} name="inner-start" />
+      <slot name="inner-start" />
       <div class="searchbar-input-wrap">
-        <slot searchbar={f7Searchbar} name="input-wrap-start" />
+        <slot name="input-wrap-start" />
         <input
           value={typeof value === 'undefined' ? '' : value}
-          {placeholder}
-          {autocomplete}
-          {autocorrect}
-          {autocapitalize}
-          {spellcheck}
+          placeholder={placeholder}
+          spellcheck={spellcheck}
           type="search"
           on:input={onInput}
           on:change={onChange}
@@ -234,17 +225,17 @@
           on:blur={onBlur}
         />
         <i class="searchbar-icon" />
-        {#if clearButton}<span on:click={onClearButtonClick} class="input-clear-button" />{/if}
-        <slot searchbar={f7Searchbar} name="input-wrap-end" />
+        {#if clearButton}
+          <span on:click={onClearButtonClick} class="input-clear-button" />
+        {/if}
+        <slot name="input-wrap-end" />
       </div>
       {#if disableButton}
-        <span on:click={onDisableButtonClick} class="searchbar-disable-button"
-          >{disableButtonText}</span
-        >
+        <span on:click={onDisableButtonClick} class="searchbar-disable-button">{disableButtonText}</span>
       {/if}
-      <slot searchbar={f7Searchbar} name="inner-end" />
-      <slot searchbar={f7Searchbar} />
+      <slot name="inner-end" />
+      <slot />
     </div>
-    <slot searchbar={f7Searchbar} name="after-inner" />
+    <slot name="after-inner" />
   </div>
 {/if}

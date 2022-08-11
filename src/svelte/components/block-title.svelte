@@ -1,7 +1,7 @@
 <script>
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
 
   export let large = false;
   export let medium = false;
@@ -9,17 +9,20 @@
   let className = undefined;
   export { className as class };
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'block-title',
     {
       'block-title-large': large,
       'block-title-medium': medium,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 </script>
 
-<div class={classes} {...restProps($$restProps)}>
+<div
+  class={classes}
+  {...restProps($$restProps)}
+>
   <slot />
 </div>

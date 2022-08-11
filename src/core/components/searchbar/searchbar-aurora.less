@@ -1,42 +1,41 @@
 .aurora {
   .searchbar {
-    input[type='search'],
-    input[type='text'] {
+    input[type="search"], input[type="text"] {
       z-index: 30;
     }
     .input-clear-button {
       z-index: 40;
       .ltr({
-        right: 8px;
+        right: 4px;
       });
       .rtl({
-        left: 8px;
+        left: 4px;
       });
     }
   }
   .searchbar-icon {
-    width: 24px;
-    height: 24px;
+    width: 13px;
+    height: 13px;
     position: absolute;
     top: 50%;
-    margin-top: -12px;
+    margin-top: -6px;
     z-index: 40;
     &:after {
-      content: 'search_md';
-      line-height: 24px;
+      content: 'search_aurora';
+      line-height: 13px;
     }
     .ltr({
-      left: 5px;
+      left: 6px;
     });
     .rtl({
-      right: 5px;
+      right: 6px;
     });
   }
 
   .searchbar-disable-button {
     font-size: 14px;
     flex-shrink: 0;
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0,0,0);
     transition-duration: 300ms;
     color: var(--f7-searchbar-link-color, var(--f7-bars-link-color, var(--f7-theme-color)));
     display: none;
@@ -46,7 +45,7 @@
     }
   }
   .searchbar-enabled {
-    .searchbar-disable-button {
+    .searchbar-disable-button  {
       pointer-events: auto;
       opacity: 1;
       .ltr({ margin-left: 8px; });
@@ -66,7 +65,7 @@
     bottom: 0;
     opacity: 0;
     width: 100%;
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0,0,0);
     overflow: hidden;
     .searchbar-disable-button {
       .ltr({ margin-left: 8px; });
@@ -75,7 +74,7 @@
       display: block;
     }
     .searchbar-inner {
-      height: var(--f7-searchbar-expandable-size);
+      height: var(--f7-searchbar-expandable-size)
     }
   }
 
@@ -84,3 +83,4 @@
     pointer-events: auto;
   }
 }
+

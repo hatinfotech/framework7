@@ -1,23 +1,22 @@
-/** @jsx $jsx */
-import $jsx from '../../../shared/$jsx.js';
-
 export default {
   render(self) {
     const { hexLabel, hexLabelText, hexValueEditable } = self.params;
-    return (
+    return `
       <div class="color-picker-module color-picker-module-hex">
         <div class="color-picker-hex-wrap">
-          {hexLabel && <div class="color-picker-hex-label">{hexLabelText}</div>}
+          ${hexLabel ? `
+            <div class="color-picker-hex-label">${hexLabelText}</div>
+          ` : ''}
           <div class="color-picker-hex-value">
-            {hexValueEditable ? (
-              <input type="text" class="color-picker-value-hex" />
-            ) : (
+            ${hexValueEditable ? `
+              <input type="text" class="color-picker-value-hex">
+            ` : `
               <span class="color-picker-value-hex"></span>
-            )}
+            `}
           </div>
         </div>
       </div>
-    );
+    `;
   },
   init(self) {
     function handleInputChange(e) {
@@ -46,7 +45,9 @@ export default {
     };
   },
   update(self) {
-    const { value } = self;
+    const {
+      value,
+    } = self;
 
     const { hexValueEditable } = self.params;
 

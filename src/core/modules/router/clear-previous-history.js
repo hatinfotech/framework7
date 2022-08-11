@@ -1,18 +1,19 @@
-import $ from '../../shared/dom7.js';
-import appRouterCheck from './app-router-check.js';
+import $ from 'dom7';
+import appRouterCheck from './app-router-check';
 
 function clearPreviousPages(router) {
   appRouterCheck(router, 'clearPreviousPages');
   const app = router.app;
   const dynamicNavbar = router.dynamicNavbar;
 
-  const $pagesToRemove = router.$el.children('.page').filter((pageInView) => {
-    if (router.currentRoute && (router.currentRoute.modal || router.currentRoute.panel))
-      return true;
-    return pageInView !== router.currentPageEl;
-  });
+  const $pagesToRemove = router.$el
+    .children('.page')
+    .filter((index, pageInView) => {
+      if (router.currentRoute && (router.currentRoute.modal || router.currentRoute.panel)) return true;
+      return pageInView !== router.currentPageEl;
+    });
 
-  $pagesToRemove.each((pageEl) => {
+  $pagesToRemove.each((index, pageEl) => {
     const $oldPageEl = $(pageEl);
     const $oldNavbarEl = $(app.navbar.getElByPage($oldPageEl));
     if (router.params.stackPages && router.initialPages.indexOf($oldPageEl[0]) >= 0) {

@@ -1,9 +1,13 @@
 /* === Accordion === */
-@import './accordion-vars.less';
+@import url('./accordion-vars.less');
 
 :root {
   --f7-accordion-chevron-icon-down: 'chevron_down';
   --f7-accordion-chevron-icon-up: 'chevron_up';
+}
+.aurora {
+  --f7-accordion-chevron-icon-down: 'chevron_down_aurora';
+  --f7-accordion-chevron-icon-up: 'chevron_up_aurora';
 }
 .accordion-item-toggle {
   cursor: pointer;
@@ -35,17 +39,12 @@
   .item-link .item-inner:after {
     transition-duration: 300ms;
   }
-  .list,
-  .block {
+  .list, .block {
     margin-top: 0;
     margin-bottom: 0;
   }
   .block {
-    > h1,
-    > h2,
-    > h3,
-    > h4,
-    > p {
+    > h1, > h2, > h3, > h4, > p {
       &:first-child {
         margin-top: 10px;
       }
@@ -68,7 +67,7 @@
   });
   .rtl({
     padding-right: 0;
-  });
+  })
 }
 .accordion-item-content {
   position: relative;
@@ -111,7 +110,7 @@
   .accordion-item-toggle.item-link .item-inner,
   .accordion-item-toggle .item-inner,
   .accordion-item > .item-link > .item-inner,
-  .accordion-item > .item-link > .item-content > .item-inner {
+  .accordion-item > .item-link > .item-content > .item-inner  {
     .ltr({
       padding-right: calc(var(--f7-list-item-padding-horizontal) + var(--f7-safe-area-right));
     });
@@ -135,7 +134,7 @@
   .accordion-item-toggle.item-content,
   .accordion-item > .item-content,
   .accordion-item > .item-link > .item-content,
-  &.links-list .accordion-item > a {
+  &.links-list .accordion-item > a  {
     position: relative;
     .ltr({
       padding-left: calc(var(--f7-list-chevron-icon-area) + var(--f7-list-item-padding-horizontal) + var(--f7-safe-area-left));
@@ -208,11 +207,11 @@
 }
 
 .if-ios-theme({
-  @import './accordion-ios.less';
+  @import url('./accordion-ios.less');
 });
 .if-md-theme({
-  @import './accordion-md.less';
+  @import url('./accordion-md.less');
 });
 .if-aurora-theme({
-  @import './accordion-aurora.less';
+  @import url('./accordion-aurora.less');
 });

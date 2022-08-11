@@ -1,12 +1,10 @@
-import { getDocument } from 'ssr-window';
-import $ from '../../shared/dom7.js';
-import { bindMethods } from '../../shared/utils.js';
-import { getSupport } from '../../shared/get-support.js';
+import $ from 'dom7';
+import { document } from 'ssr-window';
+import Utils from '../../utils/utils';
 
 const Sortable = {
   init() {
     const app = this;
-    const document = getDocument();
     let isTouched;
     let isMoved;
     let touchStartY;
@@ -41,9 +39,7 @@ const Sortable = {
       if ($listGroup.length && $listGroup.parents($sortableContainer).length) {
         $sortableContainer = $listGroup;
       }
-      $sortingItems = $sortableContainer
-        .children('ul')
-        .children('li:not(.disallow-sorting):not(.no-sorting)');
+      $sortingItems = $sortableContainer.children('ul').children('li:not(.disallow-sorting):not(.no-sorting)');
       if (app.panel) app.panel.allowOpen = false;
       if (app.swipeout) app.swipeout.allow = false;
       if (isTapHold) {
@@ -84,10 +80,10 @@ const Sortable = {
 
       const scrollAddition = 44;
       let allowScroll = true;
-      if (touchesDiff + translateScrollOffset + scrollAddition < -minTop) {
+      if ((touchesDiff + translateScrollOffset) + scrollAddition < -minTop) {
         allowScroll = false;
       }
-      if (touchesDiff + translateScrollOffset - scrollAddition > maxTop) {
+      if ((touchesDiff + translateScrollOffset) - scrollAddition > maxTop) {
         allowScroll = false;
       }
 
@@ -96,65 +92,37 @@ const Sortable = {
 
       let scrollDiff;
       if (allowScroll) {
-        if (
-          sortingElOffsetTop + touchesDiff + sortingElHeight + scrollAddition >
-          pageOffset + pageHeight
-        ) {
+        if (sortingElOffsetTop + touchesDiff + sortingElHeight + scrollAddition > pageOffset + pageHeight) {
           // To Bottom
-          scrollDiff =
-            sortingElOffsetTop +
-            touchesDiff +
-            sortingElHeight +
-            scrollAddition -
-            (pageOffset + pageHeight);
+          scrollDiff = (sortingElOffsetTop + touchesDiff + sortingElHeight + scrollAddition) - (pageOffset + pageHeight);
         }
         if (sortingElOffsetTop + touchesDiff < pageOffset + scrollAddition) {
           // To Top
-          scrollDiff = sortingElOffsetTop + touchesDiff - pageOffset - scrollAddition;
+          scrollDiff = (sortingElOffsetTop + touchesDiff) - pageOffset - scrollAddition;
         }
         if (scrollDiff) {
           $pageContentEl[0].scrollTop += scrollDiff;
         }
       }
 
-      $sortingItems.each((el) => {
+      $sortingItems.each((index, el) => {
         const $currentEl = $(el);
         if ($currentEl[0] === $sortingEl[0]) return;
         const currentElOffset = $currentEl[0].offsetTop;
         const currentElHeight = $currentEl.height();
         const sortingElOffset = sortingElOffsetLocal + translate;
 
-        let currentTranslate;
-        const prevTranslate = $currentEl[0].f7Translate;
-
-        if (
-          sortingElOffset >= currentElOffset - currentElHeight / 2 &&
-          $sortingEl.index() < $currentEl.index()
-        ) {
-          currentTranslate = -sortingElHeight;
-          $currentEl.transform(`translate3d(0, ${currentTranslate}px,0)`);
+        if ((sortingElOffset >= currentElOffset - (currentElHeight / 2)) && $sortingEl.index() < $currentEl.index()) {
+          $currentEl.transform(`translate3d(0, ${-sortingElHeight}px,0)`);
           $insertAfterEl = $currentEl;
           $insertBeforeEl = undefined;
-        } else if (
-          sortingElOffset <= currentElOffset + currentElHeight / 2 &&
-          $sortingEl.index() > $currentEl.index()
-        ) {
-          currentTranslate = sortingElHeight;
-          $currentEl[0].f7Translate = currentTranslate;
-          $currentEl.transform(`translate3d(0, ${currentTranslate}px,0)`);
+        } else if ((sortingElOffset <= currentElOffset + (currentElHeight / 2)) && $sortingEl.index() > $currentEl.index()) {
+          $currentEl.transform(`translate3d(0, ${sortingElHeight}px,0)`);
           $insertAfterEl = undefined;
           if (!$insertBeforeEl) $insertBeforeEl = $currentEl;
         } else {
-          currentTranslate = undefined;
           $currentEl.transform('translate3d(0, 0%,0)');
         }
-
-        if (prevTranslate !== currentTranslate) {
-          $currentEl.trigger('sortable:move');
-          app.emit('sortableMove', $currentEl[0], $sortableContainer[0]);
-        }
-
-        $currentEl[0].f7Translate = currentTranslate;
       });
     }
     function handleTouchEnd() {
@@ -196,18 +164,17 @@ const Sortable = {
         }
       }
 
-      if (($insertAfterEl || $insertBeforeEl) && $sortableContainer.hasClass('virtual-list')) {
+      if (($insertAfterEl || $insertBeforeEl)
+         && $sortableContainer.hasClass('virtual-list')
+      ) {
         indexFrom = $sortingEl[0].f7VirtualListIndex;
-        if (typeof indexFrom === 'undefined')
-          indexFrom = $sortingEl.attr('data-virtual-list-index');
+        if (typeof indexFrom === 'undefined') indexFrom = $sortingEl.attr('data-virtual-list-index');
         if ($insertBeforeEl) {
           indexTo = $insertBeforeEl[0].f7VirtualListIndex;
-          if (typeof indexTo === 'undefined')
-            indexTo = $insertBeforeEl.attr('data-virtual-list-index');
+          if (typeof indexTo === 'undefined') indexTo = $insertBeforeEl.attr('data-virtual-list-index');
         } else {
           indexTo = $insertAfterEl[0].f7VirtualListIndex;
-          if (typeof indexTo === 'undefined')
-            indexTo = $insertAfterEl.attr('data-virtual-list-index');
+          if (typeof indexTo === 'undefined') indexTo = $insertAfterEl.attr('data-virtual-list-index');
         }
         if (indexTo !== null) indexTo = parseInt(indexTo, 10);
         else indexTo = undefined;
@@ -220,12 +187,7 @@ const Sortable = {
       }
       if (typeof indexTo !== 'undefined' && !Number.isNaN(indexTo) && indexTo !== indexFrom) {
         $sortingEl.trigger('sortable:sort', { from: indexFrom, to: indexTo });
-        app.emit(
-          'sortableSort',
-          $sortingEl[0],
-          { from: indexFrom, to: indexTo, el: $sortingEl[0] },
-          $sortableContainer[0],
-        );
+        app.emit('sortableSort', $sortingEl[0], { from: indexFrom, to: indexTo, el: $sortingEl[0] }, $sortableContainer[0]);
       }
 
       $insertBeforeEl = undefined;
@@ -234,16 +196,9 @@ const Sortable = {
       isMoved = false;
     }
 
-    const activeListener = getSupport().passiveListener
-      ? { passive: false, capture: false }
-      : false;
+    const activeListener = app.support.passiveListener ? { passive: false, capture: false } : false;
 
-    $(document).on(
-      app.touchEvents.start,
-      '.list.sortable .sortable-handler',
-      handleTouchStart,
-      activeListener,
-    );
+    $(document).on(app.touchEvents.start, '.list.sortable .sortable-handler', handleTouchStart, activeListener);
     app.on('touchmove:active', handleTouchMove);
     app.on('touchend:passive', handleTouchEnd);
 
@@ -287,8 +242,13 @@ export default {
   },
   create() {
     const app = this;
-    bindMethods(app, {
-      sortable: Sortable,
+    Utils.extend(app, {
+      sortable: {
+        init: Sortable.init.bind(app),
+        enable: Sortable.enable.bind(app),
+        disable: Sortable.disable.bind(app),
+        toggle: Sortable.toggle.bind(app),
+      },
     });
   },
   on: {

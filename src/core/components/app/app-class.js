@@ -1,67 +1,56 @@
-/* eslint-disable no-underscore-dangle */
-
-import { getWindow, getDocument } from 'ssr-window';
-import { extend, nextFrame } from '../../shared/utils.js';
-import { getDevice } from '../../shared/get-device.js';
-import { getSupport } from '../../shared/get-support.js';
-import Framework7Class from '../../shared/class.js';
-import EventsClass from '../../shared/events-class.js';
-import ConstructorMethods from '../../shared/constructor-methods.js';
-import ModalMethods from '../../shared/modal-methods.js';
-import $ from '../../shared/dom7.js';
-import loadModule from './load-module.js';
+import $ from 'dom7';
+import Template7 from 'template7';
+import { window, document } from 'ssr-window';
+import Utils from '../../utils/utils';
+import Device from '../../utils/device';
+import Framework7Class from '../../utils/class';
+import EventsClass from '../../utils/events-class';
+import ConstructorMethods from '../../utils/constructor-methods';
+import ModalMethods from '../../utils/modal-methods';
+import loadModule from './load-module';
 
 class Framework7 extends Framework7Class {
-  constructor(params = {}) {
+  constructor(params) {
     super(params);
-    // eslint-disable-next-line
-    if (Framework7.instance && typeof window !== 'undefined') {
-      throw new Error("Framework7 is already initialized and can't be initialized more than once");
+    if (Framework7.instance) {
+      throw new Error('Framework7 is already initialized and can\'t be initialized more than once');
     }
-    const device = getDevice({ userAgent: params.userAgent || undefined });
-    const support = getSupport();
 
-    const passedParams = extend({}, params);
+    const passedParams = Utils.extend({}, params);
 
     // App Instance
     const app = this;
-
-    app.device = device;
-    app.support = support;
-
-    const w = getWindow();
-    const d = getDocument();
 
     Framework7.instance = app;
 
     // Default
     const defaults = {
       version: '1.0.0',
-      id: 'io.framework7.myapp',
-      el: 'body',
+      id: 'io.framework7.testapp',
+      root: 'body',
       theme: 'auto',
-      language: w.navigator.language,
+      language: window.navigator.language,
       routes: [],
       name: 'Framework7',
       lazyModulesPath: null,
       initOnDeviceReady: true,
       init: true,
-      autoDarkMode: false,
+      autoDarkTheme: false,
       iosTranslucentBars: true,
       iosTranslucentModals: true,
       component: undefined,
       componentUrl: undefined,
-      userAgent: null,
-      url: null,
     };
 
     // Extend defaults with modules params
     app.useModulesParams(defaults);
 
     // Extend defaults with passed params
-    app.params = extend(defaults, params);
+    app.params = Utils.extend(defaults, params);
 
-    extend(app, {
+    const $rootEl = $(app.params.root);
+
+    Utils.extend(app, {
       // App Id
       id: app.params.id,
       // App Name
@@ -72,63 +61,36 @@ class Framework7 extends Framework7Class {
       routes: app.params.routes,
       // Lang
       language: app.params.language,
-
+      // Root
+      root: $rootEl,
+      // RTL
+      rtl: $rootEl.css('direction') === 'rtl',
       // Theme
       theme: (function getTheme() {
         if (app.params.theme === 'auto') {
-          if (device.ios) return 'ios';
-          if (device.desktop && device.electron) return 'aurora';
+          if (Device.ios) return 'ios';
+          if (Device.desktop && Device.electron) return 'aurora';
           return 'md';
         }
         return app.params.theme;
-      })(),
-
+      }()),
       // Initially passed parameters
       passedParams,
-      online: w.navigator.onLine,
+      online: window.navigator.onLine,
     });
 
-    if (params.store) app.params.store = params.store;
-
     // Save Root
-    if (app.$el && app.$el[0]) {
-      app.$el[0].f7 = app;
+    if (app.root && app.root[0]) {
+      app.root[0].f7 = app;
     }
 
     // Install Modules
     app.useModules();
 
-    // Init Store
-    app.initStore();
+    // Init Data & Methods
+    app.initData();
 
-    // Init
-    if (app.params.init) {
-      if (device.cordova && app.params.initOnDeviceReady) {
-        $(d).on('deviceready', () => {
-          app.init();
-        });
-      } else {
-        app.init();
-      }
-    }
-
-    // Return app instance
-    return app;
-  }
-
-  mount(rootEl) {
-    const app = this;
-    const window = getWindow();
-    const document = getDocument();
-    const $rootEl = $(rootEl || app.params.el).eq(0);
-    app.$el = $rootEl;
-    if (app.$el && app.$el[0]) {
-      app.el = app.$el[0];
-      app.el.f7 = app;
-      app.rtl = $rootEl.css('direction') === 'rtl';
-    }
-
-    // Auto Dark Mode
+    // Auto Dark Theme
     const DARK = '(prefers-color-scheme: dark)';
     const LIGHT = '(prefers-color-scheme: light)';
     app.mq = {};
@@ -142,30 +104,55 @@ class Framework7 extends Framework7Class {
       }
       const html = document.querySelector('html');
       if (media === DARK) {
-        html.classList.add('dark');
-        app.darkMode = true;
-        app.emit('darkModeChange', true);
+        html.classList.add('theme-dark');
+        app.darkTheme = true;
+        app.emit('darkThemeChange', true);
       } else if (media === LIGHT) {
-        html.classList.remove('dark');
-        app.darkMode = false;
-        app.emit('darkModeChange', false);
+        html.classList.remove('theme-dark');
+        app.darkTheme = false;
+        app.emit('darkThemeChange', false);
       }
     };
-    app.emit('mount');
+
+    // Init
+    if (app.params.init) {
+      if (Device.cordova && app.params.initOnDeviceReady) {
+        $(document).on('deviceready', () => {
+          app.init();
+        });
+      } else {
+        app.init();
+      }
+    }
+
+    // Return app instance
+    return app;
   }
 
-  initStore() {
+  initData() {
     const app = this;
-    if (typeof app.params.store !== 'undefined' && app.params.store.__store) {
-      app.store = app.params.store;
-    } else {
-      app.store = app.createStore(app.params.store);
+
+    // Data
+    app.data = {};
+    if (app.params.data && typeof app.params.data === 'function') {
+      Utils.extend(app.data, app.params.data.bind(app)());
+    } else if (app.params.data) {
+      Utils.extend(app.data, app.params.data);
+    }
+    // Methods
+    app.methods = {};
+    if (app.params.methods) {
+      Object.keys(app.params.methods).forEach((methodName) => {
+        if (typeof app.params.methods[methodName] === 'function') {
+          app.methods[methodName] = app.params.methods[methodName].bind(app);
+        } else {
+          app.methods[methodName] = app.params.methods[methodName];
+        }
+      });
     }
   }
 
-  enableAutoDarkMode() {
-    const window = getWindow();
-    const document = getDocument();
+  enableAutoDarkTheme() {
     if (!window.matchMedia) return;
     const app = this;
     const html = document.querySelector('html');
@@ -174,18 +161,17 @@ class Framework7 extends Framework7Class {
       app.mq.light.addListener(app.colorSchemeListener);
     }
     if (app.mq.dark && app.mq.dark.matches) {
-      html.classList.add('dark');
-      app.darkMode = true;
-      app.emit('darkModeChange', true);
+      html.classList.add('theme-dark');
+      app.darkTheme = true;
+      app.emit('darkThemeChange', true);
     } else if (app.mq.light && app.mq.light.matches) {
-      html.classList.remove('dark');
-      app.darkMode = false;
-      app.emit('darkModeChange', false);
+      html.classList.remove('theme-dark');
+      app.darkTheme = false;
+      app.emit('darkThemeChange', false);
     }
   }
 
-  disableAutoDarkMode() {
-    const window = getWindow();
+  disableAutoDarkTheme() {
     if (!window.matchMedia) return;
     const app = this;
     if (app.mq.dark) app.mq.dark.removeListener(app.colorSchemeListener);
@@ -197,82 +183,80 @@ class Framework7 extends Framework7Class {
     app.router.componentLoader(
       app.params.component,
       app.params.componentUrl,
-      { componentOptions: { el: app.$el[0] } },
+      { componentOptions: { el: app.root[0], root: true } },
       (el) => {
-        app.$el = $(el);
-        app.$el[0].f7 = app;
-        app.$elComponent = el.f7Component;
-        app.el = app.$el[0];
+        app.root = $(el);
+        app.root[0].f7 = app;
+        app.rootComponent = el.f7Component;
         if (callback) callback();
       },
-      () => {},
+      () => {}
     );
   }
 
-  init(rootEl) {
+  // eslint-disable-next-line
+  _init() {
     const app = this;
+    if (app.initialized) return app;
 
-    app.mount(rootEl);
+    app.root.addClass('framework7-initializing');
 
-    const init = () => {
-      if (app.initialized) return;
+    // RTL attr
+    if (app.rtl) {
+      $('html').attr('dir', 'rtl');
+    }
 
-      app.$el.addClass('framework7-initializing');
+    // Auto Dark Theme
+    if (app.params.autoDarkTheme) {
+      app.enableAutoDarkTheme();
+    }
 
-      // RTL attr
-      if (app.rtl) {
-        $('html').attr('dir', 'rtl');
-      }
+    // Watch for online/offline state
+    window.addEventListener('offline', () => {
+      app.online = false;
+      app.emit('offline');
+      app.emit('connection', false);
+    });
+    window.addEventListener('online', () => {
+      app.online = true;
+      app.emit('online');
+      app.emit('connection', true);
+    });
 
-      // Auto Dark Mode
-      if (app.params.autoDarkMode) {
-        app.enableAutoDarkMode();
-      }
+    // Root class
+    app.root.addClass('framework7-root');
 
-      // Watch for online/offline state
-      const window = getWindow();
-      window.addEventListener('offline', () => {
-        app.online = false;
-        app.emit('offline');
-        app.emit('connection', false);
-      });
-      window.addEventListener('online', () => {
-        app.online = true;
-        app.emit('online');
-        app.emit('connection', true);
-      });
+    // Theme class
+    $('html').removeClass('ios md aurora').addClass(app.theme);
 
-      // Root class
-      app.$el.addClass('framework7-root');
+    // iOS Translucent
+    if (app.params.iosTranslucentBars && app.theme === 'ios' && Device.ios) {
+      $('html').addClass('ios-translucent-bars');
+    }
+    if (app.params.iosTranslucentModals && app.theme === 'ios' && Device.ios) {
+      $('html').addClass('ios-translucent-modals');
+    }
 
-      // Theme class
-      $('html').removeClass('ios md aurora').addClass(app.theme);
+    // Init class
+    Utils.nextFrame(() => {
+      app.root.removeClass('framework7-initializing');
+    });
+    // Emit, init other modules
+    app.initialized = true;
+    app.emit('init');
 
-      // iOS Translucent
-      const device = app.device;
-      if (app.params.iosTranslucentBars && app.theme === 'ios' && device.ios) {
-        $('html').addClass('ios-translucent-bars');
-      }
-      if (app.params.iosTranslucentModals && app.theme === 'ios' && device.ios) {
-        $('html').addClass('ios-translucent-modals');
-      }
+    return app;
+  }
 
-      // Init class
-      nextFrame(() => {
-        app.$el.removeClass('framework7-initializing');
-      });
-      // Emit, init other modules
-      app.initialized = true;
-      app.emit('init');
-    };
+  init() {
+    const app = this;
     if (app.params.component || app.params.componentUrl) {
       app.initAppComponent(() => {
-        init();
+        app._init(); // eslint-disable-line
       });
     } else {
-      init();
+      app._init(); // eslint-disable-line
     }
-    return app;
   }
 
   // eslint-disable-next-line
@@ -295,6 +279,10 @@ class Framework7 extends Framework7Class {
   get $() {
     return $;
   }
+  // eslint-disable-next-line
+  get t7() {
+    return Template7;
+  }
 
   static get Dom7() {
     return $;
@@ -304,12 +292,8 @@ class Framework7 extends Framework7Class {
     return $;
   }
 
-  static get device() {
-    return getDevice();
-  }
-
-  static get support() {
-    return getSupport();
+  static get Template7() {
+    return Template7;
   }
 
   static get Class() {
@@ -326,7 +310,7 @@ Framework7.ConstructorMethods = ConstructorMethods;
 
 Framework7.loadModule = loadModule;
 Framework7.loadModules = function loadModules(modules) {
-  return Promise.all(modules.map((module) => Framework7.loadModule(module)));
+  return Promise.all(modules.map(module => Framework7.loadModule(module)));
 };
 
 export default Framework7;

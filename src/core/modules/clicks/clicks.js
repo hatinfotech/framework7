@@ -1,40 +1,30 @@
-import { getWindow } from 'ssr-window';
-import $ from '../../shared/dom7.js';
-import ViewClass from '../../components/view/view-class.js';
+import $ from 'dom7';
+import { window /* , document */ } from 'ssr-window';
+// import Device from '../../utils/device';
+// import Support from '../../utils/support';
+import ViewClass from '../../components/view/view-class';
 
 function initClicks(app) {
   function handleClicks(e) {
-    const window = getWindow();
     const $clickedEl = $(e.target);
     const $clickedLinkEl = $clickedEl.closest('a');
     const isLink = $clickedLinkEl.length > 0;
     const url = isLink && $clickedLinkEl.attr('href');
+    // const isTabLink = isLink && $clickedLinkEl.hasClass('tab-link') && ($clickedLinkEl.attr('data-tab') || (url && url.indexOf('#') === 0));
 
     // Check if link is external
     if (isLink) {
-      if (
-        $clickedLinkEl.is(app.params.clicks.externalLinks) ||
-        // eslint-disable-next-line
-        (url && url.indexOf('javascript:') >= 0)
-      ) {
+      // eslint-disable-next-line
+      if ($clickedLinkEl.is(app.params.clicks.externalLinks) || (url && url.indexOf('javascript:') >= 0)) {
         const target = $clickedLinkEl.attr('target');
         if (
-          url &&
-          window.cordova &&
-          window.cordova.InAppBrowser &&
-          (target === '_system' || target === '_blank')
+          url
+          && window.cordova
+          && window.cordova.InAppBrowser
+          && (target === '_system' || target === '_blank')
         ) {
           e.preventDefault();
           window.cordova.InAppBrowser.open(url, target);
-        } else if (
-          url &&
-          window.Capacitor &&
-          window.Capacitor.Plugins &&
-          window.Capacitor.Plugins.Browser &&
-          (target === '_system' || target === '_blank')
-        ) {
-          e.preventDefault();
-          window.Capacitor.Plugins.Browser.open({ url });
         }
         return;
       }
@@ -48,12 +38,7 @@ function initClicks(app) {
       Object.keys(moduleClicks).forEach((clickSelector) => {
         const matchingClickedElement = $clickedEl.closest(clickSelector).eq(0);
         if (matchingClickedElement.length > 0) {
-          moduleClicks[clickSelector].call(
-            app,
-            matchingClickedElement,
-            matchingClickedElement.dataset(),
-            e,
-          );
+          moduleClicks[clickSelector].call(app, matchingClickedElement, matchingClickedElement.dataset(), e);
         }
       });
     });
@@ -64,12 +49,10 @@ function initClicks(app) {
       e.preventDefault();
       clickedLinkData = $clickedLinkEl.dataset();
     }
-    clickedLinkData.clickedEl = $clickedLinkEl[0];
 
     // Prevent Router
     if (e.preventF7Router) return;
-    if ($clickedLinkEl.hasClass('prevent-router') || $clickedLinkEl.hasClass('router-prevent'))
-      return;
+    if ($clickedLinkEl.hasClass('prevent-router') || $clickedLinkEl.hasClass('router-prevent')) return;
 
     const validUrl = url && url.length > 0 && url[0] !== '#';
     if (validUrl || $clickedLinkEl.hasClass('back')) {
@@ -89,6 +72,13 @@ function initClicks(app) {
         if (app.views.main) view = app.views.main;
       }
       if (!view || !view.router) return;
+      if (clickedLinkData.context && typeof clickedLinkData.context === 'string') {
+        try {
+          clickedLinkData.context = JSON.parse(clickedLinkData.context);
+        } catch (err) {
+          // something wrong there
+        }
+      }
       if ($clickedLinkEl[0].f7RouteProps) {
         clickedLinkData.props = $clickedLinkEl[0].f7RouteProps;
       }

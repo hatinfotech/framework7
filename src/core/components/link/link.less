@@ -1,5 +1,5 @@
 /* === Link === */
-@import './link-vars.less';
+@import url('./link-vars.less');
 
 .link,
 .tab-link {
@@ -9,8 +9,8 @@
   justify-content: center;
   position: relative;
   box-sizing: border-box;
+  // transform: translate3d(0, 0, 0);
   z-index: 1;
-  --f7-touch-ripple-color: var(--f7-link-touch-ripple-color, rgba(var(--f7-theme-color-rgb), 0.25));
 }
 .link {
   i + span,
@@ -27,11 +27,11 @@
 }
 
 .if-ios-theme({
-  @import './link-ios.less';
+  @import url('./link-ios.less');
 });
 .if-md-theme({
-  @import './link-md.less';
+  @import url('./link-md.less');
 });
 .if-aurora-theme({
-  @import './link-aurora.less';
+  @import url('./link-aurora.less');
 });

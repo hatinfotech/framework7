@@ -1,4 +1,4 @@
-import History from '../../shared/history.js';
+import History from '../../utils/history';
 
 export default {
   name: 'history',

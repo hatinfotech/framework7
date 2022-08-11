@@ -1,20 +1,17 @@
-import $ from '../../shared/dom7.js';
-import { extend } from '../../shared/utils.js';
-import Popover from './popover-class.js';
-import ModalMethods from '../../shared/modal-methods.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
+import Popover from './popover-class';
+import ModalMethods from '../../utils/modal-methods';
 
 export default {
   name: 'popover',
   params: {
     popover: {
-      verticalPosition: 'auto',
       backdrop: true,
       backdropEl: undefined,
-      backdropUnique: false,
       closeByBackdropClick: true,
       closeByOutsideClick: true,
       closeOnEscape: false,
-      containerEl: null,
     },
   },
   static: {
@@ -22,7 +19,7 @@ export default {
   },
   create() {
     const app = this;
-    app.popover = extend(
+    app.popover = Utils.extend(
       ModalMethods({
         app,
         constructor: Popover,
@@ -35,7 +32,7 @@ export default {
             // check if same popover in other page
             const $targetPage = $(targetEl).parents('.page');
             if ($targetPage.length) {
-              $popoverEl.each((el) => {
+              $popoverEl.each((index, el) => {
                 const $el = $(el);
                 if ($el.parents($targetPage)[0] === $targetPage[0]) {
                   $popoverEl = $el;
@@ -49,20 +46,17 @@ export default {
           let popover = $popoverEl[0].f7Modal;
           const data = $popoverEl.dataset();
           if (!popover) {
-            popover = new Popover(
-              app,
-              Object.assign(
-                {
-                  el: $popoverEl,
-                  targetEl,
-                },
-                data,
-              ),
-            );
+            popover = new Popover(app, Object.assign(
+              {
+                el: $popoverEl,
+                targetEl,
+              },
+              data
+            ));
           }
           return popover.open(targetEl, animate);
         },
-      },
+      }
     );
   },
   clicks: {

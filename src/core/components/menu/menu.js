@@ -1,5 +1,4 @@
-import $ from '../../shared/dom7.js';
-import { bindMethods } from '../../shared/utils.js';
+import $ from 'dom7';
 
 const Menu = {
   open(el = '.menu-item-dropdown') {
@@ -11,7 +10,7 @@ const Menu = {
     if ($menuEl.length) {
       const zIndex = $menuEl.css('z-index');
       const originalZIndex = $menuEl[0].style.zIndex;
-      $menuEl.css('z-index', parseInt(zIndex || 0, 10) + 1);
+      $menuEl.css('z-index', parseInt(zIndex || 0, 0) + 1);
       $menuEl[0].f7MenuZIndex = originalZIndex;
     }
     $el.eq(0).addClass('menu-item-dropdown-opened').trigger('menu:opened');
@@ -37,16 +36,17 @@ export default {
   name: 'menu',
   create() {
     const app = this;
-    bindMethods(app, {
-      menu: Menu,
-    });
+    app.menu = {
+      open: Menu.open.bind(app),
+      close: Menu.close.bind(app),
+    };
   },
   on: {
     click(e) {
       const app = this;
       const openedMenus = $('.menu-item-dropdown-opened');
       if (!openedMenus.length) return;
-      openedMenus.each((el) => {
+      openedMenus.each((index, el) => {
         if (!$(e.target).closest('.menu-item-dropdown-opened').length) {
           app.menu.close(el);
         }

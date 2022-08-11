@@ -1,6 +1,6 @@
-import $ from '../../shared/dom7.js';
-import { extend } from '../../shared/utils.js';
-import Panel from './panel-class.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
+import Panel from './panel-class';
 
 export default {
   name: 'panel',
@@ -26,77 +26,85 @@ export default {
   static: {
     Panel,
   },
+  instance: {
+    panel: {
+      allowOpen: true,
+    },
+  },
   create() {
     const app = this;
-    extend(app, {
-      panel: {
-        allowOpen: true,
-        create(params) {
-          return new Panel(app, params);
-        },
-        get(el = '.panel') {
-          if (el instanceof Panel) return el;
-          if (el === 'left' || el === 'right') el = `.panel-${el}`; // eslint-disable-line
-          const $el = $(el);
-          if ($el.length === 0 || $el.length > 1) return undefined;
-          return $el[0].f7Panel;
-        },
-        destroy(el = '.panel') {
-          const panel = app.panel.get(el);
-          if (panel && panel.destroy) return panel.destroy();
-          return undefined;
-        },
-        open(el = '.panel', animate) {
-          if (el === 'left' || el === 'right') el = `.panel-${el}`; // eslint-disable-line
-          let panel = app.panel.get(el);
-          if (panel && panel.open) return panel.open(animate);
-          if (!panel) {
-            panel = app.panel.create({ el });
-            return panel.open(animate);
-          }
-          return undefined;
-        },
-        close(el = '.panel-in', animate) {
-          if (el === 'left' || el === 'right') el = `.panel-${el}`; // eslint-disable-line
-          let panel = app.panel.get(el);
-          if (panel && panel.open) return panel.close(animate);
-          if (!panel) {
-            panel = app.panel.create({ el });
-            return panel.close(animate);
-          }
-          return undefined;
-        },
-        toggle(el = '.panel', animate) {
-          if (el === 'left' || el === 'right') el = `.panel-${el}`; // eslint-disable-line
-          let panel = app.panel.get(el);
-          if (panel && panel.toggle) return panel.toggle(animate);
-          if (!panel) {
-            panel = app.panel.create({ el });
-            return panel.toggle(animate);
-          }
-          return undefined;
-        },
+    Utils.extend(app.panel, {
+      create(params) {
+        return new Panel(app, params);
+      },
+      get(el = '.panel') {
+        if (el instanceof Panel) return el;
+        if (el === 'left' || el === 'right') el = `.panel-${el}`; // eslint-disable-line
+        const $el = $(el);
+        if ($el.length === 0 || $el.length > 1) return undefined;
+        return $el[0].f7Panel;
+      },
+      destroy(el = '.panel') {
+        const panel = app.panel.get(el);
+        if (panel && panel.destroy) return panel.destroy();
+        return undefined;
+      },
+      open(el = '.panel', animate) {
+        if (el === 'left' || el === 'right') el = `.panel-${el}`; // eslint-disable-line
+        let panel = app.panel.get(el);
+        if (panel && panel.open) return panel.open(animate);
+        if (!panel) {
+          panel = app.panel.create({ el });
+          return panel.open(animate);
+        }
+        return undefined;
+      },
+      close(el = '.panel-in', animate) {
+        if (el === 'left' || el === 'right') el = `.panel-${el}`; // eslint-disable-line
+        let panel = app.panel.get(el);
+        if (panel && panel.open) return panel.close(animate);
+        if (!panel) {
+          panel = app.panel.create({ el });
+          return panel.close(animate);
+        }
+        return undefined;
+      },
+      toggle(el = '.panel', animate) {
+        if (el === 'left' || el === 'right') el = `.panel-${el}`; // eslint-disable-line
+        let panel = app.panel.get(el);
+        if (panel && panel.toggle) return panel.toggle(animate);
+        if (!panel) {
+          panel = app.panel.create({ el });
+          return panel.toggle(animate);
+        }
+        return undefined;
       },
     });
   },
   on: {
     init() {
       const app = this;
-      $('.panel-init').each((panelEl) => {
-        const params = Object.assign({ el: panelEl }, $(panelEl).dataset() || {});
+      $('.panel-init').each((index, panelEl) => {
+        const params = Object.assign(
+          { el: panelEl },
+          $(panelEl).dataset() || {}
+        );
         app.panel.create(params);
       });
     },
     pageInit(page) {
       const app = this;
-      page.$el.find('.panel-init').each((panelEl) => {
-        const params = Object.assign({ el: panelEl }, $(panelEl).dataset() || {});
+      page.$el.find('.panel-init').each((index, panelEl) => {
+        const params = Object.assign(
+          { el: panelEl },
+          $(panelEl).dataset() || {}
+        );
         app.panel.create(params);
       });
     },
     pageBeforeRemove(page) {
       const app = this;
-      page.$el.find('.panel-init').each((panelEl) => {
+      page.$el.find('.panel-init').each((index, panelEl) => {
         const panel = app.panel.get(panelEl);
         if (panel && panel.destroy) panel.destroy();
       });
@@ -107,7 +115,10 @@ export default {
       insert(vnode) {
         const app = this;
         const panelEl = vnode.elm;
-        const params = Object.assign({ el: panelEl }, $(panelEl).dataset() || {});
+        const params = Object.assign(
+          { el: panelEl },
+          $(panelEl).dataset() || {}
+        );
         app.panel.create(params);
       },
       destroy(vnode) {
@@ -141,7 +152,6 @@ export default {
         instance.emit('backdropClick', instance);
       }
       app.emit('panelBackdropClick', instance || $panelEl[0]);
-      if (instance && instance.params.closeByBackdropClick === false) return;
       if (app.params.panel.closeByBackdropClick) app.panel.close();
     },
   },

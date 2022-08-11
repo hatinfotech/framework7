@@ -1,4 +1,4 @@
-function processQueue(router, routerQueue, routeQueue, to, from, resolve, reject, direction) {
+function processQueue(router, routerQueue, routeQueue, to, from, resolve, reject) {
   const queue = [];
 
   if (Array.isArray(routeQueue)) {
@@ -21,24 +21,22 @@ function processQueue(router, routerQueue, routeQueue, to, from, resolve, reject
     }
     const queueItem = queue.shift();
 
-    queueItem.call(router, {
+    queueItem.call(
       router,
       to,
       from,
-      resolve() {
+      () => {
         next();
       },
-      reject() {
+      () => {
         reject();
-      },
-      direction,
-      app: router.app,
-    });
+      }
+    );
   }
   next();
 }
 
-export default function processRouteQueue(to, from, resolve, reject, direction) {
+export default function (to, from, resolve, reject) {
   const router = this;
   function enterNextRoute() {
     if (to && to.route && (router.params.routesBeforeEnter || to.route.beforeEnter)) {
@@ -56,7 +54,6 @@ export default function processRouteQueue(to, from, resolve, reject, direction) 
         () => {
           reject();
         },
-        direction,
       );
     } else {
       resolve();
@@ -78,7 +75,6 @@ export default function processRouteQueue(to, from, resolve, reject, direction) 
         () => {
           reject();
         },
-        direction,
       );
     } else {
       enterNextRoute();

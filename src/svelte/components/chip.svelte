@@ -1,15 +1,15 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
 
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, plainText, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { useTooltip } from '../shared/use-tooltip.js';
-  import { useIcon } from '../shared/use-icon.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import hasSlots from '../utils/has-slots';
+  import f7 from '../utils/f7';
 
-  import UseIcon from './use-icon.svelte';
+  import Icon from './icon.svelte';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -25,63 +25,112 @@
   export let tooltipTrigger = undefined;
 
   let el;
+  let f7Tooltip;
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'chip',
     {
       'chip-outline': outline,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
-  $: mediaClasses = classNames(
+  $: mediaClasses = Utils.classNames(
     'chip-media',
     mediaTextColor && `text-color-${mediaTextColor}`,
     mediaBgColor && `bg-color-${mediaBgColor}`,
   );
 
   // eslint-disable-next-line
-  $: hasMediaSlots = $$slots.media;
+  $: hasMediaSlots = hasSlots(arguments, 'media');
   // eslint-disable-next-line
-  $: hasTextSlots = $$slots.text;
+  $: hasTextSlots = hasSlots(arguments, 'text');
   // eslint-disable-next-line
-  $: hasDefaultSlots = $$slots.default;
+  $: hasDefaultSlots = hasSlots(arguments, 'default');
 
-  $: icon = useIcon($$props);
+  $: hasIcon = $$props.icon || $$props.iconMaterial || $$props.iconF7 || $$props.iconMd || $$props.iconIos || $$props.iconAurora;
+
+  let tooltipText = tooltip;
+  function watchTooltip(newText) {
+    const oldText = tooltipText;
+    if (oldText === newText) return;
+    tooltipText = newText;
+    if (!newText && f7Tooltip) {
+      f7Tooltip.destroy();
+      f7Tooltip = null;
+      return;
+    }
+    if (newText && !f7Tooltip && f7.instance) {
+      f7Tooltip = f7.instance.tooltip.create({
+        targetEl: el,
+        text: newText,
+        trigger: tooltipTrigger,
+      });
+      return;
+    }
+    if (!newText || !f7Tooltip) return;
+    f7Tooltip.setText(newText);
+  }
+  $: watchTooltip(tooltip);
+
+  onMount(() => {
+    if (!tooltip) return;
+    f7.ready(() => {
+      f7Tooltip = f7.instance.tooltip.create({
+        targetEl: el,
+        text: tooltip,
+        trigger: tooltipTrigger,
+      });
+    });
+  });
+
+  onDestroy(() => {
+    if (f7Tooltip && f7Tooltip.destroy) {
+      f7Tooltip.destroy();
+      f7Tooltip = null;
+    }
+  });
 
   function onClick(e) {
-    emit('click', [e]);
+    dispatch('click', [e]);
+    if (typeof $$props.onClick === 'function') $$props.onClick(e);
   }
   function onDeleteClick(e) {
-    emit('delete', [e]);
+    dispatch('delete', [e]);
+    if (typeof $$props.onDelete === 'function') $$props.onDelete(e);
   }
-</script>
 
+</script>
 <!-- svelte-ignore a11y-missing-attribute -->
 <!-- svelte-ignore a11y-missing-content -->
-<div
-  bind:this={el}
-  class={classes}
-  on:click={onClick}
-  {...restProps($$restProps)}
-  use:useTooltip={{ tooltip, tooltipTrigger }}
->
-  {#if media || hasMediaSlots || icon}
+<div bind:this={el} class={classes} on:click={onClick} {...restProps($$restProps)}>
+  {#if media || hasMediaSlots || hasIcon}
     <div class={mediaClasses}>
-      {#if icon}
-        <UseIcon {icon} />
+      {#if hasIcon}
+        <Icon
+          material={$$props.iconMaterial}
+          f7={$$props.iconF7}
+          icon={$$props.icon}
+          md={$$props.iconMd}
+          ios={$$props.iconIos}
+          aurora={$$props.iconAurora}
+          color={$$props.iconColor}
+          size={$$props.iconSize}
+        />
       {/if}
-      {plainText(media)}
+      {Utils.text(media)}
       <slot name="media" />
     </div>
   {/if}
   {#if text || hasTextSlots || hasDefaultSlots}
     <div class="chip-label">
-      {plainText(text)}
+      {Utils.text(text)}
       <slot name="text" />
       <slot />
     </div>
   {/if}
-  {#if deleteable}<a class="chip-delete" on:click={onDeleteClick} />{/if}
+  {#if deleteable}
+    <a class="chip-delete" on:click={onDeleteClick} />
+  {/if}
 </div>

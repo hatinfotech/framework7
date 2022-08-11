@@ -6,7 +6,7 @@
   }
   .dialog-title {
     + .dialog-text {
-      margin-top: 16px;
+      margin-top: 10px;
     }
   }
   .dialog-text {
@@ -21,12 +21,12 @@
   }
 
   .dialog-button {
-    border-radius: 8px;
+    border-radius: 4px;
     min-width: 64px;
     padding: 0 10px;
     border: none;
     transition-duration: 300ms;
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0,0,0);
     background: var(--f7-theme-color);
     &.dialog-button-bold {
       font-weight: 600;
@@ -48,33 +48,30 @@
     .dialog-buttons {
       display: flex;
       flex-direction: column;
-      align-items: stretch;
+      align-items: flex-end;
     }
     .dialog-button {
       margin-left: 0;
       flex-shrink: 0;
       + .dialog-button {
-        margin-top: 8px;
+        margin-top: 5px;
       }
     }
   }
 
   // Inputs
-  div.dialog-input-field {
-    margin-top: 16px;
+  .dialog-input-field {
+    margin-top: 10px;
     input.dialog-input {
       margin-top: 0;
     }
-    &.input:after {
-      display: none !important;
-    }
   }
   .dialog-input {
-    padding: 0 8px;
+    padding: 0 4px;
     transition-duration: 200ms;
     position: relative;
     + .dialog-input {
-      margin-top: 8px;
+      margin-top: 10px;
     }
   }
   .dialog-input-double {
@@ -88,17 +85,15 @@
   }
 
   // Preloader
-  .dialog-preloader,
-  .dialog-progress {
-    .dialog-title,
-    .dialog-inner {
+  .dialog-preloader, .dialog-progress {
+    .dialog-title, .dialog-inner {
       text-align: center;
     }
   }
   .dialog-preloader {
     .dialog-title ~ .preloader,
     .dialog-text ~ .preloader {
-      margin-top: 16px;
+      margin-top: 10px;
     }
   }
   .dialog-progress {
@@ -106,7 +101,7 @@
     .dialog-text ~ .progressbar,
     .dialog-title ~ .progressbar-infinite,
     .dialog-text ~ .progressbar-infinite {
-      margin-top: 16px;
+      margin-top: 15px;
     }
   }
 }

@@ -1,7 +1,7 @@
-import { getWindow } from 'ssr-window';
-import $ from '../../shared/dom7.js';
-import { bindMethods } from '../../shared/utils.js';
-import { getSupport } from '../../shared/get-support.js';
+import $ from 'dom7';
+import { window } from 'ssr-window';
+import Utils from '../../utils/utils';
+import Support from '../../utils/support';
 
 const Lazy = {
   destroy(pageEl) {
@@ -13,8 +13,6 @@ const Lazy = {
   },
   create(pageEl) {
     const app = this;
-    const window = getWindow();
-    const support = getSupport();
     const $pageEl = $(pageEl).closest('.page').eq(0);
 
     // Lazy images
@@ -25,9 +23,8 @@ const Lazy = {
     const placeholderSrc = app.params.lazy.placeholder;
 
     if (placeholderSrc !== false) {
-      $lazyLoadImages.each((lazyEl) => {
-        if ($(lazyEl).attr('data-src') && !$(lazyEl).attr('src'))
-          $(lazyEl).attr('src', placeholderSrc);
+      $lazyLoadImages.each((index, lazyEl) => {
+        if ($(lazyEl).attr('data-src') && !$(lazyEl).attr('src')) $(lazyEl).attr('src', placeholderSrc);
       });
     }
 
@@ -61,14 +58,14 @@ const Lazy = {
         }
       });
     }
-    if (app.params.lazy.observer && support.intersectionObserver) {
+    if (app.params.lazy.observer && Support.intersectionObserver) {
       let observer = $pageEl[0].f7LazyObserver;
       if (!observer) {
         observer = new window.IntersectionObserver(observerCallback, {
           root: $pageEl[0],
         });
       }
-      $lazyLoadImages.each((el) => {
+      $lazyLoadImages.each((index, el) => {
         if (el.f7LazyObserverAdded) return;
         el.f7LazyObserverAdded = true;
         observer.observe(el);
@@ -129,15 +126,14 @@ const Lazy = {
     const threshold = app.params.lazy.threshold || 0;
 
     return (
-      rect.top >= 0 - threshold &&
-      rect.left >= 0 - threshold &&
-      rect.top <= app.height + threshold &&
-      rect.left <= app.width + threshold
+      rect.top >= (0 - threshold)
+      && rect.left >= (0 - threshold)
+      && rect.top <= (app.height + threshold)
+      && rect.left <= (app.width + threshold)
     );
   },
   loadImage(imageEl, callback) {
     const app = this;
-    const window = getWindow();
     const $imageEl = $(imageEl);
 
     const bg = $imageEl.attr('data-background');
@@ -190,7 +186,7 @@ const Lazy = {
     if ($pageEl.length === 0) {
       return;
     }
-    $pageEl.find('.lazy').each((lazyEl) => {
+    $pageEl.find('.lazy').each((index, lazyEl) => {
       const $lazyEl = $(lazyEl);
       if ($lazyEl.parents('.tab:not(.tab-active)').length > 0) {
         return;
@@ -201,13 +197,13 @@ const Lazy = {
       }
     });
   },
+
 };
 export default {
   name: 'lazy',
   params: {
     lazy: {
-      placeholder:
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEXCwsK592mkAAAACklEQVQI12NgAAAAAgAB4iG8MwAAAABJRU5ErkJggg==',
+      placeholder: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEXCwsK592mkAAAACklEQVQI12NgAAAAAgAB4iG8MwAAAABJRU5ErkJggg==',
       threshold: 0,
       sequential: true,
       observer: true,
@@ -215,8 +211,14 @@ export default {
   },
   create() {
     const app = this;
-    bindMethods(app, {
-      lazy: Lazy,
+    Utils.extend(app, {
+      lazy: {
+        create: Lazy.create.bind(app),
+        destroy: Lazy.destroy.bind(app),
+        loadImage: Lazy.loadImage.bind(app),
+        load: Lazy.load.bind(app),
+        isInViewport: Lazy.isInViewport.bind(app),
+      },
     });
   },
   on: {
@@ -228,8 +230,7 @@ export default {
     },
     pageAfterIn(page) {
       const app = this;
-      const support = getSupport();
-      if (app.params.lazy.observer && support.intersectionObserver) return;
+      if (app.params.lazy.observer && Support.intersectionObserver) return;
       if (page.$el.find('.lazy').length > 0 || page.$el.hasClass('lazy')) {
         app.lazy.create(page.$el);
       }
@@ -249,8 +250,7 @@ export default {
     },
     tabBeforeRemove(tabEl) {
       const app = this;
-      const support = getSupport();
-      if (app.params.lazy.observer && support.intersectionObserver) return;
+      if (app.params.lazy.observer && Support.intersectionObserver) return;
       const $tabEl = $(tabEl);
       if ($tabEl.find('.lazy').length > 0 || $tabEl.hasClass('lazy')) {
         app.lazy.destroy($tabEl);

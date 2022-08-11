@@ -2,12 +2,16 @@ import React from 'react';
 import { Navbar, Page, Swiper, SwiperSlide } from 'framework7-react';
 
 export default () => (
+
   <Page>
     <Navbar title="Progress Pagination" backLink="Back"></Navbar>
     <Swiper
       className="demo-swiper"
-      pagination={{
-        type: 'progressbar',
+      pagination
+      params={{
+        pagination: {
+          type: 'progressbar',
+        }
       }}
     >
       <SwiperSlide>Slide 1</SwiperSlide>
@@ -22,4 +26,5 @@ export default () => (
       <SwiperSlide>Slide 10</SwiperSlide>
     </Swiper>
   </Page>
+
 );

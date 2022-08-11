@@ -1,13 +1,13 @@
-import $ from '../../shared/dom7.js';
-import { extend } from '../../shared/utils.js';
-import View from './view-class.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
+import View from './view-class';
 
 function getCurrentView(app) {
   const $popoverView = $('.popover.modal-in .view');
   const $popupView = $('.popup.modal-in .view');
   const $panelView = $('.panel.panel-in .view');
   let $viewsEl = $('.views');
-  if ($viewsEl.length === 0) $viewsEl = app.$el;
+  if ($viewsEl.length === 0) $viewsEl = app.root;
   // Find active view as tab
   let $viewEl = $viewsEl.children('.view');
   if ($viewEl.length === 0) {
@@ -41,8 +41,6 @@ export default {
   name: 'view',
   params: {
     view: {
-      init: true,
-      initRouterOnTabShow: false,
       name: undefined,
       main: false,
       router: true,
@@ -84,15 +82,12 @@ export default {
       auroraSwipeBackActiveArea: 30,
       auroraSwipeBackThreshold: 0,
       // Push State
-      browserHistory: false,
-      browserHistoryRoot: undefined,
-      browserHistoryAnimate: true,
-      browserHistoryAnimateOnLoad: false,
-      browserHistorySeparator: '#!',
-      browserHistoryOnLoad: true,
-      browserHistoryInitialMatch: false,
-      browserHistoryStoreHistory: true,
-      browserHistoryTabs: 'replace',
+      pushState: false,
+      pushStateRoot: undefined,
+      pushStateAnimate: true,
+      pushStateAnimateOnLoad: false,
+      pushStateSeparator: '#!',
+      pushStateOnLoad: true,
       // Animate Pages
       animate: true,
       // iOS Dynamic Navbar
@@ -113,8 +108,8 @@ export default {
   },
   create() {
     const app = this;
-    extend(app, {
-      views: extend([], {
+    Utils.extend(app, {
+      views: Utils.extend([], {
         create(el, params) {
           return new View(app, el, params);
         },
@@ -138,7 +133,7 @@ export default {
   on: {
     init() {
       const app = this;
-      $('.view-init').each((viewEl) => {
+      $('.view-init').each((index, viewEl) => {
         if (viewEl.f7View) return;
         const viewParams = $(viewEl).dataset();
         app.views.create(viewEl, viewParams);
@@ -146,7 +141,7 @@ export default {
     },
     'modalOpen panelOpen': function onOpen(instance) {
       const app = this;
-      instance.$el.find('.view-init').each((viewEl) => {
+      instance.$el.find('.view-init').each((index, viewEl) => {
         if (viewEl.f7View) return;
         const viewParams = $(viewEl).dataset();
         app.views.create(viewEl, viewParams);
@@ -154,7 +149,7 @@ export default {
     },
     'modalBeforeDestroy panelBeforeDestroy': function onClose(instance) {
       if (!instance || !instance.$el) return;
-      instance.$el.find('.view-init').each((viewEl) => {
+      instance.$el.find('.view-init').each((index, viewEl) => {
         const view = viewEl.f7View;
         if (!view) return;
         view.destroy();

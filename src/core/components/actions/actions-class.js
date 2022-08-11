@@ -1,24 +1,21 @@
 /* eslint indent: ["off"] */
-import { getWindow, getDocument } from 'ssr-window';
-import { getDevice } from '../../shared/get-device.js';
-import { extend, nextTick } from '../../shared/utils.js';
-import Modal from '../modal/modal-class.js';
-import $ from '../../shared/dom7.js';
-/** @jsx $jsx */
-import $jsx from '../../shared/$jsx.js';
+import $ from 'dom7';
+import { window, document } from 'ssr-window';
+import Utils from '../../utils/utils';
+import Modal from '../modal/modal-class';
 
 class Actions extends Modal {
   constructor(app, params) {
-    const extendedParams = extend({ on: {} }, app.params.actions, params);
+    const extendedParams = Utils.extend(
+      { on: {} },
+      app.params.actions,
+      params
+    );
 
     // Extends with open/close Modal methods;
     super(app, extendedParams);
 
     const actions = this;
-
-    const device = getDevice();
-    const window = getWindow();
-    const document = getDocument();
 
     actions.params = extendedParams;
 
@@ -35,9 +32,7 @@ class Actions extends Modal {
     if (actions.params.el) {
       $el = $(actions.params.el).eq(0);
     } else if (actions.params.content) {
-      $el = $(actions.params.content)
-        .filter((node) => node.nodeType === 1)
-        .eq(0);
+      $el = $(actions.params.content).filter((elIndex, node) => node.nodeType === 1).eq(0);
     } else if (actions.params.buttons) {
       if (actions.params.convertToPopover) {
         actions.popoverHtml = actions.renderPopover();
@@ -58,15 +53,10 @@ class Actions extends Modal {
     if (actions.params.backdrop && actions.params.backdropEl) {
       $backdropEl = $(actions.params.backdropEl);
     } else if (actions.params.backdrop) {
-      if (actions.params.backdropUnique) {
-        $backdropEl = $('<div class="popup-backdrop popup-backdrop-unique"></div>');
-        actions.$containerEl.append($backdropEl);
-      } else {
-        $backdropEl = actions.$containerEl.children('.actions-backdrop');
-      }
+      $backdropEl = app.root.children('.actions-backdrop');
       if ($backdropEl.length === 0) {
         $backdropEl = $('<div class="actions-backdrop"></div>');
-        actions.$containerEl.append($backdropEl);
+        app.root.append($backdropEl);
       }
     }
 
@@ -95,23 +85,19 @@ class Actions extends Modal {
     actions.open = function open(animate) {
       let convertToPopover = false;
       const { targetEl, targetX, targetY, targetWidth, targetHeight } = actions.params;
-      if (
-        actions.params.convertToPopover &&
-        (targetEl || (targetX !== undefined && targetY !== undefined))
-      ) {
+      if (actions.params.convertToPopover && (targetEl || (targetX !== undefined && targetY !== undefined))) {
         // Popover
         if (
-          actions.params.forceToPopover ||
-          (device.ios && device.ipad) ||
-          app.width >= 768 ||
-          (device.desktop && app.theme === 'aurora')
+          actions.params.forceToPopover
+          || (app.device.ios && app.device.ipad)
+          || app.width >= 768
+          || (app.device.desktop && app.theme === 'aurora')
         ) {
           convertToPopover = true;
         }
       }
       if (convertToPopover && actions.popoverHtml) {
         popover = app.popover.create({
-          containerEl: actions.params.containerEl,
           content: actions.popoverHtml,
           backdrop: actions.params.backdrop,
           targetEl,
@@ -152,15 +138,15 @@ class Actions extends Modal {
         });
         popover.open(animate);
         popover.once('popoverOpened', () => {
-          popover.$el.find('.list-button, .item-link').each((buttonEl) => {
+          popover.$el.find('.list-button, .item-link').each((groupIndex, buttonEl) => {
             $(buttonEl).on('click', buttonOnClick);
           });
         });
         popover.once('popoverClosed', () => {
-          popover.$el.find('.list-button, .item-link').each((buttonEl) => {
+          popover.$el.find('.list-button, .item-link').each((groupIndex, buttonEl) => {
             $(buttonEl).off('click', buttonOnClick);
           });
-          nextTick(() => {
+          Utils.nextTick(() => {
             popover.destroy();
             popover = undefined;
           });
@@ -169,11 +155,11 @@ class Actions extends Modal {
         actions.$el = actions.actionsHtml ? $(actions.actionsHtml) : actions.$el;
         actions.$el[0].f7Modal = actions;
         if (actions.groups) {
-          actions.$el.find('.actions-button').each((buttonEl) => {
+          actions.$el.find('.actions-button').each((groupIndex, buttonEl) => {
             $(buttonEl).on('click', buttonOnClick);
           });
           actions.once('actionsClosed', () => {
-            actions.$el.find('.actions-button').each((buttonEl) => {
+            actions.$el.find('.actions-button').each((groupIndex, buttonEl) => {
               $(buttonEl).off('click', buttonOnClick);
             });
           });
@@ -193,7 +179,7 @@ class Actions extends Modal {
       return actions;
     };
 
-    extend(actions, {
+    Utils.extend(actions, {
       app,
       $el,
       el: $el ? $el[0] : undefined,
@@ -205,20 +191,14 @@ class Actions extends Modal {
     function handleClick(e) {
       const target = e.target;
       const $target = $(target);
-      const keyboardOpened =
-        !device.desktop &&
-        device.cordova &&
-        ((window.Keyboard && window.Keyboard.isVisible) ||
-          (window.cordova.plugins &&
-            window.cordova.plugins.Keyboard &&
-            window.cordova.plugins.Keyboard.isVisible));
+      const keyboardOpened = !app.device.desktop && app.device.cordova && ((window.Keyboard && window.Keyboard.isVisible) || (window.cordova.plugins && window.cordova.plugins.Keyboard && window.cordova.plugins.Keyboard.isVisible));
       if (keyboardOpened) return;
       if ($target.closest(actions.el).length === 0) {
         if (
-          actions.params.closeByBackdropClick &&
-          actions.params.backdrop &&
-          actions.backdropEl &&
-          actions.backdropEl === target
+          actions.params.closeByBackdropClick
+          && actions.params.backdrop
+          && actions.backdropEl
+          && actions.backdropEl === target
         ) {
           actions.close();
         } else if (actions.params.closeByOutsideClick) {
@@ -266,11 +246,10 @@ class Actions extends Modal {
     if (actions.params.render) return actions.params.render.call(actions, actions);
     const { groups } = actions;
     const cssClass = actions.params.cssClass;
-    return (
-      <div class={`actions-modal${actions.params.grid ? ' actions-grid' : ''} ${cssClass || ''}`}>
-        {groups.map((group) => (
-          <div class="actions-group">
-            {group.map((button) => {
+    return `
+      <div class="actions-modal${actions.params.grid ? ' actions-grid' : ''} ${cssClass || ''}">
+        ${groups.map(group => `<div class="actions-group">
+            ${group.map((button) => {
               const buttonClasses = [`actions-${button.label ? 'label' : 'button'}`];
               const { color, bg, bold, disabled, label, text, icon } = button;
               if (color) buttonClasses.push(`color-${color}`);
@@ -278,19 +257,17 @@ class Actions extends Modal {
               if (bold) buttonClasses.push('actions-button-bold');
               if (disabled) buttonClasses.push('disabled');
               if (label) {
-                return <div class={buttonClasses.join(' ')}>{text}</div>;
+                return `<div class="${buttonClasses.join(' ')}">${text}</div>`;
               }
-              return (
-                <div class={buttonClasses.join(' ')}>
-                  {icon && <div class="actions-button-media">{icon}</div>}
-                  <div class="actions-button-text">{text}</div>
-                </div>
-              );
-            })}
-          </div>
-        ))}
+              return `
+                <div class="${buttonClasses.join(' ')}">
+                  ${icon ? `<div class="actions-button-media">${icon}</div>` : ''}
+                  <div class="actions-button-text">${text}</div>
+                </div>`.trim();
+            }).join('')}
+          </div>`).join('')}
       </div>
-    );
+    `.trim();
   }
 
   renderPopover() {
@@ -298,13 +275,13 @@ class Actions extends Modal {
     if (actions.params.renderPopover) return actions.params.renderPopover.call(actions, actions);
     const { groups } = actions;
     const cssClass = actions.params.cssClass;
-    return (
-      <div class={`popover popover-from-actions ${cssClass || ''}`}>
+    return `
+      <div class="popover popover-from-actions ${cssClass || ''}">
         <div class="popover-inner">
-          {groups.map((group) => (
+          ${groups.map(group => `
             <div class="list">
               <ul>
-                {group.map((button) => {
+                ${group.map((button) => {
                   const itemClasses = [];
                   const { color, bg, bold, disabled, label, text, icon } = button;
                   if (color) itemClasses.push(`color-${color}`);
@@ -317,30 +294,34 @@ class Actions extends Modal {
                   }
                   if (icon) {
                     itemClasses.push('item-link item-content');
-                    return (
+                    return `
                       <li>
-                        <a class={itemClasses.join(' ')}>
-                          <div class="item-media">{icon}</div>
+                        <a class="${itemClasses.join(' ')}">
+                          <div class="item-media">
+                            ${icon}
+                          </div>
                           <div class="item-inner">
-                            <div class="item-title">{text}</div>
+                            <div class="item-title">
+                              ${text}
+                            </div>
                           </div>
                         </a>
                       </li>
-                    );
+                    `;
                   }
                   itemClasses.push('list-button');
-                  return (
+                  return `
                     <li>
-                      <a class={itemClasses.join(' ')}>{text}</a>
+                      <a class="${itemClasses.join(' ')}">${text}</a>
                     </li>
-                  );
-                })}
+                  `;
+                }).join('')}
               </ul>
             </div>
-          ))}
+          `).join('')}
         </div>
       </div>
-    );
+    `.trim();
   }
 }
 

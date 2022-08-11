@@ -1,9 +1,9 @@
-import { VNode } from '../vnode.js';
+import { VNode } from '../vnode';
 export interface AttachData {
-  [key: string]: any;
-  [i: number]: any;
-  placeholder?: any;
-  real?: Node;
+    [key: string]: any;
+    [i: number]: any;
+    placeholder?: any;
+    real?: Node;
 }
-export declare function attachTo (target: Element, vnode: VNode): VNode;
+export declare function attachTo(target: Element, vnode: VNode): VNode;
 export default attachTo;

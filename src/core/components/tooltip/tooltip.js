@@ -1,6 +1,6 @@
-import $ from '../../shared/dom7.js';
-import Tooltip from './tooltip-class.js';
-import ConstructorMethods from '../../shared/constructor-methods.js';
+import $ from 'dom7';
+import Tooltip from './tooltip-class';
+import ConstructorMethods from '../../utils/constructor-methods';
 
 export default {
   name: 'tooltip',
@@ -43,48 +43,36 @@ export default {
   params: {
     tooltip: {
       targetEl: null,
-      delegated: false,
       text: null,
       cssClass: null,
       render: null,
       offset: 0,
       trigger: 'hover',
-      containerEl: undefined,
     },
   },
   on: {
     tabMounted(tabEl) {
       const app = this;
-      $(tabEl)
-        .find('.tooltip-init')
-        .each((el) => {
-          const text = $(el).attr('data-tooltip');
-          if (!text) return;
-          app.tooltip.create({ targetEl: el, text });
-        });
-    },
-    tabBeforeRemove(tabEl) {
-      $(tabEl)
-        .find('.tooltip-init')
-        .each((el) => {
-          if (el.f7Tooltip) el.f7Tooltip.destroy();
-        });
-    },
-    pageInit(page) {
-      const app = this;
-      page.$el.find('.tooltip-init').each((el) => {
+      $(tabEl).find('.tooltip-init').each((index, el) => {
         const text = $(el).attr('data-tooltip');
         if (!text) return;
         app.tooltip.create({ targetEl: el, text });
       });
-      if (
-        app.theme === 'ios' &&
-        page.view &&
-        page.view.router.dynamicNavbar &&
-        page.$navbarEl &&
-        page.$navbarEl.length > 0
-      ) {
-        page.$navbarEl.find('.tooltip-init').each((el) => {
+    },
+    tabBeforeRemove(tabEl) {
+      $(tabEl).find('.tooltip-init').each((index, el) => {
+        if (el.f7Tooltip) el.f7Tooltip.destroy();
+      });
+    },
+    pageInit(page) {
+      const app = this;
+      page.$el.find('.tooltip-init').each((index, el) => {
+        const text = $(el).attr('data-tooltip');
+        if (!text) return;
+        app.tooltip.create({ targetEl: el, text });
+      });
+      if (app.theme === 'ios' && page.view && page.view.router.dynamicNavbar && page.$navbarEl && page.$navbarEl.length > 0) {
+        page.$navbarEl.find('.tooltip-init').each((index, el) => {
           const text = $(el).attr('data-tooltip');
           if (!text) return;
           app.tooltip.create({ targetEl: el, text });
@@ -93,17 +81,11 @@ export default {
     },
     pageBeforeRemove(page) {
       const app = this;
-      page.$el.find('.tooltip-init').each((el) => {
+      page.$el.find('.tooltip-init').each((index, el) => {
         if (el.f7Tooltip) el.f7Tooltip.destroy();
       });
-      if (
-        app.theme === 'ios' &&
-        page.view &&
-        page.view.router.dynamicNavbar &&
-        page.$navbarEl &&
-        page.$navbarEl.length > 0
-      ) {
-        page.$navbarEl.find('.tooltip-init').each((el) => {
+      if (app.theme === 'ios' && page.view && page.view.router.dynamicNavbar && page.$navbarEl && page.$navbarEl.length > 0) {
+        page.$navbarEl.find('.tooltip-init').each((index, el) => {
           if (el.f7Tooltip) el.f7Tooltip.destroy();
         });
       }

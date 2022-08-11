@@ -5,10 +5,8 @@ import About from './pages/about.jsx';
 import Accordion from './pages/accordion.jsx';
 import ActionSheet from './pages/action-sheet.jsx';
 import Appbar from './pages/appbar.jsx';
-import AreaChart from './pages/area-chart.jsx';
 import Autocomplete from './pages/autocomplete.jsx';
 import Badge from './pages/badge.jsx';
-import Breadcrumbs from './pages/breadcrumbs.jsx';
 import Buttons from './pages/buttons.jsx';
 import Calendar from './pages/calendar.jsx';
 import CalendarPage from './pages/calendar-page.jsx';
@@ -36,7 +34,6 @@ import ListIndex from './pages/list-index.jsx';
 import LoginScreen from './pages/login-screen.jsx';
 import LoginScreenPage from './pages/login-screen-page.jsx';
 import Menu from './pages/menu.jsx';
-import MenuList from './pages/menu-list.jsx';
 import Messages from './pages/messages.jsx';
 import Navbar from './pages/navbar.jsx';
 import NavbarHideScroll from './pages/navbar-hide-scroll.jsx';
@@ -44,7 +41,6 @@ import Notifications from './pages/notifications.jsx';
 import Panel from './pages/panel.jsx';
 import PhotoBrowser from './pages/photo-browser.jsx';
 import Picker from './pages/picker.jsx';
-import PieChart from './pages/pie-chart.jsx';
 import Popup from './pages/popup.jsx';
 import Popover from './pages/popover.jsx';
 import Preloader from './pages/preloader.jsx';
@@ -113,7 +109,6 @@ import RoutableActions from './pages/routable-actions.jsx';
 import MasterDetailMaster from './pages/master-detail-master.jsx';
 import MasterDetailDetail from './pages/master-detail-detail.jsx';
 
-import Store from './pages/store.jsx';
 
 import NotFound from './pages/404.jsx';
 
@@ -123,10 +118,6 @@ export default [
   {
     path: '/',
     component: Home,
-    master(f7) {
-      console.log(f7.theme);
-      return f7.theme === 'aurora';
-    },
   },
   // About page
   {
@@ -208,20 +199,12 @@ export default [
     component: Appbar,
   },
   {
-    path: '/area-chart/',
-    component: AreaChart,
-  },
-  {
     path: '/autocomplete/',
     component: Autocomplete,
   },
   {
     path: '/badge/',
     component: Badge,
-  },
-  {
-    path: '/breadcrumbs/',
-    component: Breadcrumbs,
   },
   {
     path: '/buttons/',
@@ -332,10 +315,6 @@ export default [
     component: Menu,
   },
   {
-    path: '/menu-list/',
-    component: MenuList,
-  },
-  {
     path: '/messages/',
     component: Messages,
   },
@@ -362,10 +341,6 @@ export default [
   {
     path: '/picker/',
     component: Picker,
-  },
-  {
-    path: '/pie-chart/',
-    component: PieChart,
   },
   {
     path: '/popup/',
@@ -677,11 +652,6 @@ export default [
   {
     path: '/master-detail/:id/',
     component: MasterDetailDetail,
-  },
-
-  {
-    path: '/store/',
-    component: Store,
   },
   // Default route (404 page). MUST BE THE LAST
   {

@@ -1,13 +1,12 @@
 <script>
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, extend, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
-  import { useTab } from '../shared/use-tab.js';
-  import { setReactiveContext } from '../shared/set-reactive-context.js';
+  import { createEventDispatcher, onMount, onDestroy, setContext } from 'svelte';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
+  import hasSlots from '../utils/has-slots';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -31,7 +30,6 @@
   export let contactsList = false;
   export let simpleList = false;
   export let linksList = false;
-  export let menuList = false;
 
   export let noHairlines = false;
   export let noHairlinesBetween = false;
@@ -66,10 +64,15 @@
     return f7VirtualList;
   }
 
-  // eslint-disable-next-line
-  $: hasUlSlots = $$slots.default || $$slots.list;
+  setContext('f7ListMedia', mediaList);
+  setContext('f7ListSortable', sortable);
+  setContext('f7ListSortableOpposite', sortableOpposite);
+  setContext('f7ListSimple', simpleList);
 
-  $: classes = classNames(
+  // eslint-disable-next-line
+  $: hasUlSlots = hasSlots(arguments, 'default') || hasSlots(arguments, 'list');
+
+  $: classes = Utils.classNames(
     className,
     'list',
     {
@@ -82,7 +85,6 @@
       'media-list': mediaList,
       'simple-list': simpleList,
       'links-list': linksList,
-      'menu-list': menuList,
       sortable,
       'sortable-tap-hold': sortableTapHold,
       'sortable-enabled': sortableEnabled,
@@ -106,111 +108,111 @@
       'no-chevron': noChevron,
       'chevron-center': chevronCenter,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
-  setReactiveContext('ListContext', () => ({
-    listIsMedia: mediaList,
-    listIsSimple: simpleList,
-    listIsSortable: sortable,
-    listIsSortableOpposite: sortableOpposite,
-  }));
-
   function onSubmit(event) {
-    emit('submit', [event]);
+    dispatch('submit', [event]);
+    if (typeof $$props.onSubmit === 'function') $$props.onSubmit(event);
   }
   function onSortableEnable(sortableEl) {
     if (sortableEl !== el) return;
-    emit('sortableEnable');
+    dispatch('sortableEnable');
+    if (typeof $$props.onSortableEnable === 'function') $$props.onSortableEnable();
   }
   function onSortableDisable(sortableEl) {
     if (sortableEl !== el) return;
-    emit('sortableDisable');
+    dispatch('sortableDisable');
+    if (typeof $$props.onSortableDisable === 'function') $$props.onSortableDisable();
   }
   function onSortableSort(listItemEl, sortData, listEl) {
     if (listEl !== el) return;
-    emit('sortableSort', [sortData]);
+    dispatch('sortableSort', [sortData]);
+    if (typeof $$props.onSortableSort === 'function') $$props.onSortableSort(sortData);
   }
-  function onSortableMove(listItemEl, listEl) {
-    if (listEl !== el) return;
-    emit('sortableMove', [listItemEl, listEl]);
+  function onTabShow(tabEl) {
+    if (tabEl !== el) return;
+    dispatch('tabShow');
+    if (typeof $$props.onTabShow === 'function') $$props.onTabShow(tabEl);
   }
-
-  useTab(() => el, emit);
+  function onTabHide(tabEl) {
+    if (tabEl !== el) return;
+    dispatch('tabHide');
+    if (typeof $$props.onTabHide === 'function') $$props.onTabHide(tabEl);
+  }
 
   onMount(() => {
-    f7ready(() => {
-      app.f7.on('sortableEnable', onSortableEnable);
-      app.f7.on('sortableDisable', onSortableDisable);
-      app.f7.on('sortableSort', onSortableSort);
-      app.f7.on('sortableMove', onSortableMove);
+    f7.ready(() => {
+      f7.instance.on('sortableEnable', onSortableEnable);
+      f7.instance.on('sortableDisable', onSortableDisable);
+      f7.instance.on('sortableSort', onSortableSort);
+      f7.instance.on('tabShow', onTabShow);
+      f7.instance.on('tabHide', onTabHide);
 
       if (!virtualList) return;
       const vlParams = virtualListParams || {};
-      if (!vlParams.renderItem && !vlParams.renderExternal) return;
+      if (!vlParams.renderItem && !vlParams.itemTemplate && !vlParams.renderExternal) return;
 
-      f7VirtualList = app.f7.virtualList.create(
-        extend(
-          {
-            el,
-            on: {
-              itemBeforeInsert(itemEl, item) {
-                const vl = this;
-                emit('virtualItemBeforeInsert', [vl, itemEl, item]);
-              },
-              beforeClear(fragment) {
-                const vl = this;
-                emit('virtualBeforeClear', [vl, fragment]);
-              },
-              itemsBeforeInsert(fragment) {
-                const vl = this;
-                emit('virtualItemsBeforeInsert', [vl, fragment]);
-              },
-              itemsAfterInsert(fragment) {
-                const vl = this;
-                emit('virtualItemsAfterInsert', [vl, fragment]);
-              },
+      f7VirtualList = f7.instance.virtualList.create(Utils.extend(
+        {
+          el,
+          on: {
+            itemBeforeInsert(itemEl, item) {
+              const vl = this;
+              dispatch('virtualItemBeforeInsert', [vl, itemEl, item]);
+              if (typeof $$props.onVirtualItemBeforeInsert === 'function') $$props.onVirtualItemBeforeInsert(vl, itemEl, item);
+            },
+            beforeClear(fragment) {
+              const vl = this;
+              dispatch('virtualBeforeClear', [vl, fragment]);
+              if (typeof $$props.onVirtualBeforeClear === 'function') $$props.onVirtualBeforeClear(vl, fragment);
+            },
+            itemsBeforeInsert(fragment) {
+              const vl = this;
+              dispatch('virtualItemsBeforeInsert', [vl, fragment]);
+              if (typeof $$props.onVirtualItemsBeforeInsert === 'function') $$props.onVirtualItemsBeforeInsert(vl, fragment);
+            },
+            itemsAfterInsert(fragment) {
+              const vl = this;
+              dispatch('virtualItemsAfterInsert', [vl, fragment]);
+              if (typeof $$props.onVirtualItemsAfterInsert === 'function') $$props.onVirtualItemsAfterInsert(vl, fragment);
             },
           },
-          vlParams,
-        ),
-      );
+        },
+        vlParams,
+      ));
     });
   });
 
   onDestroy(() => {
-    if (!app.f7) return;
-    app.f7.off('sortableEnable', onSortableEnable);
-    app.f7.off('sortableDisable', onSortableDisable);
-    app.f7.off('sortableSort', onSortableSort);
-    app.f7.off('sortableMove', onSortableMove);
+    if (!f7.instance) return;
+    f7.instance.off('sortableEnable', onSortableEnable);
+    f7.instance.off('sortableDisable', onSortableDisable);
+    f7.instance.off('sortableSort', onSortableSort);
+    f7.instance.off('tabShow', onTabShow);
+    f7.instance.off('tabHide', onTabHide);
 
-    if (f7VirtualList && f7VirtualList.destroy) {
-      f7VirtualList.destroy();
-      f7VirtualList = null;
-    }
+    if (f7VirtualList && f7VirtualList.destroy) f7VirtualList.destroy();
   });
-</script>
 
+</script>
 <!-- svelte-ignore a11y-missing-attribute -->
 {#if form}
   <form
     bind:this={el}
     class={classes}
-    data-sortable-move-elements={typeof sortableMoveElements !== 'undefined'
-      ? sortableMoveElements.toString()
-      : undefined}
+    data-sortable-move-elements={typeof sortableMoveElements !== 'undefined' ? sortableMoveElements.toString() : undefined}
     on:submit={onSubmit}
     {...restProps($$restProps)}
   >
     <slot name="before-list" />
     {#if hasUlSlots && ul}
-      <ul>
-        <slot name="list" />
-        <slot />
-      </ul>
-    {:else}
+    <ul>
+      <slot name="list" />
       <slot />
+    </ul>
+    {:else}
+    <slot />
     {/if}
     <slot name="after-list" />
   </form>
@@ -218,19 +220,17 @@
   <div
     bind:this={el}
     class={classes}
-    data-sortable-move-elements={typeof sortableMoveElements !== 'undefined'
-      ? sortableMoveElements.toString()
-      : undefined}
+    data-sortable-move-elements={typeof sortableMoveElements !== 'undefined' ? sortableMoveElements.toString() : undefined}
     {...restProps($$restProps)}
   >
     <slot name="before-list" />
     {#if hasUlSlots && ul}
-      <ul>
-        <slot name="list" />
-        <slot />
-      </ul>
-    {:else}
+    <ul>
+      <slot name="list" />
       <slot />
+    </ul>
+    {:else}
+    <slot />
     {/if}
     <slot name="after-list" />
   </div>

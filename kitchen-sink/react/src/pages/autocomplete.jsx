@@ -1,55 +1,146 @@
-import React, { useRef } from 'react';
-import {
-  Navbar,
-  Page,
-  BlockTitle,
-  Subnavbar,
-  Searchbar,
-  Block,
-  List,
-  BlockHeader,
-  ListItem,
-  ListInput,
-  theme,
-  f7,
-} from 'framework7-react';
+import React from 'react';
+import { Navbar, Page, BlockTitle, Subnavbar, Searchbar, Block, List, BlockHeader, ListItem, ListInput } from 'framework7-react';
 
-export default () => {
-  const fruits = 'Apple Apricot Avocado Banana Melon Orange Peach Pear Pineapple'.split(' ');
+export default class extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      fruits: 'Apple Apricot Avocado Banana Melon Orange Peach Pear Pineapple'.split(' '),
+    };
+  }
+  render() {
+    return (
+      <Page onPageInit={this.onPageInit.bind(this)} onPageBeforeRemove={this.onPageBeforeRemove.bind(this)}>
+        <Navbar title="Autocomplete" backLink="Back">
+          <Subnavbar inner={false}>
+            <Searchbar init={false} id="searchbar-autocomplete" disableButton={!this.$theme.aurora}></Searchbar>
+          </Subnavbar>
+        </Navbar>
 
-  const autocompleteDropdownSimple = useRef(null);
-  const autocompleteDropdownExpand = useRef(null);
-  const autocompleteDropdownAll = useRef(null);
-  const autocompleteDropdownPlaceholder = useRef(null);
-  const autocompleteDropdownTypeahead = useRef(null);
-  const autocompleteDropdownAjax = useRef(null);
-  const autocompleteDropdownAjaxTypeahead = useRef(null);
-  const autocompleteStandaloneSimple = useRef(null);
-  const autocompleteStandalonePopup = useRef(null);
-  const autocompleteStandaloneMultiple = useRef(null);
-  const autocompleteStandaloneAjax = useRef(null);
-  const autocompleteSearchbar = useRef(null);
+        <BlockTitle>Dropdown Autocomplete</BlockTitle>
+        <Block>
+          <p>Dropdown autocomplete is good to use as a quick and simple solution to provide more options in addition to free-type value.</p>
+        </Block>
+        <List noHairlinesMd>
+          <BlockHeader>Simple Dropdown Autocomplete</BlockHeader>
+          <ListInput
+            label="Fruit"
+            inlineLabel
+            type="text"
+            placeholder="Fruit"
+            inputId="autocomplete-dropdown"
+          />
+        </List>
 
-  const onPageBeforeRemove = () => {
+        <List noHairlinesMd>
+          <BlockHeader>Dropdown With Input Expand</BlockHeader>
+          <ListInput
+            label="Fruit"
+            inlineLabel
+            type="text"
+            placeholder="Fruit"
+            inputId="autocomplete-dropdown-expand"
+          />
+        </List>
+        <List noHairlinesMd>
+          <BlockHeader>Dropdown With All Values</BlockHeader>
+          <ListInput
+            label="Fruit"
+            type="text"
+            placeholder="Fruit"
+            inputId="autocomplete-dropdown-all"
+          />
+        </List>
+        <List noHairlinesMd>
+          <BlockHeader>Dropdown With Placeholder</BlockHeader>
+          <ListInput
+            label="Fruit"
+            type="text"
+            placeholder="Fruit"
+            inputId="autocomplete-dropdown-placeholder"
+          />
+        </List>
+        <List noHairlinesMd>
+          <BlockHeader>Dropdown With Typeahead</BlockHeader>
+          <ListInput
+            label="Fruit"
+            type="text"
+            placeholder="Fruit"
+            inputId="autocomplete-dropdown-typeahead"
+          />
+        </List>
+        <List noHairlinesMd>
+          <BlockHeader>Dropdown With Ajax-Data</BlockHeader>
+          <ListInput
+            label="Language"
+            type="text"
+            placeholder="Language"
+            inputId="autocomplete-dropdown-ajax"
+          />
+        </List>
+        <List noHairlinesMd>
+          <BlockHeader>Dropdown With Ajax-Data + Typeahead</BlockHeader>
+          <ListInput
+            label="Language"
+            type="text"
+            placeholder="Language"
+            inputId="autocomplete-dropdown-ajax-typeahead"
+          />
+        </List>
+        <BlockTitle>Standalone Autocomplete</BlockTitle>
+        <Block>
+          <p>Standalone autocomplete provides better mobile UX by opening it in a new page or popup. Good to use when you need to get strict values without allowing free-type values.</p>
+        </Block>
+        <List>
+          <BlockHeader>Simple Standalone Autocomplete</BlockHeader>
+          <ListItem link="#" id="autocomplete-standalone" title="Favorite Fruite" after=" ">
+            <input type="hidden"/>
+          </ListItem>
+        </List>
+        <List>
+          <BlockHeader>Popup Autocomplete</BlockHeader>
+          <ListItem link="#" id="autocomplete-standalone-popup" title="Favorite Fruite" after=" ">
+            <input type="hidden"/>
+          </ListItem>
+        </List>
+        <List>
+          <BlockHeader>Multiple Values</BlockHeader>
+          <ListItem link="#" id="autocomplete-standalone-multiple" title="Favorite Fruite" after=" ">
+            <input type="hidden"/>
+          </ListItem>
+        </List>
+        <List>
+          <BlockHeader>With Ajax-Data</BlockHeader>
+          <ListItem link="#" id="autocomplete-standalone-ajax" title="Language" after=" ">
+            <input type="hidden"/>
+          </ListItem>
+        </List>
+      </Page>
+    );
+  }
+  onPageBeforeRemove() {
+    const self = this;
     // Destroy all autocompletes
-    autocompleteDropdownSimple.current.destroy();
-    autocompleteDropdownExpand.current.destroy();
-    autocompleteDropdownAll.current.destroy();
-    autocompleteDropdownPlaceholder.current.destroy();
-    autocompleteDropdownTypeahead.current.destroy();
-    autocompleteDropdownAjax.current.destroy();
-    autocompleteDropdownAjaxTypeahead.current.destroy();
-    autocompleteStandaloneSimple.current.destroy();
-    autocompleteStandalonePopup.current.destroy();
-    autocompleteStandaloneMultiple.current.destroy();
-    autocompleteStandaloneAjax.current.destroy();
-    autocompleteSearchbar.current.destroy();
-  };
-  const onPageInit = () => {
-    const $ = f7.$;
+    self.autocompleteDropdownSimple.destroy();
+    self.autocompleteDropdownExpand.destroy();
+    self.autocompleteDropdownAll.destroy();
+    self.autocompleteDropdownPlaceholder.destroy();
+    self.autocompleteDropdownTypeahead.destroy();
+    self.autocompleteDropdownAjax.destroy();
+    self.autocompleteDropdownAjaxTypeahead.destroy();
+    self.autocompleteStandaloneSimple.destroy();
+    self.autocompleteStandalonePopup.destroy();
+    self.autocompleteStandaloneMultiple.destroy();
+    self.autocompleteStandaloneAjax.destroy();
+  }
+  onPageInit() {
+    const self = this;
+    const app = self.$f7;
+    const fruits = self.state.fruits;
+    const $ = self.$$;
 
     // Simple Dropdown
-    autocompleteDropdownSimple.current = f7.autocomplete.create({
+    self.autocompleteDropdownSimple = app.autocomplete.create({
       inputEl: '#autocomplete-dropdown',
       openIn: 'dropdown',
       source(query, render) {
@@ -68,7 +159,7 @@ export default () => {
     });
 
     // Dropdown with input expand
-    autocompleteDropdownExpand.current = f7.autocomplete.create({
+    self.autocompleteDropdownExpand = app.autocomplete.create({
       inputEl: '#autocomplete-dropdown-expand',
       openIn: 'dropdown',
       expandInput: true, // expand input
@@ -88,7 +179,7 @@ export default () => {
     });
 
     // Dropdown with all values
-    autocompleteDropdownAll.current = f7.autocomplete.create({
+    self.autocompleteDropdownAll = app.autocomplete.create({
       inputEl: '#autocomplete-dropdown-all',
       openIn: 'dropdown',
       source(query, render) {
@@ -103,7 +194,7 @@ export default () => {
     });
 
     // Dropdown with placeholder
-    autocompleteDropdownPlaceholder.current = f7.autocomplete.create({
+    self.autocompleteDropdownPlaceholder = app.autocomplete.create({
       inputEl: '#autocomplete-dropdown-placeholder',
       openIn: 'dropdown',
       dropdownPlaceholderText: 'Try to type "Apple"',
@@ -123,7 +214,7 @@ export default () => {
     });
 
     // Dropdown with typeahead
-    autocompleteDropdownTypeahead.current = f7.autocomplete.create({
+    self.autocompleteDropdownTypeahead = app.autocomplete.create({
       inputEl: '#autocomplete-dropdown-typeahead',
       openIn: 'dropdown',
       dropdownPlaceholderText: 'Try to type "Pineapple"',
@@ -144,7 +235,7 @@ export default () => {
     });
 
     // Dropdown with ajax data
-    autocompleteDropdownAjax.current = f7.autocomplete.create({
+    self.autocompleteDropdownAjax = app.autocomplete.create({
       inputEl: '#autocomplete-dropdown-ajax',
       openIn: 'dropdown',
       preloader: true, // enable preloader
@@ -164,8 +255,8 @@ export default () => {
         autocomplete.preloaderShow();
 
         // Do Ajax request to Autocomplete data
-        f7.request({
-          url: './autocomplete-languages.json',
+        app.request({
+          url: './js/autocomplete-languages.json',
           method: 'GET',
           dataType: 'json',
           // send "query" to server. Useful in case you generate response dynamically
@@ -173,10 +264,9 @@ export default () => {
             query,
           },
           success(data) {
-            // Find matched items
+          // Find matched items
             for (let i = 0; i < data.length; i += 1) {
-              if (data[i].name.toLowerCase().indexOf(query.toLowerCase()) >= 0)
-                results.push(data[i]);
+              if (data[i].name.toLowerCase().indexOf(query.toLowerCase()) >= 0) results.push(data[i]);
             }
             // Hide Preoloader
             autocomplete.preloaderHide();
@@ -188,7 +278,7 @@ export default () => {
     });
 
     // Dropdown with ajax data
-    autocompleteDropdownAjaxTypeahead.current = f7.autocomplete.create({
+    self.autocompleteDropdownAjaxTypeahead = app.autocomplete.create({
       inputEl: '#autocomplete-dropdown-ajax-typeahead',
       openIn: 'dropdown',
       preloader: true, // enable preloader
@@ -209,8 +299,8 @@ export default () => {
         autocomplete.preloaderShow();
 
         // Do Ajax request to Autocomplete data
-        f7.request({
-          url: './autocomplete-languages.json',
+        app.request({
+          url: './js/autocomplete-languages.json',
           method: 'GET',
           dataType: 'json',
           // send "query" to server. Useful in case you generate response dynamically
@@ -218,10 +308,9 @@ export default () => {
             query,
           },
           success(data) {
-            // Find matched items
+          // Find matched items
             for (let i = 0; i < data.length; i += 1) {
-              if (data[i].name.toLowerCase().indexOf(query.toLowerCase()) === 0)
-                results.push(data[i]);
+              if (data[i].name.toLowerCase().indexOf(query.toLowerCase()) === 0) results.push(data[i]);
             }
             // Hide Preoloader
             autocomplete.preloaderHide();
@@ -233,7 +322,7 @@ export default () => {
     });
 
     // Simple Standalone
-    autocompleteStandaloneSimple.current = f7.autocomplete.create({
+    self.autocompleteStandaloneSimple = app.autocomplete.create({
       openIn: 'page', // open in page
       openerEl: '#autocomplete-standalone a', // link that opens autocomplete
       closeOnSelect: true, // go back after we select something
@@ -261,7 +350,7 @@ export default () => {
     });
 
     // Standalone Popup
-    autocompleteStandalonePopup.current = f7.autocomplete.create({
+    self.autocompleteStandalonePopup = app.autocomplete.create({
       openIn: 'popup', // open in page
       openerEl: '#autocomplete-standalone-popup a', // link that opens autocomplete
       closeOnSelect: true, // go back after we select something
@@ -289,7 +378,7 @@ export default () => {
     });
 
     // Multiple Standalone
-    autocompleteStandaloneMultiple.current = f7.autocomplete.create({
+    self.autocompleteStandaloneMultiple = app.autocomplete.create({
       openIn: 'page', // open in page
       openerEl: '#autocomplete-standalone-multiple a', // link that opens autocomplete
       multiple: true, // allow multiple values
@@ -317,7 +406,7 @@ export default () => {
     });
 
     // Standalone With Ajax
-    autocompleteStandaloneAjax.current = f7.autocomplete.create({
+    self.autocompleteStandaloneAjax = app.autocomplete.create({
       openIn: 'page', // open in page
       openerEl: '#autocomplete-standalone-ajax a', // link that opens autocomplete
       multiple: true, // allow multiple values
@@ -335,8 +424,8 @@ export default () => {
         // Show Preloader
         autocomplete.preloaderShow();
         // Do Ajax request to Autocomplete data
-        f7.request({
-          url: './autocomplete-languages.json',
+        app.request({
+          url: './js/autocomplete-languages.json',
           method: 'GET',
           dataType: 'json',
           // send "query" to server. Useful in case you generate response dynamically
@@ -344,10 +433,9 @@ export default () => {
             query,
           },
           success(data) {
-            // Find matched items
+          // Find matched items
             for (let i = 0; i < data.length; i += 1) {
-              if (data[i].name.toLowerCase().indexOf(query.toLowerCase()) >= 0)
-                results.push(data[i]);
+              if (data[i].name.toLowerCase().indexOf(query.toLowerCase()) >= 0) results.push(data[i]);
             }
             // Hide Preoloader
             autocomplete.preloaderHide();
@@ -373,7 +461,7 @@ export default () => {
     });
 
     // Searchbar Autocomplete
-    autocompleteSearchbar.current = f7.autocomplete.create({
+    self.autocompleteSearchbar = app.autocomplete.create({
       openIn: 'dropdown',
       inputEl: '#searchbar-autocomplete input[type="search"]',
       dropdownPlaceholderText: 'Type "Apple"',
@@ -391,7 +479,7 @@ export default () => {
         render(results);
       },
     });
-    self.searchbar = f7.searchbar.create({
+    self.searchbar = app.searchbar.create({
       el: '#searchbar-autocomplete',
       customSearch: true,
       on: {
@@ -400,120 +488,5 @@ export default () => {
         },
       },
     });
-  };
-
-  return (
-    <Page onPageInit={onPageInit} onPageBeforeRemove={onPageBeforeRemove}>
-      <Navbar title="Autocomplete" backLink="Back">
-        <Subnavbar inner={false}>
-          <Searchbar init={false} id="searchbar-autocomplete" disableButton={!theme.aurora} />
-        </Subnavbar>
-      </Navbar>
-
-      <BlockTitle>Dropdown Autocomplete</BlockTitle>
-      <Block>
-        <p>
-          Dropdown autocomplete is good to use as a quick and simple solution to provide more
-          options in addition to free-type value.
-        </p>
-      </Block>
-      <List noHairlinesMd>
-        <BlockHeader>Simple Dropdown Autocomplete</BlockHeader>
-        <ListInput
-          label="Fruit"
-          inlineLabel
-          type="text"
-          placeholder="Fruit"
-          inputId="autocomplete-dropdown"
-        />
-      </List>
-
-      <List noHairlinesMd>
-        <BlockHeader>Dropdown With Input Expand</BlockHeader>
-        <ListInput
-          label="Fruit"
-          inlineLabel
-          type="text"
-          placeholder="Fruit"
-          inputId="autocomplete-dropdown-expand"
-        />
-      </List>
-      <List noHairlinesMd>
-        <BlockHeader>Dropdown With All Values</BlockHeader>
-        <ListInput
-          label="Fruit"
-          type="text"
-          placeholder="Fruit"
-          inputId="autocomplete-dropdown-all"
-        />
-      </List>
-      <List noHairlinesMd>
-        <BlockHeader>Dropdown With Placeholder</BlockHeader>
-        <ListInput
-          label="Fruit"
-          type="text"
-          placeholder="Fruit"
-          inputId="autocomplete-dropdown-placeholder"
-        />
-      </List>
-      <List noHairlinesMd>
-        <BlockHeader>Dropdown With Typeahead</BlockHeader>
-        <ListInput
-          label="Fruit"
-          type="text"
-          placeholder="Fruit"
-          inputId="autocomplete-dropdown-typeahead"
-        />
-      </List>
-      <List noHairlinesMd>
-        <BlockHeader>Dropdown With Ajax-Data</BlockHeader>
-        <ListInput
-          label="Language"
-          type="text"
-          placeholder="Language"
-          inputId="autocomplete-dropdown-ajax"
-        />
-      </List>
-      <List noHairlinesMd>
-        <BlockHeader>Dropdown With Ajax-Data + Typeahead</BlockHeader>
-        <ListInput
-          label="Language"
-          type="text"
-          placeholder="Language"
-          inputId="autocomplete-dropdown-ajax-typeahead"
-        />
-      </List>
-      <BlockTitle>Standalone Autocomplete</BlockTitle>
-      <Block>
-        <p>
-          Standalone autocomplete provides better mobile UX by opening it in a new page or popup.
-          Good to use when you need to get strict values without allowing free-type values.
-        </p>
-      </Block>
-      <List>
-        <BlockHeader>Simple Standalone Autocomplete</BlockHeader>
-        <ListItem link="#" id="autocomplete-standalone" title="Favorite Fruite" after=" ">
-          <input type="hidden" />
-        </ListItem>
-      </List>
-      <List>
-        <BlockHeader>Popup Autocomplete</BlockHeader>
-        <ListItem link="#" id="autocomplete-standalone-popup" title="Favorite Fruite" after=" ">
-          <input type="hidden" />
-        </ListItem>
-      </List>
-      <List>
-        <BlockHeader>Multiple Values</BlockHeader>
-        <ListItem link="#" id="autocomplete-standalone-multiple" title="Favorite Fruite" after=" ">
-          <input type="hidden" />
-        </ListItem>
-      </List>
-      <List>
-        <BlockHeader>With Ajax-Data</BlockHeader>
-        <ListItem link="#" id="autocomplete-standalone-ajax" title="Language" after=" ">
-          <input type="hidden" />
-        </ListItem>
-      </List>
-    </Page>
-  );
+  }
 };

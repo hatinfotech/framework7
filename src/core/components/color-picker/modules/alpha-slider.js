@@ -1,26 +1,25 @@
-/** @jsx $jsx */
-import $jsx from '../../../shared/$jsx.js';
-
 export default {
   render(self) {
     const { sliderLabel, sliderValue, sliderValueEditable, alphaLabelText } = self.params;
-    return (
+    return `
       <div class="color-picker-module color-picker-module-alpha-slider">
         <div class="color-picker-slider-wrap">
-          {sliderLabel && <div class="color-picker-slider-label">{alphaLabelText}</div>}
+          ${sliderLabel ? `
+            <div class="color-picker-slider-label">${alphaLabelText}</div>
+          ` : ''}
           <div class="range-slider color-picker-slider color-picker-slider-alpha"></div>
-          {sliderValue && (
+          ${sliderValue ? `
             <div class="color-picker-slider-value">
-              {sliderValueEditable ? (
-                <input type="number" step="0.01" min="0" max="1" class="color-picker-value-alpha" />
-              ) : (
+              ${sliderValueEditable ? `
+                <input type="number" step="0.01" min="0" max="1" class="color-picker-value-alpha">
+              ` : `
                 <span class="color-picker-value-alpha"></span>
-              )}
+              `}
             </div>
-          )}
+          ` : ''}
         </div>
       </div>
-    );
+    `;
   },
   init(self) {
     self.alphaRangeSlider = self.app.range.create({
@@ -54,7 +53,9 @@ export default {
     };
   },
   update(self) {
-    const { value } = self;
+    const {
+      value,
+    } = self;
     const { sliderValue, sliderValueEditable } = self.params;
 
     const { alpha } = value;

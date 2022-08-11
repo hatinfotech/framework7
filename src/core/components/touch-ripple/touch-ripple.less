@@ -1,5 +1,5 @@
 /* === Touch Ripple === */
-@import './touch-ripple-vars.less';
+@import url('./touch-ripple-vars.less');
 // Ripple Elements
 .ripple,
 .fab a,
@@ -23,16 +23,20 @@
   position: absolute !important;
   border-radius: 50%;
   pointer-events: none;
-  z-index: -1;
+  z-index:-1;
   padding: 0;
   margin: 0;
   font-size: 0;
   transform: translate3d(0px, 0px, 0) scale(0);
+  transition-duration: 1400ms;
   background-color: var(--f7-touch-ripple-color);
-  animation: touch-ripple-in 200ms forwards;
+  &.ripple-wave-fill {
+    transition-duration: 300ms;
+    opacity: 0.35;
+  }
   &.ripple-wave-out {
-    transform: var(--f7-ripple-transform);
-    animation: touch-ripple-out 300ms forwards;
+    transition-duration: 600ms;
+    opacity: 0;
   }
   .button-fill &,
   .picker-calendar-day &,
@@ -48,32 +52,15 @@
   }
 }
 
-[class*='ripple-color-'] {
+[class*="ripple-color-"] {
   --f7-touch-ripple-color: var(--f7-theme-color-ripple-color);
 }
-
-@keyframes touch-ripple-in {
-  from {
-    transform: translate3d(0px, 0px, 0) scale(0);
-  }
-  to {
-    transform: var(--f7-ripple-transform);
-  }
-}
-@keyframes touch-ripple-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
 .if-ios-theme({
-  @import './touch-ripple-ios.less';
+  @import url('./touch-ripple-ios.less');
 });
 .if-md-theme({
-  @import './touch-ripple-md.less';
+  @import url('./touch-ripple-md.less');
 });
 .if-aurora-theme({
-  @import './touch-ripple-aurora.less';
+  @import url('./touch-ripple-aurora.less');
 });

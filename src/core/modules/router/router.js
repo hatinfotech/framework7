@@ -1,4 +1,4 @@
-import Router from './router-class.js';
+import Router from './router-class';
 
 export default {
   name: 'router',

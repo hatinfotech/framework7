@@ -1,6 +1,7 @@
 .md {
   --f7-ptr-top: -4px;
   .ptr-preloader {
+
     width: var(--f7-ptr-size);
     border-radius: 50%;
     background: #fff;
@@ -17,8 +18,9 @@
       margin-right: calc(-1 * var(--f7-ptr-size) / 2);
     });
     .preloader {
-      circle {
-        stroke-width: 4;
+      .preloader-inner-gap,
+      .preloader-inner-half-circle {
+        border-width: 3px;
       }
     }
   }
@@ -52,10 +54,10 @@
     }
   }
   .ptr-content:not(.ptr-refreshing):not(.ptr-pull-up) {
-    .ptr-preloader .preloader,
-    .ptr-preloader .preloader-inner,
-    .ptr-preloader circle {
-      animation: none;
+    .ptr-preloader .preloader {
+      &, * {
+        animation: none;
+      }
     }
   }
   .ptr-refreshing,

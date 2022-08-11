@@ -1,12 +1,3 @@
-// Demo
-if (window.parent && window !== window.parent) {
-  const html = document.documentElement;
-  if (html) {
-    html.style.setProperty('--f7-safe-area-top', '44px');
-    html.style.setProperty('--f7-safe-area-bottom', '34px');
-  }
-}
-
 // Dom7
 var $ = Dom7;
 
@@ -19,11 +10,21 @@ if (document.location.search.indexOf('theme=') >= 0) {
 // Init App
 var app = new Framework7({
   id: 'io.framework7.testapp',
-  el: '#app',
-  theme,
-  // store.js,
-  store: store,
-  // routes.js,
+  root: '#app',
+  theme: theme,
+  data: function () {
+    return {
+      user: {
+        firstName: 'John',
+        lastName: 'Doe',
+      },
+    };
+  },
+  methods: {
+    helloWorld: function () {
+      app.dialog.alert('Hello World!');
+    },
+  },
   routes: routes,
   popup: {
     closeOnEscape: true,

@@ -1,65 +1,60 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
-  import { modalStateClasses } from '../shared/modal-state-classes.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
 
   export let opened = undefined;
-  export let animate = undefined;
-  export let targetEl = undefined;
+  export let target = undefined;
   export let backdrop = undefined;
   export let backdropEl = undefined;
   export let closeByBackdropClick = undefined;
   export let closeByOutsideClick = undefined;
   export let closeOnEscape = undefined;
-  export let containerEl = undefined;
-  export let verticalPosition = undefined;
 
   let el;
   let f7Popover;
-
-  const state = {
-    isOpened: opened,
-    isClosing: false,
-  };
 
   export function instance() {
     return f7Popover;
   }
 
-  $: classes = classNames(className, 'popover', modalStateClasses(state), colorClasses($$props));
+  export function open(anim) {
+    if (!f7Popover) return undefined;
+    return f7Popover.open(anim);
+  }
+  export function close(anim) {
+    if (!f7Popover) return undefined;
+    return f7Popover.close(anim);
+  }
+
+  $: classes = Utils.classNames(
+    className,
+    'popover',
+    Mixins.colorClasses($$props),
+  );
 
   function onOpen(instance) {
-    Object.assign(state, {
-      isOpened: true,
-      isClosing: false,
-    });
-    emit('popoverOpen', [instance]);
-    opened = true;
+    dispatch('popoverOpen', [instance]);
+    if (typeof $$props.onPopoverOpen === 'function') $$props.onPopoverOpen(instance);
   }
   function onOpened(instance) {
-    emit('popoverOpened', [instance]);
+    dispatch('popoverOpened', [instance]);
+    if (typeof $$props.onPopoverOpened === 'function') $$props.onPopoverOpened(instance);
   }
   function onClose(instance) {
-    Object.assign(state, {
-      isOpened: false,
-      isClosing: true,
-    });
-    emit('popoverClose', [instance]);
+    dispatch('popoverClose', [instance]);
+    if (typeof $$props.onPopoverClose === 'function') $$props.onPopoverClose(instance);
   }
   function onClosed(instance) {
-    Object.assign(state, {
-      isClosing: false,
-    });
-    emit('popoverClosed', [instance]);
-    opened = false;
+    dispatch('popoverClosed', [instance]);
+    if (typeof $$props.onPopoverClosed === 'function') $$props.onPopoverClosed(instance);
   }
 
   let initialWatched = false;
@@ -85,36 +80,34 @@
         closed: onClosed,
       },
     };
-    if (targetEl) params.targetEl = targetEl;
+    if (target) params.targetEl = target;
 
-    if (typeof animate !== 'undefined') params.animate = animate;
-    if (typeof closeByBackdropClick !== 'undefined')
-      params.closeByBackdropClick = closeByBackdropClick;
-    if (typeof closeByOutsideClick !== 'undefined')
-      params.closeByOutsideClick = closeByOutsideClick;
+    if (typeof closeByBackdropClick !== 'undefined') params.closeByBackdropClick = closeByBackdropClick;
+    if (typeof closeByOutsideClick !== 'undefined') params.closeByOutsideClick = closeByOutsideClick;
     if (typeof closeOnEscape !== 'undefined') params.closeOnEscape = closeOnEscape;
     if (typeof backdrop !== 'undefined') params.backdrop = backdrop;
     if (typeof backdropEl !== 'undefined') params.backdropEl = backdropEl;
-    if (typeof containerEl !== 'undefined') params.containerEl = containerEl;
-    if (typeof verticalPosition !== 'undefined') params.verticalPosition = verticalPosition;
 
-    f7ready(() => {
-      f7Popover = app.f7.popover.create(params);
+    f7.ready(() => {
+      f7Popover = f7.instance.popover.create(params);
       if (opened) {
-        f7Popover.open(targetEl, false);
+        f7Popover.open(false);
       }
     });
   });
 
   onDestroy(() => {
     if (f7Popover) f7Popover.destroy();
-    f7Popover = null;
+    f7Popover = undefined;
   });
 </script>
-
-<div class={classes} bind:this={el} {...restProps($$restProps)}>
+<div
+  class={classes}
+  bind:this={el}
+  {...restProps($$restProps)}
+>
   <div class="popover-angle" />
   <div class="popover-inner">
-    <slot popover={f7Popover} />
+    <slot />
   </div>
 </div>

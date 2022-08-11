@@ -1,7 +1,3 @@
-<script>
-  import { Actions, ActionsLabel, ActionsGroup, ActionsButton } from 'framework7-svelte';
-</script>
-
 <Actions>
   <ActionsGroup>
     <ActionsLabel>This Action Sheet was loaded as standalone component</ActionsLabel>
@@ -12,3 +8,6 @@
     <ActionsButton color="red">Cancel</ActionsButton>
   </ActionsGroup>
 </Actions>
+<script>
+  import { Actions, ActionsLabel, ActionsGroup, ActionsButton } from 'framework7-svelte';
+</script>

@@ -6,10 +6,8 @@ import About from './pages/about.svelte';
 import Accordion from './pages/accordion.svelte';
 import ActionSheet from './pages/action-sheet.svelte';
 import Appbar from './pages/appbar.svelte';
-import AreaChart from './pages/area-chart.svelte';
 import Autocomplete from './pages/autocomplete.svelte';
 import Badge from './pages/badge.svelte';
-import Breadcrumbs from './pages/breadcrumbs.svelte';
 import Buttons from './pages/buttons.svelte';
 import Calendar from './pages/calendar.svelte';
 import CalendarPage from './pages/calendar-page.svelte';
@@ -37,7 +35,6 @@ import ListIndex from './pages/list-index.svelte';
 import LoginScreen from './pages/login-screen.svelte';
 import LoginScreenPage from './pages/login-screen-page.svelte';
 import Menu from './pages/menu.svelte';
-import MenuList from './pages/menu-list.svelte';
 import Messages from './pages/messages.svelte';
 import Navbar from './pages/navbar.svelte';
 import NavbarHideScroll from './pages/navbar-hide-scroll.svelte';
@@ -45,7 +42,6 @@ import Notifications from './pages/notifications.svelte';
 import Panel from './pages/panel.svelte';
 import PhotoBrowser from './pages/photo-browser.svelte';
 import Picker from './pages/picker.svelte';
-import PieChart from './pages/pie-chart.svelte';
 import Popup from './pages/popup.svelte';
 import Popover from './pages/popover.svelte';
 import Preloader from './pages/preloader.svelte';
@@ -114,8 +110,6 @@ import RoutableActions from './pages/routable-actions.svelte';
 import MasterDetailMaster from './pages/master-detail-master.svelte';
 import MasterDetailDetail from './pages/master-detail-detail.svelte';
 
-import Store from './pages/store.svelte';
-
 import NotFound from './pages/404.svelte';
 
 // Pages
@@ -124,9 +118,6 @@ export default [
   {
     path: '/',
     component: Home,
-    master(f7) {
-      return f7.theme === 'aurora';
-    },
   },
   // About page
   {
@@ -209,20 +200,12 @@ export default [
     component: Appbar,
   },
   {
-    path: '/area-chart/',
-    component: AreaChart,
-  },
-  {
     path: '/autocomplete/',
     component: Autocomplete,
   },
   {
     path: '/badge/',
     component: Badge,
-  },
-  {
-    path: '/breadcrumbs/',
-    component: Breadcrumbs,
   },
   {
     path: '/buttons/',
@@ -333,10 +316,6 @@ export default [
     component: Menu,
   },
   {
-    path: '/menu-list/',
-    component: MenuList,
-  },
-  {
     path: '/messages/',
     component: Messages,
   },
@@ -363,10 +342,6 @@ export default [
   {
     path: '/picker/',
     component: Picker,
-  },
-  {
-    path: '/pie-chart/',
-    component: PieChart,
   },
   {
     path: '/popup/',
@@ -679,11 +654,7 @@ export default [
         path: '/master-detail/:id/',
         component: MasterDetailDetail,
       },
-    ],
-  },
-  {
-    path: '/store/',
-    component: Store,
+    ]
   },
 
   // Default route (404 page). MUST BE THE LAST

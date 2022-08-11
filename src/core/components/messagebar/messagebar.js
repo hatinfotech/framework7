@@ -1,7 +1,7 @@
-import $ from '../../shared/dom7.js';
-import { extend } from '../../shared/utils.js';
-import Messagebar from './messagebar-class.js';
-import ConstructorMethods from '../../shared/constructor-methods.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
+import Messagebar from './messagebar-class';
+import ConstructorMethods from '../../utils/constructor-methods';
 
 export default {
   name: 'messagebar',
@@ -15,39 +15,32 @@ export default {
       constructor: Messagebar,
       app,
       domProp: 'f7Messagebar',
-      addMethods:
-        'clear getValue setValue setPlaceholder resizePage focus blur attachmentsCreate attachmentsShow attachmentsHide attachmentsToggle renderAttachments sheetCreate sheetShow sheetHide sheetToggle'.split(
-          ' ',
-        ),
+      addMethods: 'clear getValue setValue setPlaceholder resizePage focus blur attachmentsCreate attachmentsShow attachmentsHide attachmentsToggle renderAttachments sheetCreate sheetShow sheetHide sheetToggle'.split(' '),
     });
   },
   on: {
     tabBeforeRemove(tabEl) {
       const app = this;
-      $(tabEl)
-        .find('.messagebar-init')
-        .each((messagebarEl) => {
-          app.messagebar.destroy(messagebarEl);
-        });
+      $(tabEl).find('.messagebar-init').each((index, messagebarEl) => {
+        app.messagebar.destroy(messagebarEl);
+      });
     },
     tabMounted(tabEl) {
       const app = this;
-      $(tabEl)
-        .find('.messagebar-init')
-        .each((messagebarEl) => {
-          app.messagebar.create(extend({ el: messagebarEl }, $(messagebarEl).dataset()));
-        });
+      $(tabEl).find('.messagebar-init').each((index, messagebarEl) => {
+        app.messagebar.create(Utils.extend({ el: messagebarEl }, $(messagebarEl).dataset()));
+      });
     },
     pageBeforeRemove(page) {
       const app = this;
-      page.$el.find('.messagebar-init').each((messagebarEl) => {
+      page.$el.find('.messagebar-init').each((index, messagebarEl) => {
         app.messagebar.destroy(messagebarEl);
       });
     },
     pageInit(page) {
       const app = this;
-      page.$el.find('.messagebar-init').each((messagebarEl) => {
-        app.messagebar.create(extend({ el: messagebarEl }, $(messagebarEl).dataset()));
+      page.$el.find('.messagebar-init').each((index, messagebarEl) => {
+        app.messagebar.create(Utils.extend({ el: messagebarEl }, $(messagebarEl).dataset()));
       });
     },
   },
@@ -56,7 +49,7 @@ export default {
       insert(vnode) {
         const app = this;
         const messagebarEl = vnode.elm;
-        app.messagebar.create(extend({ el: messagebarEl }, $(messagebarEl).dataset()));
+        app.messagebar.create(Utils.extend({ el: messagebarEl }, $(messagebarEl).dataset()));
       },
       destroy(vnode) {
         const app = this;

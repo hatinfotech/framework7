@@ -1,11 +1,11 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { useTab } from '../shared/use-tab.js';
+  import { onMount, onDestroy, createEventDispatcher } from 'svelte';
+  import f7 from '../utils/f7';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   export let inset = false;
   export let xsmallInset = false;
@@ -29,7 +29,18 @@
 
   let el;
 
-  $: classes = classNames(
+  function onTabShow(tabEl) {
+    if (el !== tabEl) return;
+    dispatch('tabShow');
+    if (typeof $$props.onTabShow === 'function') $$props.onTabShow(tabEl);
+  }
+  function onTabHide(tabEl) {
+    if (el !== tabEl) return;
+    dispatch('tabHide');
+    if (typeof $$props.onTabHide === 'function') $$props.onTabHide(tabEl);
+  }
+
+  $: classes = Utils.classNames(
     className,
     'block',
     {
@@ -50,12 +61,28 @@
       'no-hairlines-ios': noHairlinesIos,
       'no-hairlines-aurora': noHairlinesAurora,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
-  useTab(() => el, emit);
+  onMount(() => {
+    f7.ready(() => {
+      f7.instance.on('tabShow', onTabShow);
+      f7.instance.on('tabHide', onTabHide);
+    });
+  });
+
+  onDestroy(() => {
+    if (f7.instance) {
+      f7.instance.off('tabShow', onTabShow);
+      f7.instance.off('tabHide', onTabHide);
+    }
+  });
 </script>
 
-<div class={classes} bind:this={el} {...restProps($$restProps)}>
+<div
+  class={classes}
+  bind:this={el}
+  {...restProps($$restProps)}
+>
   <slot />
 </div>

@@ -1,17 +1,15 @@
-/** @jsx $jsx */
-import $jsx from '../../../shared/$jsx.js';
-
 export default {
   render() {
-    return (
+    return `
       <div class="color-picker-module color-picker-module-current-color">
         <div class="color-picker-current-color"></div>
       </div>
-    );
+    `;
   },
   update(self) {
-    self.$el
-      .find('.color-picker-module-current-color .color-picker-current-color')
-      .css('background-color', self.value.hex);
+    self.$el.find('.color-picker-module-current-color .color-picker-current-color').css(
+      'background-color',
+      self.value.hex,
+    );
   },
 };

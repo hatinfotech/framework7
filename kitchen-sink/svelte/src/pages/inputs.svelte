@@ -1,117 +1,222 @@
-<script>
-  import { Navbar, Page, BlockTitle, List, ListInput, Range } from 'framework7-svelte';
-</script>
-
 <Page>
-  <Navbar title="Form Inputs" backLink="Back" />
+  <Navbar title="Form Inputs" backLink="Back"></Navbar>
   <BlockTitle>Full Layout / Inline Labels</BlockTitle>
   <List inlineLabels noHairlinesMd>
-    <ListInput label="Name" type="text" placeholder="Your name" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Name"
+      type="text"
+      placeholder="Your name"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Password" type="password" placeholder="Your password" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Password"
+      type="password"
+      placeholder="Your password"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="E-mail" type="email" placeholder="Your e-mail" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="E-mail"
+      type="email"
+      placeholder="Your e-mail"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="URL" type="url" placeholder="URL" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="URL"
+      type="url"
+      placeholder="URL"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Phone" type="tel" placeholder="Your phone number" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Phone"
+      type="tel"
+      placeholder="Your phone number"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Gender" type="select" value="Male" placeholder="Please choose...">
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Gender"
+      type="select"
+      value="Male"
+      placeholder="Please choose..."
+    >
+      <i class="icon demo-list-icon" slot="media"/>
       <option value="Male">Male</option>
       <option value="Female">Female</option>
     </ListInput>
 
-    <ListInput label="Birthday" type="date" value="2014-04-30" placeholder="Please choose...">
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Birthday"
+      type="date"
+      value="2014-04-30"
+      placeholder="Please choose..."
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Date time" type="datetime-local" placeholder="Please choose...">
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Date time"
+      type="datetime-local"
+      placeholder="Please choose..."
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Range" input={false}>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Range"
+      input={false}
+    >
+      <i class="icon demo-list-icon" slot="media"/>
       <span slot="input">
-        <Range value={50} min={0} max={100} step={1} />
+        <Range  value={50} min={0} max={100} step={1}/>
       </span>
     </ListInput>
 
-    <ListInput label="Textarea" type="textarea" placeholder="Bio">
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Textarea"
+      type="textarea"
+      placeholder="Bio"
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Resizable" type="textarea" resizable placeholder="Bio">
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Resizable"
+      type="textarea"
+      resizable
+      placeholder="Bio"
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
+
   </List>
 
   <BlockTitle>Full Layout / Stacked Labels</BlockTitle>
   <List noHairlinesMd>
-    <ListInput label="Name" type="text" placeholder="Your name" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Name"
+      type="text"
+      placeholder="Your name"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Password" type="password" placeholder="Your password" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Password"
+      type="password"
+      placeholder="Your password"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="E-mail" type="email" placeholder="Your e-mail" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="E-mail"
+      type="email"
+      placeholder="Your e-mail"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="URL" type="url" placeholder="URL" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="URL"
+      type="url"
+      placeholder="URL"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Phone" type="tel" placeholder="Your phone number" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Phone"
+      type="tel"
+      placeholder="Your phone number"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Gender" type="select" value="Male" placeholder="Please choose...">
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Gender"
+      type="select"
+      value="Male"
+      placeholder="Please choose..."
+    >
+      <i class="icon demo-list-icon" slot="media"/>
       <option value="Male">Male</option>
       <option value="Female">Female</option>
     </ListInput>
 
-    <ListInput label="Birthday" type="date" value="2014-04-30" placeholder="Please choose...">
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Birthday"
+      type="date"
+      value="2014-04-30"
+      placeholder="Please choose..."
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Date time" type="datetime-local" placeholder="Please choose...">
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Date time"
+      type="datetime-local"
+      placeholder="Please choose..."
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Range" input={false}>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Range"
+      input={false}
+    >
+      <i class="icon demo-list-icon" slot="media"/>
       <span slot="input">
-        <Range value={50} min={0} max={100} step={1} />
+        <Range value={50} min={0} max={100} step={1}/>
       </span>
     </ListInput>
 
-    <ListInput label="Textarea" type="textarea" placeholder="Bio">
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Textarea"
+      type="textarea"
+      placeholder="Bio"
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Resizable" type="textarea" resizable placeholder="Bio">
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Resizable"
+      type="textarea"
+      resizable
+      placeholder="Bio"
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
   </List>
 
   <BlockTitle>Floating Labels</BlockTitle>
   <List noHairlinesMd>
-    <ListInput label="Name" floatingLabel type="text" placeholder="Your name" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Name"
+      floatingLabel
+      type="text"
+      placeholder="Your name"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
     <ListInput
@@ -119,30 +224,62 @@
       floatingLabel
       type="password"
       placeholder="Your password"
-      clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="E-mail" floatingLabel type="email" placeholder="Your e-mail" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="E-mail"
+      floatingLabel
+      type="email"
+      placeholder="Your e-mail"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="URL" floatingLabel type="url" placeholder="URL" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="URL"
+      floatingLabel
+      type="url"
+      placeholder="URL"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Phone" floatingLabel type="tel" placeholder="Your phone number" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Phone"
+      floatingLabel
+      type="tel"
+      placeholder="Your phone number"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput label="Resizable" floatingLabel type="textarea" resizable placeholder="Bio">
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      label="Resizable"
+      floatingLabel
+      type="textarea"
+      resizable
+      placeholder="Bio"
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
   </List>
 
   <BlockTitle>Floating Labels + Outline Inputs</BlockTitle>
   <List noHairlinesMd>
-    <ListInput outline label="Name" floatingLabel type="text" placeholder="Your name" clearButton>
+    <ListInput
+      outline
+      label="Name"
+      floatingLabel
+      type="text"
+      placeholder="Your name"
+      clearButton
+    >
       <i class="icon demo-list-icon" slot="media" />
     </ListInput>
     <ListInput
@@ -151,7 +288,8 @@
       floatingLabel
       type="password"
       placeholder="Your password"
-      clearButton>
+      clearButton
+    >
       <i class="icon demo-list-icon" slot="media" />
     </ListInput>
     <ListInput
@@ -160,10 +298,18 @@
       floatingLabel
       type="email"
       placeholder="Your e-mail"
-      clearButton>
+      clearButton
+    >
       <i class="icon demo-list-icon" slot="media" />
     </ListInput>
-    <ListInput outline label="URL" floatingLabel type="url" placeholder="URL" clearButton>
+    <ListInput
+      outline
+      label="URL"
+      floatingLabel
+      type="url"
+      placeholder="URL"
+      clearButton
+    >
       <i class="icon demo-list-icon" slot="media" />
     </ListInput>
     <ListInput
@@ -172,7 +318,8 @@
       floatingLabel
       type="tel"
       placeholder="Your phone number"
-      clearButton>
+      clearButton
+    >
       <i class="icon demo-list-icon" slot="media" />
     </ListInput>
     <ListInput
@@ -182,7 +329,8 @@
       type="textarea"
       resizable
       placeholder="Bio"
-      clearButton>
+      clearButton
+    >
       <i class="icon demo-list-icon" slot="media" />
     </ListInput>
   </List>
@@ -196,8 +344,9 @@
       info="Default validation"
       required
       validate
-      clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
     <ListInput
@@ -207,8 +356,9 @@
       required
       validate
       pattern="apple|banana"
-      clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
       <span slot="info">Pattern validation (<b>apple|banana</b>)</span>
     </ListInput>
 
@@ -219,8 +369,9 @@
       info="Default e-mail validation"
       required
       validate
-      clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
     <ListInput
@@ -230,8 +381,9 @@
       info="Default URL validation"
       required
       validate
-      clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
     <ListInput
@@ -243,75 +395,165 @@
       required
       validate
       pattern="[0-9]*"
-      clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
+
   </List>
 
   <BlockTitle>Icon + Input</BlockTitle>
   <List noHairlinesMd>
-    <ListInput type="text" placeholder="Your name" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      type="text"
+      placeholder="Your name"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput type="password" placeholder="Your password" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      type="password"
+      placeholder="Your password"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput type="email" placeholder="Your e-mail" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      type="email"
+      placeholder="Your e-mail"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
 
-    <ListInput type="url" placeholder="URL" clearButton>
-      <i class="icon demo-list-icon" slot="media" />
+    <ListInput
+      type="url"
+      placeholder="URL"
+      clearButton
+    >
+      <i class="icon demo-list-icon" slot="media"/>
     </ListInput>
+
   </List>
 
   <BlockTitle>Label + Input</BlockTitle>
   <List noHairlinesMd>
-    <ListInput label="Name" type="text" placeholder="Your name" clearButton />
+    <ListInput
+      label="Name"
+      type="text"
+      placeholder="Your name"
+      clearButton
+    />
 
-    <ListInput label="Password" type="password" placeholder="Your password" clearButton />
+    <ListInput
+      label="Password"
+      type="password"
+      placeholder="Your password"
+      clearButton
+    />
 
-    <ListInput label="E-mail" type="email" placeholder="Your e-mail" clearButton />
+    <ListInput
+      label="E-mail"
+      type="email"
+      placeholder="Your e-mail"
+      clearButton
+    />
 
-    <ListInput label="URL" type="url" placeholder="URL" clearButton />
+    <ListInput
+      label="URL"
+      type="url"
+      placeholder="URL"
+      clearButton
+    />
   </List>
 
   <BlockTitle>Only Inputs</BlockTitle>
   <List noHairlinesMd>
-    <ListInput type="text" placeholder="Your name" clearButton />
+    <ListInput
+      type="text"
+      placeholder="Your name"
+      clearButton
+    />
 
-    <ListInput type="password" placeholder="Your password" clearButton />
+    <ListInput
+      type="password"
+      placeholder="Your password"
+      clearButton
+    />
 
-    <ListInput type="email" placeholder="Your e-mail" clearButton />
+    <ListInput
+      type="email"
+      placeholder="Your e-mail"
+      clearButton
+    />
 
-    <ListInput type="url" placeholder="URL" clearButton />
+    <ListInput
+      type="url"
+      placeholder="URL"
+      clearButton
+    />
   </List>
 
   <BlockTitle>Inputs + Additional Info</BlockTitle>
   <List noHairlinesMd>
-    <ListInput type="text" placeholder="Your name" info="Full name please" clearButton />
+    <ListInput
+      type="text"
+      placeholder="Your name"
+      info="Full name please"
+      clearButton
+    />
 
     <ListInput
       type="password"
       placeholder="Your password"
       info="8 characters minimum"
-      clearButton />
+      clearButton
+    />
 
-    <ListInput type="email" placeholder="Your e-mail" info="Your work e-mail address" clearButton />
+    <ListInput
+      type="email"
+      placeholder="Your e-mail"
+      info="Your work e-mail address"
+      clearButton
+    />
 
-    <ListInput type="url" placeholder="URL" info="Your website URL" clearButton />
+    <ListInput
+      type="url"
+      placeholder="URL"
+      info="Your website URL"
+      clearButton
+    />
   </List>
 
   <BlockTitle>Only Inputs Inset</BlockTitle>
   <List inset>
-    <ListInput type="text" placeholder="Your name" clearButton />
+    <ListInput
+      type="text"
+      placeholder="Your name"
+      clearButton
+    />
 
-    <ListInput type="password" placeholder="Your password" clearButton />
+    <ListInput
+      type="password"
+      placeholder="Your password"
+      clearButton
+    />
 
-    <ListInput type="email" placeholder="Your e-mail" clearButton />
+    <ListInput
+      type="email"
+      placeholder="Your e-mail"
+      clearButton
+    />
 
-    <ListInput type="url" placeholder="URL" clearButton />
+    <ListInput
+      type="url"
+      placeholder="URL"
+      clearButton
+    />
   </List>
 </Page>
+<script>
+  import { Navbar, Page, BlockTitle, List, Icon, ListInput, Range } from 'framework7-svelte';
+</script>

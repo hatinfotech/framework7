@@ -1,10 +1,11 @@
-<script>
-  import { Navbar, Page, Swiper, SwiperSlide } from 'framework7-svelte';
-</script>
-
 <Page>
-  <Navbar title="Swiper Horizontal" backLink="Back" />
-  <Swiper class="demo-swiper" pagination={{ hideOnClick: true }} direction="vertical">
+  <Navbar title="Swiper Horizontal" backLink="Back"></Navbar>
+  <Swiper class="demo-swiper" pagination params={{
+    direction: 'vertical',
+    pagination: {
+      hideOnClick: true,
+    }
+  }}>
     <SwiperSlide>Slide 1</SwiperSlide>
     <SwiperSlide>Slide 2</SwiperSlide>
     <SwiperSlide>Slide 3</SwiperSlide>
@@ -17,3 +18,6 @@
     <SwiperSlide>Slide 10</SwiperSlide>
   </Swiper>
 </Page>
+<script>
+  import { Navbar, Page, Swiper, SwiperSlide } from 'framework7-svelte';
+</script>

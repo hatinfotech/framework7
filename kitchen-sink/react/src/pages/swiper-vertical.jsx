@@ -2,9 +2,15 @@ import React from 'react';
 import { Navbar, Page, Swiper, SwiperSlide } from 'framework7-react';
 
 export default () => (
+
   <Page>
     <Navbar title="Swiper Horizontal" backLink="Back"></Navbar>
-    <Swiper className="demo-swiper" pagination={{ hideOnClick: true }} direction="vertical">
+    <Swiper className="demo-swiper" pagination params={{
+      direction: 'vertical',
+      pagination: {
+        hideOnClick: true,
+      }
+    }}>
       <SwiperSlide>Slide 1</SwiperSlide>
       <SwiperSlide>Slide 2</SwiperSlide>
       <SwiperSlide>Slide 3</SwiperSlide>

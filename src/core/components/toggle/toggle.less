@@ -1,8 +1,7 @@
 /* === Toggle === */
-@import './toggle-vars.less';
+@import url('./toggle-vars.less');
 
-.toggle,
-.toggle-icon {
+.toggle, .toggle-icon {
   width: var(--f7-toggle-width);
   height: var(--f7-toggle-height);
   border-radius: var(--f7-toggle-height);
@@ -14,7 +13,7 @@
   box-sizing: border-box;
   align-self: center;
   user-select: none;
-  input[type='checkbox'] {
+  input[type="checkbox"] {
     display: none;
   }
   input[disabled] ~ .toggle-icon {
@@ -33,8 +32,7 @@
   box-sizing: border-box;
   display: block;
   cursor: pointer;
-  &:before,
-  &:after {
+  &:before, &:after {
     content: '';
   }
   &:after {
@@ -46,11 +44,11 @@
   }
 }
 .if-ios-theme({
-  @import './toggle-ios.less';
+  @import url('./toggle-ios.less');
 });
 .if-md-theme({
-  @import './toggle-md.less';
+  @import url('./toggle-md.less');
 });
 .if-aurora-theme({
-  @import './toggle-aurora.less';
+  @import url('./toggle-aurora.less');
 });

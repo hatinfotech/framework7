@@ -1,91 +1,76 @@
 <script>
-  import { onMount, onDestroy, afterUpdate, createEventDispatcher, tick, getContext } from 'svelte';
+  import { onMount, onDestroy, afterUpdate, createEventDispatcher, tick } from 'svelte';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import Mixins from '../utils/mixins';
+  import f7 from '../utils/f7';
 
-  import { restProps } from '../shared/rest-props.js';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter, getComponentId } from '../shared/utils.js';
-  import { f7ready, app } from '../shared/f7.js';
-  import { useTab } from '../shared/use-tab.js';
-
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
   export let tabActive = false;
-  export let id = undefined;
-
-  const RouterContext = getContext('RouterContext') || {};
 
   let el;
+  let tabContent = null;
   let routerData = null;
-  let initialTabContent = null;
 
-  if (
-    !routerData &&
-    RouterContext &&
-    RouterContext.route &&
-    RouterContext.route.route &&
-    RouterContext.route.route.tab &&
-    RouterContext.route.route.tab.id === id
-  ) {
-    const { component, asyncComponent, options: tabRouteOptions } = RouterContext.route.route.tab;
-    if (component || asyncComponent) {
-      const parentProps =
-        RouterContext.route.route.options && RouterContext.route.route.options.props;
-      initialTabContent = {
-        id: getComponentId(),
-        component: component || asyncComponent,
-        isAsync: !!asyncComponent,
-        props: {
-          ...(parentProps || {}),
-          ...((tabRouteOptions && tabRouteOptions.props) || {}),
-          f7router: RouterContext.router,
-          f7route: RouterContext.route,
-          ...RouterContext.route.params,
-        },
-      };
-    }
+  $: classes = Utils.classNames(
+    className,
+    'tab',
+    tabActive && 'tab-active',
+    Mixins.colorClasses($$props),
+  );
+
+  function onTabShow(tabEl) {
+    if (tabEl !== el) return;
+    dispatch('tabShow');
+    if (typeof $$props.onTabShow === 'function') $$props.onTabShow(tabEl);
   }
-  let tabContent = initialTabContent || null;
-
-  $: classes = classNames(className, 'tab', tabActive && 'tab-active', colorClasses($$props));
-
-  useTab(() => el, emit);
+  function onTabHide(tabEl) {
+    if (tabEl !== el) return;
+    dispatch('tabHide');
+    if (typeof $$props.onTabHide === 'function') $$props.onTabHide(tabEl);
+  }
 
   onMount(() => {
-    if (el && initialTabContent) {
-      el.f7RouterTabLoaded = true;
-    }
-    f7ready(() => {
-      if (!routerData) {
-        routerData = {
-          el,
-          setTabContent(tc) {
-            tick().then(() => {
-              tabContent = tc;
-            });
-          },
-        };
-        app.f7routers.tabs.push(routerData);
-      } else {
-        routerData.el = el;
-      }
+    f7.ready(() => {
+      routerData = {
+        el,
+        setTabContent(tc) {
+          tick().then(() => {
+            tabContent = tc;
+          });
+        },
+      };
+      f7.routers.tabs.push(routerData);
+      f7.instance.on('tabShow', onTabShow);
+      f7.instance.on('tabHide', onTabHide);
     });
   });
   afterUpdate(() => {
     if (!routerData) return;
-    app.f7events.emit('tabRouterDidUpdate', routerData);
+    f7.events.emit('tabRouterDidUpdate', routerData);
   });
   onDestroy(() => {
+    if (f7.instance) {
+      f7.instance.off('tabShow', onTabShow);
+      f7.instance.off('tabHide', onTabHide);
+    }
     if (!routerData) return;
-    app.f7routers.tabs.splice(app.f7routers.tabs.indexOf(routerData), 1);
+    f7.routers.tabs.splice(f7.routers.tabs.indexOf(routerData), 1);
     routerData = null;
   });
+
+  export function show(animate) {
+    if (!f7.instance) return;
+    f7.instance.tab.show(el, animate);
+  }
 </script>
 
-<div {id} class={classes} bind:this={el} {...restProps($$restProps)}>
+<div class={classes} bind:this={el} {...restProps($$restProps)}>
   {#if tabContent}
-    <svelte:component this={tabContent.component} {...tabContent.props} />
+  <svelte:component this={tabContent.component} {...tabContent.props}></svelte:component>
   {/if}
-  <slot />
+  <slot/>
 </div>

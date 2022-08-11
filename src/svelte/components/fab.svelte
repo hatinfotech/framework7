@@ -1,12 +1,12 @@
 <script>
-  import { createEventDispatcher, onMount, afterUpdate } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, plainText, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
-  import { useTooltip } from '../shared/use-tooltip.js';
+  import { createEventDispatcher, onMount, afterUpdate, onDestroy } from 'svelte';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
+  import hasSlots from '../utils/has-slots';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -23,13 +23,14 @@
   let el;
   let linkEl;
   let textEl;
+  let f7Tooltip;
 
   $: hrefComputed = href === true ? '#' : href || undefined;
 
   // eslint-disable-next-line
-  $: hasTextSlots = $$slots.text;
+  $: hasTextSlots = hasSlots(arguments, 'text');
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'fab',
     `fab-${position}`,
@@ -37,30 +38,68 @@
       'fab-morph': morphTo,
       'fab-extended': text || hasTextSlots || typeof textEl !== 'undefined',
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
+  let tooltipText = tooltip;
+  function watchTooltip(newText) {
+    const oldText = tooltipText;
+    if (oldText === newText) return;
+    tooltipText = newText;
+    if (!newText && f7Tooltip) {
+      f7Tooltip.destroy();
+      f7Tooltip = null;
+      return;
+    }
+    if (newText && !f7Tooltip && f7.instance) {
+      f7Tooltip = f7.instance.tooltip.create({
+        targetEl: linkEl,
+        text: newText,
+        trigger: tooltipTrigger,
+      });
+      return;
+    }
+    if (!newText || !f7Tooltip) return;
+    f7Tooltip.setText(newText);
+  }
+  $: watchTooltip(tooltip);
+
   function onClick() {
-    emit('click');
+    dispatch('click');
+    if (typeof $$props.onClick === 'function') $$props.onClick();
   }
 
   onMount(() => {
-    f7ready(() => {
-      const dom7 = app.f7.$;
+    f7.ready(() => {
+      const dom7 = f7.instance.$;
       const rootEls = dom7(linkEl).children('.fab-buttons');
       if (rootEls.length) {
         dom7(el).append(rootEls);
       }
+      if (tooltip) {
+        f7Tooltip = f7.instance.tooltip.create({
+          targetEl: linkEl,
+          text: tooltip,
+          trigger: tooltipTrigger,
+        });
+      }
     });
   });
   afterUpdate(() => {
-    if (!app.f7) return;
-    const dom7 = app.f7.$;
+    if (!f7.instance) return;
+    const dom7 = f7.instance.$;
     const rootEls = dom7(linkEl).children('.fab-buttons');
     if (rootEls.length) {
       dom7(el).append(rootEls);
     }
   });
+  onDestroy(() => {
+    if (f7Tooltip && f7Tooltip.destroy) {
+      f7Tooltip.destroy();
+      f7Tooltip = null;
+    }
+  });
+
 </script>
 
 <div
@@ -70,19 +109,10 @@
   data-f7-slot={f7Slot}
   {...restProps($$restProps)}
 >
-  <a
-    bind:this={linkEl}
-    on:click={onClick}
-    {target}
-    href={hrefComputed}
-    use:useTooltip={{ tooltip, tooltipTrigger }}
-  >
+  <a bind:this={linkEl} on:click={onClick} target={target} href={hrefComputed}>
     <slot />
     {#if typeof text !== 'undefined' || hasTextSlots}
-      <div class="fab-text" bind:this={textEl}>
-        {plainText(text)}
-        <slot name="text" />
-      </div>
+      <div class="fab-text" bind:this={textEl}>{Utils.text(text)}<slot name="text" /></div>
     {/if}
     <slot name="link" />
   </a>

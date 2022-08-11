@@ -1,21 +1,25 @@
-@import './app-vars.less';
+@import url('./app-vars.less');
 // Core Icons
 @font-face {
   @fontBase64: framework7_coreIconsFont();
   font-family: 'framework7-core-icons';
-  src: url('data:application/font-woff;charset=utf-8;base64, @{fontBase64}') format('woff');
+  src: url("data:application/font-woff;charset=utf-8;base64, @{fontBase64}") format("woff");
   font-weight: 400;
   font-style: normal;
 }
-
+@font-face {
+  @fontBase64: framework7_skeletonFont();
+  font-family: 'framework7-skeleton';
+  src: url("data:application/font-woff;charset=utf-8;base64, @{fontBase64}") format("woff");
+  font-weight: 300, 400, 500, 600, 700;
+  font-style: normal, italic;
+}
 .rtl({
   html {
     direction: rtl;
   }
 });
-html,
-body,
-.framework7-root {
+html, body, .framework7-root {
   position: relative;
   height: 100%;
   width: 100%;
@@ -34,11 +38,11 @@ body {
   line-height: var(--f7-line-height);
   color: var(--f7-text-color);
 }
-.dark body,
-body.dark {
+.theme-dark body,
+body.theme-dark {
   background: #000;
 }
-.dark {
+.theme-dark {
   color: var(--f7-text-color);
 }
 .framework7-root {
@@ -46,9 +50,7 @@ body.dark {
   box-sizing: border-box;
 }
 .framework7-initializing * {
-  &,
-  &:before,
-  &:after {
+  &, &:before, &:after {
     transition-duration: 0ms !important;
   }
 }
@@ -61,28 +63,21 @@ body.dark {
 }
 
 // Fix for iPad in Safari in Lanscape mode
-@media (width: 1024px) and (height: 691px) and (orientation: landscape) {
-  html,
-  body,
-  .framework7-root {
+@media (width:1024px) and (height:691px) and (orientation:landscape) {
+  html, body, .framework7-root {
     height: 671px;
   }
 }
-@media (width: 1024px) and (height: 692px) and (orientation: landscape) {
-  html,
-  body,
-  .framework7-root {
+@media (width:1024px) and (height:692px) and (orientation:landscape) {
+  html, body, .framework7-root  {
     height: 672px;
   }
 }
 * {
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
   -webkit-touch-callout: none;
 }
-a,
-input,
-textarea,
-select {
+a, input, textarea, select {
   outline: 0;
 }
 a {
@@ -103,18 +98,17 @@ p {
 }
 // Full viewport
 html.device-full-viewport {
-  &,
-  & body {
+  &, & body {
     height: 100vh;
   }
 }
 
 .if-ios-theme({
-  @import './app-ios.less';
+  @import url('./app-ios.less');
 });
 .if-md-theme({
-  @import './app-md.less';
+  @import url('./app-md.less');
 });
 .if-aurora-theme({
-  @import './app-aurora.less';
+  @import url('./app-aurora.less');
 });

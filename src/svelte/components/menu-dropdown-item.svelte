@@ -1,17 +1,11 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
-  import {
-    colorClasses,
-    routerAttrs,
-    routerClasses,
-    actionsAttrs,
-    actionsClasses,
-  } from '../shared/mixins.js';
-  import { classNames, extend, plainText, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { useRouteProps } from '../shared/use-route-props.js';
+  import { createEventDispatcher, onMount, afterUpdate, onDestroy } from 'svelte';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -21,53 +15,68 @@
   export let link = undefined;
   export let target = undefined;
   export let divider = undefined;
-  export let routeProps = undefined;
 
   let el;
 
   $: hrefComputed = typeof href === 'undefined' && link ? '#' : href;
 
-  $: attrs = extend(
+  $: attrs = Utils.extend(
     {
       href: hrefComputed,
       target,
       ...restProps($$restProps),
     },
-    routerAttrs($$props),
-    actionsAttrs($$props),
+    Mixins.linkRouterAttrs($$props),
+    Mixins.linkActionsAttrs($$props),
   );
 
-  $: isLink = link || href || href === '';
+  $: isLink = (link || href || href === '');
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     {
       'menu-dropdown-link': isLink && !divider,
       'menu-dropdown-item': !isLink && !divider,
       'menu-dropdown-divider': divider,
     },
     className,
-    colorClasses($$props),
-    routerClasses($$props),
-    actionsClasses($$props),
+    Mixins.colorClasses($$props),
+    Mixins.linkRouterClasses($$props),
+    Mixins.linkActionsClasses($$props),
     {
       'menu-close': typeof menuClose === 'undefined',
-    },
+    }
   );
 
   function onClick(e) {
-    emit('click', [e]);
+    dispatch('click', [e]);
+    if (typeof $$props.onClick === 'function') $$props.onClick(e);
   }
-</script>
 
+  onMount(() => {
+    if ($$props.routeProps) {
+      el.f7RouteProps = $$props.routeProps;
+    }
+  });
+  afterUpdate(() => {
+    if ($$props.routeProps && el) {
+      el.f7RouteProps = $$props.routeProps;
+    }
+  });
+  onDestroy(() => {
+    if (!el || !f7.instance) return;
+    delete el.f7RouteProps;
+  });
+
+</script>
 <!-- svelte-ignore a11y-missing-attribute -->
 {#if isLink}
-  <a on:click={onClick} bind:this={el} class={classes} {...attrs} use:useRouteProps={routeProps}>
-    {plainText(text)}
+  <a on:click={onClick} bind:this={el} class={classes} {...attrs}>
+    {Utils.text(text)}
     <slot />
   </a>
 {:else}
-  <div on:click={onClick} bind:this={el} class={classes} {...attrs} use:useRouteProps={routeProps}>
-    {plainText(text)}
+  <div on:click={onClick} bind:this={el} class={classes} {...attrs}>
+    {Utils.text(text)}
     <slot />
   </div>
 {/if}

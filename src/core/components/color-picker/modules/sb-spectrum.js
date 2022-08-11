@@ -1,17 +1,14 @@
-import $ from '../../../shared/dom7.js';
-import { getSupport } from '../../../shared/get-support.js';
-/** @jsx $jsx */
-import $jsx from '../../../shared/$jsx.js';
+import $ from 'dom7';
 
 export default {
   render() {
-    return (
+    return `
       <div class="color-picker-module color-picker-module-sb-spectrum">
         <div class="color-picker-sb-spectrum" style="background-color: hsl(0, 100%, 50%)">
           <div class="color-picker-sb-spectrum-handle"></div>
         </div>
       </div>
-    );
+    `;
   },
   init(self) {
     const { app } = self;
@@ -54,9 +51,7 @@ export default {
         setSBFromSpecterCoords(touchStartX, touchStartY);
       }
       if (specterHandleIsTouched || specterIsTouched) {
-        $el
-          .find('.color-picker-sb-spectrum-handle')
-          .addClass('color-picker-sb-spectrum-handle-pressed');
+        $el.find('.color-picker-sb-spectrum-handle').addClass('color-picker-sb-spectrum-handle-pressed');
       }
     }
     function handleTouchMove(e) {
@@ -78,9 +73,7 @@ export default {
     function handleTouchEnd() {
       isMoved = false;
       if (specterIsTouched || specterHandleIsTouched) {
-        $el
-          .find('.color-picker-sb-spectrum-handle')
-          .removeClass('color-picker-sb-spectrum-handle-pressed');
+        $el.find('.color-picker-sb-spectrum-handle').removeClass('color-picker-sb-spectrum-handle-pressed');
       }
       specterIsTouched = false;
       specterHandleIsTouched = false;
@@ -90,10 +83,7 @@ export default {
       self.modules['sb-spectrum'].update(self);
     }
 
-    const passiveListener =
-      app.touchEvents.start === 'touchstart' && getSupport().passiveListener
-        ? { passive: true, capture: false }
-        : false;
+    const passiveListener = app.touchEvents.start === 'touchstart' && app.support.passiveListener ? { passive: true, capture: false } : false;
 
     self.$el.on(app.touchEvents.start, handleTouchStart, passiveListener);
     app.on('touchmove:active', handleTouchMove);
@@ -108,17 +98,19 @@ export default {
     };
   },
   update(self) {
-    const { value } = self;
+    const {
+      value,
+    } = self;
 
     const { hsl, hsb } = value;
 
     const specterWidth = self.$el.find('.color-picker-sb-spectrum')[0].offsetWidth;
     const specterHeight = self.$el.find('.color-picker-sb-spectrum')[0].offsetHeight;
 
-    self.$el.find('.color-picker-sb-spectrum').css('background-color', `hsl(${hsl[0]}, 100%, 50%)`);
+    self.$el.find('.color-picker-sb-spectrum')
+      .css('background-color', `hsl(${hsl[0]}, 100%, 50%)`);
 
-    self.$el
-      .find('.color-picker-sb-spectrum-handle')
+    self.$el.find('.color-picker-sb-spectrum-handle')
       .css('background-color', `hsl(${hsl[0]}, ${hsl[1] * 100}%, ${hsl[2] * 100}%)`)
       .transform(`translate(${specterWidth * hsb[1]}px, ${specterHeight * (1 - hsb[2])}px)`);
   },

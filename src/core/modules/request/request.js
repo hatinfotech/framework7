@@ -1,12 +1,12 @@
 /* eslint no-param-reassign: "off" */
-import request from '../../shared/request.js';
+import Request from '../../utils/request';
 
 export default {
   name: 'request',
   proto: {
-    request,
+    request: Request,
   },
   static: {
-    request,
+    request: Request,
   },
 };

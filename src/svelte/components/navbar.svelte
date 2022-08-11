@@ -1,16 +1,17 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy, afterUpdate } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, plainText, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { f7ready, app } from '../shared/f7.js';
-  import { useTheme } from '../shared/use-theme.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import { theme } from '../utils/plugin';
+  import f7 from '../utils/f7';
+  import hasSlots from '../utils/has-slots';
 
   import NavLeft from './nav-left.svelte';
   import NavTitle from './nav-title.svelte';
   import NavRight from './nav-right.svelte';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -35,9 +36,8 @@
   export let f7Slot = 'fixed';
 
   let el;
-  let theme = useTheme((t) => {
-    theme = t;
-  });
+  // eslint-disable-next-line
+  let _theme = f7.instance ? theme : null;
   let routerPositionClass = '';
   let largeCollapsed = false;
   let routerNavbarRole = null;
@@ -46,36 +46,41 @@
   let transparentVisible = false;
 
   export function hide(animate) {
-    app.f7.navbar.hide(el, animate);
+    f7.navbar.hide(el, animate);
   }
   export function show(animate) {
-    app.f7.navbar.show(el, animate);
+    f7.navbar.show(el, animate);
   }
   export function size() {
-    app.f7.navbar.size(el);
+    f7.navbar.size(el);
+  }
+
+  if (!f7.instance) {
+    f7.ready(() => {
+      _theme = theme;
+    });
   }
 
   // eslint-disable-next-line
-  $: hasLeftSlots = $$slots['nav-left'] || $$slots['left'];
+  $: hasLeftSlots = hasSlots(arguments, 'nav-left') || hasSlots(arguments, 'left');
   // eslint-disable-next-line
-  $: hasRightSlots = $$slots['nav-right'] || $$slots['right'];
+  $: hasRightSlots = hasSlots(arguments, 'nav-right') || hasSlots(arguments, 'right');
   // eslint-disable-next-line
-  $: hasTitleSlots = $$slots['title'];
+  $: hasTitleSlots = hasSlots(arguments, 'title');
 
   $: largeTitle = titleLarge || (large && title);
   // eslint-disable-next-line
-  $: hasTitleLargeSlots = $$slots['title-large'];
+  $: hasTitleLargeSlots = hasSlots(arguments, 'title-large');
 
-  $: addLeftTitleClass = theme && theme.ios && app.f7 && !app.f7.params.navbar.iosCenterTitle;
-  $: addCenterTitleClass =
-    (theme && theme.md && app.f7 && app.f7.params.navbar.mdCenterTitle) ||
-    (theme && theme.aurora && app.f7 && app.f7.params.navbar.auroraCenterTitle);
+  $: addLeftTitleClass = _theme && _theme.ios && f7.instance && !f7.instance.params.navbar.iosCenterTitle;
+  $: addCenterTitleClass = (_theme && _theme.md && f7.instance && f7.instance.params.navbar.mdCenterTitle)
+    || (_theme && _theme.aurora && f7.instance && f7.instance.params.navbar.auroraCenterTitle);
 
   $: isLarge = large || largeTransparent;
   $: isTransparent = transparent || (isLarge && largeTransparent);
   $: isTransparentVisible = isTransparent && transparentVisible;
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'navbar',
     routerPositionClass,
@@ -92,42 +97,53 @@
       'no-shadow': noShadow,
       'no-hairline': noHairline,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
-  $: innerClasses = classNames('navbar-inner', innerClass, innerClassName, {
-    sliding,
-    'navbar-inner-left-title': addLeftTitleClass,
-    'navbar-inner-centered-title': addCenterTitleClass,
-  });
+  $: innerClasses = Utils.classNames(
+    'navbar-inner',
+    innerClass,
+    innerClassName,
+    {
+      sliding,
+      'navbar-inner-left-title': addLeftTitleClass,
+      'navbar-inner-centered-title': addCenterTitleClass,
+    }
+  );
 
   function onHide(navbarEl) {
     if (el !== navbarEl) return;
-    emit('navbarHide');
+    dispatch('navbarHide');
+    if (typeof $$props.onNavbarHide === 'function') $$props.onNavbarHide();
   }
   function onShow(navbarEl) {
     if (el !== navbarEl) return;
-    emit('navbarShow');
+    dispatch('navbarShow');
+    if (typeof $$props.onNavbarShow === 'function') $$props.onNavbarShow();
   }
   function onNavbarTransparentShow(navbarEl) {
     if (el !== navbarEl) return;
     transparentVisible = true;
-    emit('navbarTransparentShow');
+    dispatch('navbarTransparentShow');
+    if (typeof $$props.onNavbarTransparentShow === 'function') $$props.onNavbarTransparentShow();
   }
   function onNavbarTransparentHide(navbarEl) {
     if (el !== navbarEl) return;
     transparentVisible = false;
-    emit('navbarTransparentHide');
+    dispatch('navbarTransparentHide');
+    if (typeof $$props.onNavbarTransparentHide === 'function') $$props.onNavbarTransparentHide();
   }
   function onExpand(navbarEl) {
     if (el !== navbarEl) return;
     largeCollapsed = false;
-    emit('navbarExpand');
+    dispatch('navbarExpand');
+    if (typeof $$props.onNavbarExpand === 'function') $$props.onNavbarExpand();
   }
   function onCollapse(navbarEl) {
     if (el !== navbarEl) return;
     largeCollapsed = true;
-    emit('navbarCollapse');
+    dispatch('navbarCollapse');
+    if (typeof $$props.onNavbarCollapse === 'function') $$props.onNavbarCollapse();
   }
   function onNavbarPosition(navbarEl, position) {
     if (el !== navbarEl) return;
@@ -147,61 +163,75 @@
     routerNavbarMasterStack = false;
   }
   function onBackClick() {
-    emit('clickBack');
+    dispatch('clickBack');
+    if (typeof $$props.onClickBack === 'function') $$props.onClickBack();
   }
 
   function mountNavbar() {
-    app.f7.on('navbarShow', onShow);
-    app.f7.on('navbarHide', onHide);
-    app.f7.on('navbarCollapse', onCollapse);
-    app.f7.on('navbarExpand', onExpand);
-    app.f7.on('navbarPosition', onNavbarPosition);
-    app.f7.on('navbarRole', onNavbarRole);
-    app.f7.on('navbarMasterStack', onNavbarMasterStack);
-    app.f7.on('navbarMasterUnstack', onNavbarMasterUnstack);
-    app.f7.on('navbarTransparentShow', onNavbarTransparentShow);
-    app.f7.on('navbarTransparentHide', onNavbarTransparentHide);
+    f7.instance.on('navbarShow', onShow);
+    f7.instance.on('navbarHide', onHide);
+    f7.instance.on('navbarCollapse', onCollapse);
+    f7.instance.on('navbarExpand', onExpand);
+    f7.instance.on('navbarPosition', onNavbarPosition);
+    f7.instance.on('navbarRole', onNavbarRole);
+    f7.instance.on('navbarMasterStack', onNavbarMasterStack);
+    f7.instance.on('navbarMasterUnstack', onNavbarMasterUnstack);
+    f7.instance.on('navbarTransparentShow', onNavbarTransparentShow);
+    f7.instance.on('navbarTransparentHide', onNavbarTransparentHide);
   }
   function destroyNavbar() {
-    app.f7.off('navbarShow', onShow);
-    app.f7.off('navbarHide', onHide);
-    app.f7.off('navbarCollapse', onCollapse);
-    app.f7.off('navbarExpand', onExpand);
-    app.f7.off('navbarPosition', onNavbarPosition);
-    app.f7.off('navbarRole', onNavbarRole);
-    app.f7.off('navbarMasterStack', onNavbarMasterStack);
-    app.f7.off('navbarMasterUnstack', onNavbarMasterUnstack);
-    app.f7.off('navbarTransparentShow', onNavbarTransparentShow);
-    app.f7.off('navbarTransparentHide', onNavbarTransparentHide);
+    f7.instance.off('navbarShow', onShow);
+    f7.instance.off('navbarHide', onHide);
+    f7.instance.off('navbarCollapse', onCollapse);
+    f7.instance.off('navbarExpand', onExpand);
+    f7.instance.off('navbarPosition', onNavbarPosition);
+    f7.instance.off('navbarRole', onNavbarRole);
+    f7.instance.off('navbarMasterStack', onNavbarMasterStack);
+    f7.instance.off('navbarMasterUnstack', onNavbarMasterUnstack);
+    f7.instance.off('navbarTransparentShow', onNavbarTransparentShow);
+    f7.instance.off('navbarTransparentHide', onNavbarTransparentHide);
   }
 
   onMount(() => {
-    f7ready(() => {
+    f7.ready(() => {
       mountNavbar();
     });
   });
   afterUpdate(() => {
-    if (!app.f7) return;
-    app.f7.navbar.size(el);
+    if (!f7.instance) return;
+    f7.instance.navbar.size(el);
   });
   onDestroy(() => {
-    if (!app.f7) return;
+    if (!f7.instance) return;
     destroyNavbar();
   });
 </script>
-
-<div class={classes} bind:this={el} data-f7-slot={f7Slot} {...restProps($$restProps)}>
-  <div class="navbar-bg" />
-  <slot name="before-inner" />
+<div
+  class={classes}
+  bind:this={el}
+  data-f7-slot={f7Slot}
+  {...restProps($$restProps)}
+>
+  <div class="navbar-bg"></div>
+  <slot name="before-inner"></slot>
   <div class={innerClasses}>
     {#if backLink || hasLeftSlots}
-      <NavLeft {backLink} {backLinkUrl} {backLinkForce} {backLinkShowText} {onBackClick}>
+      <NavLeft
+        backLink={backLink}
+        backLinkUrl={backLinkUrl}
+        backLinkForce={backLinkForce}
+        backLinkShowText={backLinkShowText}
+        onBackClick={onBackClick}
+      >
         <slot name="nav-left" />
         <slot name="left" />
       </NavLeft>
     {/if}
     {#if title || subtitle || hasTitleSlots}
-      <NavTitle {title} {subtitle}>
+      <NavTitle
+        title={title}
+        subtitle={subtitle}
+      >
         <slot name="title" />
       </NavTitle>
     {/if}
@@ -214,12 +244,12 @@
     {#if largeTitle || hasTitleLargeSlots}
       <div class="title-large">
         <div class="title-large-text">
-          {plainText(largeTitle)}
+          {Utils.text(largeTitle)}
           <slot name="title-large" />
         </div>
       </div>
     {/if}
     <slot />
   </div>
-  <slot name="after-inner" />
+  <slot name="after-inner"></slot>
 </div>

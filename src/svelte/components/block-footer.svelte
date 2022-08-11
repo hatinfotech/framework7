@@ -1,14 +1,16 @@
 <script>
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import Mixins from '../utils/mixins';
 
   let className = undefined;
   export { className as class };
 
-  $: classes = classNames(className, 'block-footer', colorClasses($$props));
+  $: classes = Utils.classNames(
+    className,
+    'block-footer',
+    Mixins.colorClasses($$props),
+  );
 </script>
 
-<div class={classes} {...restProps($$restProps)}>
-  <slot />
-</div>
+<div class={classes} {...restProps($$restProps)}><slot /></div>

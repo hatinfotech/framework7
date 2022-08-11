@@ -1,13 +1,14 @@
 <script>
   import { createEventDispatcher } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { useTheme } from '../shared/use-theme.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
+  import { theme } from '../utils/plugin';
 
   import Link from './link.svelte';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -18,31 +19,39 @@
   export let backLinkShowText = undefined;
   export let sliding = undefined;
 
-  let theme = useTheme((t) => {
-    theme = t;
-  });
+  // eslint-disable-next-line
+  let _theme = f7.instance ? theme : null;
+  if (!f7.instance) {
+    f7.ready(() => {
+      _theme = theme;
+    });
+  }
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'left',
     {
       sliding,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   $: needBackLinkText = backLinkShowText;
-  $: if (typeof needBackLinkText === 'undefined') needBackLinkText = theme && !theme.md;
+  $: if (typeof needBackLinkText === 'undefined') needBackLinkText = _theme && !_theme.md;
 
   $: backLinkText = backLink !== true && needBackLinkText ? backLink : undefined;
 
   function onBackClick() {
-    emit('clickBack');
-    emit('backClick');
+    dispatch('clickBack');
+    if (typeof $$props.onClickBack === 'function') $$props.onClickBack();
+    dispatch('backClick');
+    if (typeof $$props.onBackClick === 'function') $$props.onBackClick();
   }
 </script>
-
-<div class={classes} {...restProps($$restProps)}>
+<div
+  class={classes}
+  {...restProps($$restProps)}
+>
   {#if backLink}
     <Link
       href={backLinkUrl || '#'}

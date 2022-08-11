@@ -1,11 +1,12 @@
 <script>
   /* eslint-disable no-undef */
   import { createEventDispatcher } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, plainText, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import hasSlots from '../utils/has-slots';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -29,7 +30,7 @@
   export let sameAvatar = undefined;
   export let typing = undefined;
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'message',
     {
@@ -44,94 +45,101 @@
       'message-same-footer': sameFooter,
       'message-same-avatar': sameAvatar,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
-  $: hasAvatarSlots = $$slots.avatar;
-  $: hasNameSlots = $$slots.name;
-  $: hasHeaderSlots = $$slots.header;
-  $: hasImageSlots = $$slots.image;
-  $: hasTextHeaderSlots = $$slots['text-header'];
-  $: hasTextFooterSlots = $$slots['text-footer'];
-  $: hasTextSlots = $$slots.text;
-  $: hasFooterSlots = $$slots.footer;
+  $: hasAvatarSlots = hasSlots(arguments, 'avatar');
+  $: hasNameSlots = hasSlots(arguments, 'name');
+  $: hasHeaderSlots = hasSlots(arguments, 'header');
+  $: hasImageSlots = hasSlots(arguments, 'image');
+  $: hasTextHeaderSlots = hasSlots(arguments, 'text-header');
+  $: hasTextFooterSlots = hasSlots(arguments, 'text-footer');
+  $: hasTextSlots = hasSlots(arguments, 'text');
+  $: hasFooterSlots = hasSlots(arguments, 'footer');
 
   function onClick() {
-    emit('click');
+    dispatch('click');
+    if (typeof $$props.onClick === 'function') $$props.onClick();
   }
 
   function onNameClick() {
-    emit('clickName');
+    dispatch('clickName');
+    if (typeof $$props.onClickName === 'function') $$props.onClickName();
   }
 
   function onTextClick() {
-    emit('clickText');
+    dispatch('clickText');
+    if (typeof $$props.onClickText === 'function') $$props.onClickText();
   }
 
   function onAvatarClick() {
-    emit('clickAvatar');
+    dispatch('clickAvatar');
+    if (typeof $$props.onClickAvatar === 'function') $$props.onClickAvatar();
   }
 
   function onHeaderClick() {
-    emit('clickHeader');
+    dispatch('clickHeader');
+    if (typeof $$props.onClickHeader === 'function') $$props.onClickHeader();
   }
 
   function onFooterClick() {
-    emit('clickFooter');
+    dispatch('clickFooter');
+    if (typeof $$props.onClickFooter === 'function') $$props.onClickFooter();
   }
 
   function onBubbleClick() {
-    emit('clickBubble');
+    dispatch('clickBubble');
+    if (typeof $$props.onClickBubble === 'function') $$props.onClickBubble();
   }
-</script>
 
+</script>
 <!-- svelte-ignore a11y-missing-attribute -->
 <div class={classes} on:click={onClick} {...restProps($$restProps)}>
-  <slot name="start" />
-  {#if avatar || hasAvatarSlots}
+  <slot name="start"/>
+  {#if (avatar || hasAvatarSlots)}
     <div
       on:click={onAvatarClick}
       class="message-avatar"
-      style={avatar ? `background-image: url(${avatar})` : undefined}
+      style={ avatar ? `background-image: url(${avatar})` : undefined }
     >
-      <slot name="avatar" />
+      <slot name="avatar"/>
     </div>
   {/if}
   <div class="message-content">
-    <slot name="content-start" />
-    {#if hasNameSlots || name}
+    <slot name="content-start"/>
+    {#if (hasNameSlots || name)}
       <div class="message-name" on:click={onNameClick}>
-        {plainText(name)}
-        <slot name="name" />
+        {Utils.text(name)}
+        <slot name="name"/>
       </div>
     {/if}
-    {#if hasHeaderSlots || header}
+    {#if (hasHeaderSlots || header)}
       <div class="message-header" on:click={onHeaderClick}>
-        {plainText(header)}
-        <slot name="header" />
+        {Utils.text(header)}
+        <slot name="header"/>
       </div>
     {/if}
     <div class="message-bubble" on:click={onBubbleClick}>
-      <slot name="bubble-start" />
-      {#if hasImageSlots || image}
+      <slot name="bubble-start"/>
+      {#if (hasImageSlots || image)}
         <div class="message-image">
           {#if image}
             <img src={image} />
           {/if}
-          <slot name="image" />
+          <slot name="image"/>
         </div>
       {/if}
-      {#if hasTextHeaderSlots || textHeader}
+      {#if (hasTextHeaderSlots || textHeader)}
         <div class="message-text-header">
-          {plainText(textHeader)}
-          <slot name="text-header" />
+          {Utils.text(textHeader)}
+          <slot name="text-header"/>
         </div>
       {/if}
-      {#if hasTextSlots || text || htmlText || typing}
+      {#if (hasTextSlots || text || htmlText || typing)}
         <div class="message-text" on:click={onTextClick}>
-          {plainText(text)}
+          {Utils.text(text)}
           {#if htmlText}{@html htmlText}{/if}
-          <slot name="text" />
+          <slot name="text"/>
           {#if typing}
             <div class="message-typing-indicator">
               <div />
@@ -141,22 +149,22 @@
           {/if}
         </div>
       {/if}
-      {#if hasTextFooterSlots || textFooter}
+      {#if (hasTextFooterSlots || textFooter)}
         <div class="message-text-footer">
-          {plainText(textFooter)}
-          <slot name="text-footer" />
+          {Utils.text(textFooter)}
+          <slot name="text-footer"/>
         </div>
       {/if}
-      <slot name="bubble-end" />
+      <slot name="bubble-end"/>
       <slot />
     </div>
-    {#if hasFooterSlots || footer}
+    {#if (hasFooterSlots || footer)}
       <div class="message-footer" on:click={onFooterClick}>
-        {plainText(footer)}
-        <slot name="footer" />
+        {Utils.text(footer)}
+        <slot name="footer"/>
       </div>
     {/if}
-    <slot name="content-end" />
+    <slot name="content-end"/>
   </div>
-  <slot name="end" />
+  <slot name="end"/>
 </div>

@@ -1,7 +1,7 @@
 <script>
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
 
   let className = undefined;
   export { className as class };
@@ -20,12 +20,13 @@
     return pos;
   })();
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     'menu-dropdown',
     `menu-dropdown-${positionComputed}`,
-    colorClasses($$props),
-    className,
+    Mixins.colorClasses($$props),
+    className
   );
+
 </script>
 
 <div class={classes} {...restProps($$restProps)}>

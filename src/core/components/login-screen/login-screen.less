@@ -1,5 +1,5 @@
 /* === Login Screen === */
-@import './login-screen-vars.less';
+@import url('./login-screen-vars.less');
 
 .login-screen {
   position: absolute;
@@ -13,8 +13,7 @@
   transform: translate3d(0, 100vh, 0);
   background: var(--f7-login-screen-bg-color);
   z-index: 11000;
-  &.modal-in,
-  &.modal-out {
+  &.modal-in, &.modal-out {
     transition-duration: 400ms;
   }
   &.not-animated {
@@ -55,8 +54,7 @@
     .hairline-remove-top-bottom();
     background: none;
   }
-  .block-footer,
-  .block-header {
+  .block-footer, .block-header {
     text-align: center;
     margin-left: auto;
     margin-right: auto;
@@ -84,7 +82,7 @@
   }
 }
 
-.dark {
+.theme-dark {
   .login-screen-content .list ul,
   .login-screen-content .block-strong,
   .login-screen-page .list ul,
@@ -96,11 +94,11 @@
 }
 
 .if-ios-theme({
-  @import './login-screen-ios.less';
+  @import url('./login-screen-ios.less');
 });
 .if-md-theme({
-  @import './login-screen-md.less';
+  @import url('./login-screen-md.less');
 });
 .if-aurora-theme({
-  @import './login-screen-aurora.less';
+  @import url('./login-screen-aurora.less');
 });

@@ -1,10 +1,10 @@
 <script>
   import { createEventDispatcher, onMount, afterUpdate } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -18,18 +18,18 @@
 
   let inputEl;
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     {
       checkbox: true,
       disabled,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function onChange(event) {
-    emit('change', [event]);
-    checked = event.target.checked;
+    dispatch('change', [event]);
+    if (typeof $$props.onChange === 'function') $$props.onChange(event);
   }
 
   onMount(() => {
@@ -43,17 +43,18 @@
       inputEl.indeterminate = indeterminate;
     }
   });
+
 </script>
 
-<label class={classes} {...restProps($$restProps)}>
+<label class={classes}  {...restProps($$restProps)}>
   <input
     bind:this={inputEl}
     type="checkbox"
-    {name}
+    name={name}
     value={typeof value === 'undefined' ? '' : value}
-    {disabled}
-    {readonly}
-    {checked}
+    disabled={disabled}
+    readonly={readonly}
+    checked={checked}
     on:change={onChange}
   />
   <i class="icon-checkbox" />

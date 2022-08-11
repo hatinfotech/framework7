@@ -1,21 +1,14 @@
-import { getWindow } from 'ssr-window';
-import $ from '../../shared/dom7.js';
-import { extend, nextTick, deleteProps } from '../../shared/utils.js';
-import Framework7Class from '../../shared/class.js';
-import { getDevice } from '../../shared/get-device.js';
-
-import pickerColumn from './picker-column.js';
-
-/** @jsx $jsx */
-import $jsx from '../../shared/$jsx.js';
+import $ from 'dom7';
+import { window } from 'ssr-window';
+import Utils from '../../utils/utils';
+import Framework7Class from '../../utils/class';
+import pickerColumn from './picker-column';
 
 class Picker extends Framework7Class {
   constructor(app, params = {}) {
     super(params, [app]);
     const picker = this;
-    const device = getDevice();
-    const window = getWindow();
-    picker.params = extend({}, app.params.picker, params);
+    picker.params = Utils.extend({}, app.params.picker, params);
 
     let $containerEl;
     if (picker.params.containerEl) {
@@ -28,6 +21,7 @@ class Picker extends Framework7Class {
       $inputEl = $(picker.params.inputEl);
     }
 
+
     let $scrollToEl = picker.params.scrollToInput ? $inputEl : undefined;
     if (picker.params.scrollToEl) {
       const scrollToEl = $(picker.params.scrollToEl);
@@ -36,16 +30,12 @@ class Picker extends Framework7Class {
       }
     }
 
-    extend(picker, {
+    Utils.extend(picker, {
       app,
       $containerEl,
       containerEl: $containerEl && $containerEl[0],
       inline: $containerEl && $containerEl.length > 0,
-      needsOriginFix:
-        device.ios ||
-        (window.navigator.userAgent.toLowerCase().indexOf('safari') >= 0 &&
-          window.navigator.userAgent.toLowerCase().indexOf('chrome') < 0 &&
-          !device.android),
+      needsOriginFix: app.device.ios || ((window.navigator.userAgent.toLowerCase().indexOf('safari') >= 0 && window.navigator.userAgent.toLowerCase().indexOf('chrome') < 0) && !app.device.android),
       cols: [],
       $inputEl,
       inputEl: $inputEl && $inputEl[0],
@@ -64,10 +54,6 @@ class Picker extends Framework7Class {
     function onInputFocus(e) {
       e.preventDefault();
     }
-    let htmlTouchStartTarget = null;
-    function onHtmlTouchStart(e) {
-      htmlTouchStartTarget = e.target;
-    }
     function onHtmlClick(e) {
       if (picker.destroyed || !picker.params) return;
       const $targetEl = $(e.target);
@@ -75,11 +61,7 @@ class Picker extends Framework7Class {
       if (!picker.opened || picker.closing) return;
       if ($targetEl.closest('[class*="backdrop"]').length) return;
       if ($inputEl && $inputEl.length > 0) {
-        if (
-          htmlTouchStartTarget === e.target &&
-          $targetEl[0] !== $inputEl[0] &&
-          $targetEl.closest('.sheet-modal').length === 0
-        ) {
+        if ($targetEl[0] !== $inputEl[0] && $targetEl.closest('.sheet-modal').length === 0) {
           picker.close();
         }
       } else if ($(e.target).closest('.sheet-modal').length === 0) {
@@ -88,7 +70,7 @@ class Picker extends Framework7Class {
     }
 
     // Events
-    extend(picker, {
+    Utils.extend(picker, {
       attachResizeEvent() {
         app.on('resize', onResize);
       },
@@ -115,11 +97,9 @@ class Picker extends Framework7Class {
       },
       attachHtmlEvents() {
         app.on('click', onHtmlClick);
-        app.on('touchstart', onHtmlTouchStart);
       },
       detachHtmlEvents() {
         app.off('click', onHtmlClick);
-        app.off('touchstart', onHtmlTouchStart);
       },
     });
 
@@ -152,7 +132,7 @@ class Picker extends Framework7Class {
     for (let i = 0; i < picker.cols.length; i += 1) {
       if (!picker.cols[i].divider) {
         picker.cols[i].calcSize();
-        picker.cols[i].setValue(picker.cols[i].value, false);
+        picker.cols[i].setValue(picker.cols[i].value, 0, false);
       }
     }
   }
@@ -160,19 +140,18 @@ class Picker extends Framework7Class {
   isPopover() {
     const picker = this;
     const { app, modal, params } = picker;
-    const device = getDevice();
     if (params.openIn === 'sheet') return false;
     if (modal && modal.type !== 'popover') return false;
 
     if (!picker.inline && picker.inputEl) {
       if (params.openIn === 'popover') return true;
-      if (device.ios) {
-        return !!device.ipad;
+      if (app.device.ios) {
+        return !!app.device.ipad;
       }
       if (app.width >= 768) {
         return true;
       }
-      if (device.desktop && app.theme === 'aurora') {
+      if (app.device.desktop && app.theme === 'aurora') {
         return true;
       }
     }
@@ -188,7 +167,7 @@ class Picker extends Framework7Class {
     return value.join(' ');
   }
 
-  setValue(values) {
+  setValue(values, transition) {
     const picker = this;
     let valueIndex = 0;
     if (picker.cols.length === 0) {
@@ -198,7 +177,7 @@ class Picker extends Framework7Class {
     }
     for (let i = 0; i < picker.cols.length; i += 1) {
       if (picker.cols[i] && !picker.cols[i].divider) {
-        picker.cols[i].setValue(values[valueIndex]);
+        picker.cols[i].setValue(values[valueIndex], transition);
         valueIndex += 1;
       }
     }
@@ -215,14 +194,10 @@ class Picker extends Framework7Class {
     const newDisplayValue = [];
     let column;
     if (picker.cols.length === 0) {
-      const noDividerColumns = picker.params.cols.filter((c) => !c.divider);
+      const noDividerColumns = picker.params.cols.filter(c => !c.divider);
       for (let i = 0; i < noDividerColumns.length; i += 1) {
         column = noDividerColumns[i];
-        if (
-          column.displayValues !== undefined &&
-          column.values !== undefined &&
-          column.values.indexOf(newValue[i]) !== -1
-        ) {
+        if (column.displayValues !== undefined && column.values !== undefined && column.values.indexOf(newValue[i]) !== -1) {
           newDisplayValue.push(column.displayValues[column.values.indexOf(newValue[i])]);
         } else {
           newDisplayValue.push(newValue[i]);
@@ -266,38 +241,33 @@ class Picker extends Framework7Class {
   renderToolbar() {
     const picker = this;
     if (picker.params.renderToolbar) return picker.params.renderToolbar.call(picker, picker);
-    return (
+    return `
       <div class="toolbar toolbar-top no-shadow">
         <div class="toolbar-inner">
           <div class="left"></div>
           <div class="right">
-            <a class="link sheet-close popover-close">{picker.params.toolbarCloseText}</a>
+            <a class="link sheet-close popover-close">${picker.params.toolbarCloseText}</a>
           </div>
         </div>
       </div>
-    );
+    `.trim();
   }
   // eslint-disable-next-line
   renderColumn(col, onlyItems) {
-    const colClasses = `picker-column ${col.textAlign ? `picker-column-${col.textAlign}` : ''} ${
-      col.cssClass || ''
-    }`;
+    const colClasses = `picker-column ${col.textAlign ? `picker-column-${col.textAlign}` : ''} ${col.cssClass || ''}`;
     let columnHtml;
     let columnItemsHtml;
 
     if (col.divider) {
-      // prettier-ignore
       columnHtml = `
         <div class="${colClasses} picker-column-divider">${col.content}</div>
       `;
     } else {
-      // prettier-ignore
       columnItemsHtml = col.values.map((value, index) => `
         <div class="picker-item" data-picker-value="${value}">
           <span>${col.displayValues ? col.displayValues[index] : value}</span>
         </div>
       `).join('');
-      // prettier-ignore
       columnHtml = `
         <div class="${colClasses}">
           <div class="picker-items">${columnItemsHtml}</div>
@@ -311,15 +281,15 @@ class Picker extends Framework7Class {
   renderInline() {
     const picker = this;
     const { rotateEffect, cssClass, toolbar } = picker.params;
-    const inlineHtml = (
-      <div class={`picker picker-inline ${rotateEffect ? 'picker-3d' : ''} ${cssClass || ''}`}>
-        {toolbar && picker.renderToolbar()}
+    const inlineHtml = `
+      <div class="picker picker-inline ${rotateEffect ? 'picker-3d' : ''} ${cssClass || ''}">
+        ${toolbar ? picker.renderToolbar() : ''}
         <div class="picker-columns">
-          {picker.cols.map((col) => picker.renderColumn(col))}
+          ${picker.cols.map(col => picker.renderColumn(col)).join('')}
           <div class="picker-center-highlight"></div>
         </div>
       </div>
-    );
+    `.trim();
 
     return inlineHtml;
   }
@@ -327,19 +297,15 @@ class Picker extends Framework7Class {
   renderSheet() {
     const picker = this;
     const { rotateEffect, cssClass, toolbar } = picker.params;
-    const sheetHtml = (
-      <div
-        class={`sheet-modal picker picker-sheet ${rotateEffect ? 'picker-3d' : ''} ${
-          cssClass || ''
-        }`}
-      >
-        {toolbar && picker.renderToolbar()}
+    const sheetHtml = `
+      <div class="sheet-modal picker picker-sheet ${rotateEffect ? 'picker-3d' : ''} ${cssClass || ''}">
+        ${toolbar ? picker.renderToolbar() : ''}
         <div class="sheet-modal-inner picker-columns">
-          {picker.cols.map((col) => picker.renderColumn(col))}
+          ${picker.cols.map(col => picker.renderColumn(col)).join('')}
           <div class="picker-center-highlight"></div>
         </div>
       </div>
-    );
+    `.trim();
 
     return sheetHtml;
   }
@@ -347,19 +313,19 @@ class Picker extends Framework7Class {
   renderPopover() {
     const picker = this;
     const { rotateEffect, cssClass, toolbar } = picker.params;
-    const popoverHtml = (
+    const popoverHtml = `
       <div class="popover picker-popover">
         <div class="popover-inner">
-          <div class={`picker ${rotateEffect ? 'picker-3d' : ''} ${cssClass || ''}`}>
-            {toolbar && picker.renderToolbar()}
+          <div class="picker ${rotateEffect ? 'picker-3d' : ''} ${cssClass || ''}">
+            ${toolbar ? picker.renderToolbar() : ''}
             <div class="picker-columns">
-              {picker.cols.map((col) => picker.renderColumn(col))}
+              ${picker.cols.map(col => picker.renderColumn(col)).join('')}
               <div class="picker-center-highlight"></div>
             </div>
           </div>
         </div>
       </div>
-    );
+    `.trim();
 
     return popoverHtml;
   }
@@ -385,9 +351,12 @@ class Picker extends Framework7Class {
     picker.attachResizeEvent();
 
     // Init cols
-    $el.find('.picker-column').each((colEl) => {
+    $el.find('.picker-column').each((index, colEl) => {
       let updateItems = true;
-      if ((!initialized && params.value) || (initialized && value)) {
+      if (
+        (!initialized && params.value)
+        || (initialized && value)
+      ) {
         updateItems = false;
       }
       picker.initColumn(colEl, updateItems);
@@ -395,12 +364,12 @@ class Picker extends Framework7Class {
 
     // Set value
     if (!initialized) {
-      if (value) picker.setValue(value);
+      if (value) picker.setValue(value, 0);
       else if (params.value) {
-        picker.setValue(params.value);
+        picker.setValue(params.value, 0);
       }
     } else if (value) {
-      picker.setValue(value);
+      picker.setValue(value, 0);
     }
 
     // Extra focus
@@ -473,7 +442,7 @@ class Picker extends Framework7Class {
     picker.closing = false;
 
     if (!picker.inline) {
-      nextTick(() => {
+      Utils.nextTick(() => {
         if (picker.modal && picker.modal.el && picker.modal.destroy) {
           if (!picker.params.routableModals) {
             picker.modal.destroy();
@@ -524,15 +493,9 @@ class Picker extends Framework7Class {
           picker.$el[0].f7Picker = picker;
           picker.onOpen();
         },
-        opened() {
-          picker.onOpened();
-        },
-        close() {
-          picker.onClose();
-        },
-        closed() {
-          picker.onClosed();
-        },
+        opened() { picker.onOpened(); },
+        close() { picker.onClose(); },
+        closed() { picker.onClosed(); },
       },
     };
     if (modalType === 'sheet') {
@@ -612,7 +575,7 @@ class Picker extends Framework7Class {
     }
 
     if ($el && $el.length) delete picker.$el[0].f7Picker;
-    deleteProps(picker);
+    Utils.deleteProps(picker);
     picker.destroyed = true;
   }
 }

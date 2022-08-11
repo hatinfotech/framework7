@@ -1,21 +1,22 @@
 <script>
-  import { restProps } from '../shared/rest-props.js';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames } from '../shared/utils.js';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import Mixins from '../utils/mixins';
 
   export let tabs = false;
 
   let className = undefined;
   export { className as class };
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'views',
     {
       tabs,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
+
 </script>
 
 <div class={classes} {...restProps($$restProps)}>

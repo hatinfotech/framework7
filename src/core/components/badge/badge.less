@@ -1,5 +1,5 @@
 /* === Badge === */
-@import './badge-vars.less';
+@import url('./badge-vars.less');
 
 .badge {
   display: inline-flex;
@@ -32,16 +32,16 @@
     --f7-badge-size: var(--f7-badge-in-icon-size);
   }
 }
-.badge[class*='color-'] {
+.badge[class*="color-"] {
   --f7-badge-bg-color: var(--f7-theme-color);
 }
 
 .if-ios-theme({
-  @import './badge-ios.less';
+  @import url('./badge-ios.less');
 });
 .if-md-theme({
-  @import './badge-md.less';
+  @import url('./badge-md.less');
 });
 .if-aurora-theme({
-  @import './badge-aurora.less';
+  @import url('./badge-aurora.less');
 });

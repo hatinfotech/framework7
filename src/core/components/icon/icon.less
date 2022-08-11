@@ -21,16 +21,16 @@ i.icon {
     .core-icons-font();
   }
 }
-.icon[class*='color-'] {
+.icon[class*="color-"] {
   color: var(--f7-theme-color);
 }
 
 .if-ios-theme({
-  @import './icon-ios.less';
+  @import url('./icon-ios.less');
 });
 .if-md-theme({
-  @import './icon-md.less';
+  @import url('./icon-md.less');
 });
 .if-aurora-theme({
-  @import './icon-aurora.less';
+  @import url('./icon-aurora.less');
 });

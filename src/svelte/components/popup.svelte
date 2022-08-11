@@ -1,12 +1,11 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
-  import { modalStateClasses } from '../shared/modal-state-classes.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -21,68 +20,65 @@
   export let swipeToClose = false;
   export let swipeHandler = undefined;
   export let push = undefined;
-  export let containerEl = undefined;
 
   let el;
   let f7Popup;
-
-  const state = {
-    isOpened: opened,
-    isClosing: false,
-  };
 
   export function instance() {
     return f7Popup;
   }
 
-  $: classes = classNames(
+  export function open(anim) {
+    if (!f7Popup) return undefined;
+    return f7Popup.open(anim);
+  }
+  export function close(anim) {
+    if (!f7Popup) return undefined;
+    return f7Popup.close(anim);
+  }
+
+  $: classes = Utils.classNames(
     className,
     'popup',
     {
       'popup-tablet-fullscreen': tabletFullscreen,
       'popup-push': push,
     },
-    modalStateClasses(state),
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function onSwipeStart(instance) {
-    emit('popupSwipeStart', [instance]);
+    dispatch('popupSwipeStart', [instance]);
+    if (typeof $$props.onPopupSwipeStart === 'function') $$props.onPopupSwipeStart(instance);
   }
   function onSwipeMove(instance) {
-    emit('popupSwipeMove', [instance]);
+    dispatch('popupSwipeMove', [instance]);
+    if (typeof $$props.onPopupSwipeMove === 'function') $$props.onPopupSwipeMove(instance);
   }
   function onSwipeEnd(instance) {
-    emit('popupSwipeEnd', [instance]);
+    dispatch('popupSwipeEnd', [instance]);
+    if (typeof $$props.onPopupSwipeEnd === 'function') $$props.onPopupSwipeEnd(instance);
   }
   function onSwipeClose(instance) {
-    emit('popupSwipeClose', [instance]);
+    dispatch('popupSwipeClose', [instance]);
+    if (typeof $$props.onPopupSwipeClose === 'function') $$props.onPopupSwipeClose(instance);
   }
 
   function onOpen(instance) {
-    Object.assign(state, {
-      isOpened: true,
-      isClosing: false,
-    });
-    emit('popupOpen', [instance]);
-    opened = true;
+    dispatch('popupOpen', [instance]);
+    if (typeof $$props.onPopupOpen === 'function') $$props.onPopupOpen(instance);
   }
   function onOpened(instance) {
-    emit('popupOpened', [instance]);
+    dispatch('popupOpened', [instance]);
+    if (typeof $$props.onPopupOpened === 'function') $$props.onPopupOpened(instance);
   }
   function onClose(instance) {
-    Object.assign(state, {
-      isOpened: false,
-      isClosing: true,
-    });
-    emit('popupClose', [instance]);
+    dispatch('popupClose', [instance]);
+    if (typeof $$props.onPopupClose === 'function') $$props.onPopupClose(instance);
   }
   function onClosed(instance) {
-    Object.assign(state, {
-      isClosing: false,
-    });
-    emit('popupClosed', [instance]);
-    opened = false;
+    dispatch('popupClosed', [instance]);
+    if (typeof $$props.onPopupClosed === 'function') $$props.onPopupClosed(instance);
   }
 
   let initialWatched = false;
@@ -112,18 +108,16 @@
         closed: onClosed,
       },
     };
-    if (typeof closeByBackdropClick !== 'undefined')
-      popupParams.closeByBackdropClick = closeByBackdropClick;
+    if (typeof closeByBackdropClick !== 'undefined') popupParams.closeByBackdropClick = closeByBackdropClick;
     if (typeof closeOnEscape !== 'undefined') popupParams.closeOnEscape = closeOnEscape;
     if (typeof animate !== 'undefined') popupParams.animate = animate;
     if (typeof backdrop !== 'undefined') popupParams.backdrop = backdrop;
     if (typeof backdropEl !== 'undefined') popupParams.backdropEl = backdropEl;
     if (typeof swipeToClose !== 'undefined') popupParams.swipeToClose = swipeToClose;
     if (typeof swipeHandler !== 'undefined') popupParams.swipeHandler = swipeHandler;
-    if (typeof containerEl !== 'undefined') popupParams.containerEl = containerEl;
 
-    f7ready(() => {
-      f7Popup = app.f7.popup.create(popupParams);
+    f7.ready(() => {
+      f7Popup = f7.instance.popup.create(popupParams);
       if (opened) {
         f7Popup.open(false);
       }
@@ -131,10 +125,13 @@
   });
   onDestroy(() => {
     if (f7Popup) f7Popup.destroy();
-    f7Popup = null;
+    f7Popup = undefined;
   });
 </script>
-
-<div class={classes} bind:this={el} {...restProps($$restProps)}>
-  <slot popup={f7Popup} />
+<div
+  class={classes}
+  bind:this={el}
+  {...restProps($$restProps)}
+>
+  <slot />
 </div>

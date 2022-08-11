@@ -1,11 +1,11 @@
 <script>
   import { createEventDispatcher } from 'svelte';
 
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, plainText, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -19,19 +19,21 @@
   export { deleteProp as delete };
   export let href = undefined;
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     {
       'swipeout-overswipe': overswipe,
       'swipeout-delete': deleteProp,
       'swipeout-close': close,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function onClick() {
-    emit('click');
+    dispatch('click');
+    if (typeof $$props.onClick === 'function') $$props.onClick();
   }
+
 </script>
 
 <a
@@ -42,6 +44,6 @@
   on:click={onClick}
   {...restProps($$restProps)}
 >
-  {plainText(text)}
-  <slot />
+  {Utils.text(text)}
+  <slot></slot>
 </a>

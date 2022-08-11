@@ -1,46 +1,39 @@
-import { getDocument } from 'ssr-window';
-import { getDevice } from '../../shared/get-device.js';
+import { document } from 'ssr-window';
+import Device from '../../utils/device';
 
 export default {
   name: 'device',
+  proto: {
+    device: Device,
+  },
   static: {
-    getDevice,
+    device: Device,
   },
   on: {
     init() {
-      const document = getDocument();
-      const device = getDevice();
       const classNames = [];
       const html = document.querySelector('html');
-      const metaStatusbar = document.querySelector(
-        'meta[name="apple-mobile-web-app-status-bar-style"]',
-      );
+      const metaStatusbar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
       if (!html) return;
-      if (
-        device.standalone &&
-        device.ios &&
-        metaStatusbar &&
-        metaStatusbar.content === 'black-translucent'
-      ) {
+      if (Device.standalone && Device.ios && metaStatusbar && metaStatusbar.content === 'black-translucent') {
         classNames.push('device-full-viewport');
       }
 
       // Pixel Ratio
-      classNames.push(`device-pixel-ratio-${Math.floor(device.pixelRatio)}`);
+      classNames.push(`device-pixel-ratio-${Math.floor(Device.pixelRatio)}`);
       // OS classes
-      if (device.os && !device.desktop) {
-        classNames.push(`device-${device.os}`);
-      } else if (device.desktop) {
+      if (Device.os && !Device.desktop) {
+        classNames.push(
+          `device-${Device.os}`,
+        );
+      } else if (Device.desktop) {
         classNames.push('device-desktop');
-        if (device.os) {
-          classNames.push(`device-${device.os}`);
+        if (Device.os) {
+          classNames.push(`device-${Device.os}`);
         }
       }
-      if (device.cordova) {
+      if (Device.cordova || Device.phonegap) {
         classNames.push('device-cordova');
-      }
-      if (device.capacitor) {
-        classNames.push('device-capacitor');
       }
 
       // Add html classes

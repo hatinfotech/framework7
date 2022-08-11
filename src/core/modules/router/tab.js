@@ -1,21 +1,18 @@
-import $ from '../../shared/dom7.js';
-import { extend } from '../../shared/utils.js';
-import History from '../../shared/history.js';
-import asyncComponent from './async-component.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
+import History from '../../utils/history';
+import asyncComponent from './async-component';
 
 function tabLoad(tabRoute, loadOptions = {}) {
   const router = this;
-  const options = extend(
-    {
-      animate: router.params.animate,
-      browserHistory: true,
-      history: true,
-      parentPageEl: null,
-      preload: false,
-      on: {},
-    },
-    loadOptions,
-  );
+  const options = Utils.extend({
+    animate: router.params.animate,
+    pushState: true,
+    history: true,
+    parentPageEl: null,
+    preload: false,
+    on: {},
+  }, loadOptions);
 
   let currentRoute;
   let previousRoute;
@@ -34,15 +31,13 @@ function tabLoad(tabRoute, loadOptions = {}) {
     }
 
     // Update Browser History
-    if (router.params.browserHistory && options.browserHistory && !options.reloadPrevious) {
-      History[router.params.browserHistoryTabs](
+    if (router.params.pushState && options.pushState && !options.reloadPrevious) {
+      History.replace(
         router.view.id,
         {
           url: options.route.url,
         },
-        (router.params.browserHistoryRoot || '') +
-          router.params.browserHistorySeparator +
-          options.route.url,
+        (router.params.pushStateRoot || '') + router.params.pushStateSeparator + options.route.url
       );
     }
 
@@ -121,7 +116,7 @@ function tabLoad(tabRoute, loadOptions = {}) {
   // Load Tab Content
   function loadTab(loadTabParams, loadTabOptions) {
     // Load Tab Props
-    const { url, content, el, component, componentUrl } = loadTabParams;
+    const { url, content, el, template, templateUrl, component, componentUrl } = loadTabParams;
     // Component/Template Callbacks
     function resolve(contentEl) {
       router.allowPageChange = true;
@@ -131,7 +126,7 @@ function tabLoad(tabRoute, loadOptions = {}) {
       } else {
         $newTabEl.html('');
         if (contentEl.f7Component) {
-          contentEl.f7Component.mount((componentEl) => {
+          contentEl.f7Component.$mount((componentEl) => {
             $newTabEl.append(componentEl);
           });
         } else {
@@ -148,31 +143,30 @@ function tabLoad(tabRoute, loadOptions = {}) {
 
     if (content) {
       resolve(content);
+    } else if (template || templateUrl) {
+      try {
+        router.tabTemplateLoader(template, templateUrl, loadTabOptions, resolve, reject);
+      } catch (err) {
+        router.allowPageChange = true;
+        throw err;
+      }
     } else if (el) {
       resolve(el);
     } else if (component || componentUrl) {
       // Load from component (F7/Vue/React/...)
       try {
-        router.tabComponentLoader({
-          tabEl: $newTabEl[0],
-          component,
-          componentUrl,
-          options: loadTabOptions,
-          resolve,
-          reject,
-        });
+        router.tabComponentLoader($newTabEl[0], component, componentUrl, loadTabOptions, resolve, reject);
       } catch (err) {
         router.allowPageChange = true;
         throw err;
       }
     } else if (url) {
       // Load using XHR
-      if (router.xhrAbortController) {
-        router.xhrAbortController.abort();
-        router.xhrAbortController = false;
+      if (router.xhr) {
+        router.xhr.abort();
+        router.xhr = false;
       }
-      router
-        .xhrRequest(url, loadTabOptions)
+      router.xhrRequest(url, loadTabOptions)
         .then((tabContent) => {
           resolve(tabContent);
         })
@@ -183,7 +177,7 @@ function tabLoad(tabRoute, loadOptions = {}) {
   }
 
   let hasContentLoadProp;
-  'url content component el componentUrl'.split(' ').forEach((tabLoadProp) => {
+  ('url content component el componentUrl template templateUrl').split(' ').forEach((tabLoadProp) => {
     if (tabRoute[tabLoadProp]) {
       hasContentLoadProp = true;
       loadTab({ [tabLoadProp]: tabRoute[tabLoadProp] }, options);
@@ -192,20 +186,13 @@ function tabLoad(tabRoute, loadOptions = {}) {
 
   // Async
   function asyncResolve(resolveParams, resolveOptions) {
-    loadTab(resolveParams, extend(options, resolveOptions));
+    loadTab(resolveParams, Utils.extend(options, resolveOptions));
   }
   function asyncReject() {
     router.allowPageChange = true;
   }
   if (tabRoute.async) {
-    tabRoute.async.call(router, {
-      router,
-      to: currentRoute,
-      from: previousRoute,
-      resolve: asyncResolve,
-      reject: asyncReject,
-      app: router.app,
-    });
+    tabRoute.async.call(router, currentRoute, previousRoute, asyncResolve, asyncReject);
   } else if (tabRoute.asyncComponent) {
     asyncComponent(router, tabRoute.asyncComponent, asyncResolve, asyncReject);
   } else if (!hasContentLoadProp) {
@@ -222,11 +209,11 @@ function tabRemove($oldTabEl, $newTabEl, tabRoute) {
     $oldTabEl[0].f7RouterTabLoaded = false;
     delete $oldTabEl[0].f7RouterTabLoaded;
   }
-  $oldTabEl.children().each((tabChild) => {
+  $oldTabEl.children().each((index, tabChild) => {
     if (tabChild.f7Component) {
       hasTabComponentChild = true;
       $(tabChild).trigger('tab:beforeremove', tabRoute);
-      tabChild.f7Component.destroy();
+      tabChild.f7Component.$destroy();
     }
   });
   if (!hasTabComponentChild) {

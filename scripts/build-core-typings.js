@@ -4,108 +4,60 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 
 const path = require('path');
-const glob = require('glob');
 const getOutput = require('./get-output.js');
-const fs = require('./utils/fs-extra.js');
+const fs = require('./utils/fs-extra');
 
 function capitalize(name) {
-  return name
-    .split('-')
-    .map((word) => {
-      // eslint-disable-line
-      return word
-        .split('')
-        .map((char, index) => {
-          if (index === 0) return char.toUpperCase();
-          return char;
-        })
-        .join('');
-    })
-    .join('');
+  return name.split('-').map((word) => { // eslint-disable-line
+    return word.split('').map((char, index) => {
+      if (index === 0) return char.toUpperCase();
+      return char;
+    }).join('');
+  }).join('');
 }
 
-function copyTypings() {
-  const output = `${getOutput()}/core`;
-  ['modules', 'components', 'shared'].forEach((folderName) => {
-    glob('**/*.*', { cwd: path.resolve(__dirname, `../src/core/${folderName}`) }, (err, files) => {
-      const filesToProcess = files.filter((file) => {
-        return file.indexOf('.d.ts') >= 0;
-      });
-      filesToProcess.forEach((file) => {
-        const fileContent = fs.readFileSync(
-          path.resolve(__dirname, `../src/core/${folderName}`, file),
-        );
-        fs.writeFileSync(path.resolve(`${output}/${folderName}`, file), fileContent);
-      });
-    });
-  });
-}
-
-function generateTypings(content, modules, components) {
-  const f7Base = `import Framework7 from './components/app/app-class.js'`;
+function generateTypings(basePath, modules, components) {
+  const f7Base = `import Framework7 from '${basePath}/components/app/app-class'`;
 
   const helpers = ['request', 'utils', 'support', 'device'];
 
   const importHelpers = helpers.map((helper) => {
     const capitalized = capitalize(helper);
-    return `import ${capitalized} from './shared/${helper}';`;
+    return `import ${capitalized} from '${basePath}/utils/${helper}';`;
   });
 
   const exportHelpers = helpers.map(capitalize).join(', ');
 
   const importModules = modules.map((f7Module) => {
     const capitalized = capitalize(f7Module);
-    return `import { ${capitalized} as ${capitalized}Module } from './modules/${f7Module}/${f7Module}.js';`;
+    return `import {${capitalized} as ${capitalized}Namespace} from '${basePath}/modules/${f7Module}/${f7Module}';`;
   });
 
   const importComponents = components.map((component) => {
     const capitalized = capitalize(component);
-    return `import { ${capitalized} } from './components/${component}/${component}.js';`;
+    return `import {${capitalized} as ${capitalized}Namespace} from '${basePath}/components/${component}/${component}';`;
   });
 
-  const installModules = modules
-    .map((f7Module) => {
-      const capitalized = capitalize(f7Module);
-      return [
-        `interface Framework7Class<Events> extends ${capitalized}Module.AppMethods{}`,
-        `interface Framework7Parameters extends ${capitalized}Module.AppParams{}`,
-        `interface Framework7Events extends ${capitalized}Module.AppEvents{}`,
-      ].join('\n  ');
-    })
-    .join('\n  ');
+  const install = [...modules, ...components].map((f7Module) => {
+    const capitalized = capitalize(f7Module);
+    return [
+      `interface Framework7Class<Events> extends ${capitalized}Namespace.AppMethods{}`,
+      `interface Framework7Params extends ${capitalized}Namespace.AppParams{}`,
+      `interface Framework7Events extends ${capitalized}Namespace.AppEvents{}`,
+    ].join('\n  ');
+  });
 
-  const installComponents = components
-    .map((f7Module) => {
-      const capitalized = capitalize(f7Module);
-      return [
-        `interface Framework7Class<Events> extends ${capitalized}.AppMethods{}`,
-        `interface Framework7Parameters extends ${capitalized}.AppParams{}`,
-        `interface Framework7Events extends ${capitalized}.AppEvents{}`,
-      ].join('\n  ');
-    })
-    .join('\n  ');
-
-  const install = [installModules, `  ${installComponents}`].join('\n');
-
-  const exportComponents = components
-    .map((f7Module) => {
-      return capitalize(f7Module);
-    })
-    .join(', ');
-
-  return content
+  return fs.readFileSync(path.resolve(__dirname, '../src/core/framework7.d.ts'))
+    .replace(/{{basePath}}/g, basePath)
     .replace(/\/\/ IMPORT_BASE/, f7Base)
     .replace(/\/\/ IMPORT_HELPERS/, importHelpers.join('\n'))
     .replace(/\/\/ EXPORT_HELPERS/, `export { ${exportHelpers} };`)
     .replace(/\/\/ IMPORT_MODULES/, importModules.join('\n'))
     .replace(/\/\/ IMPORT_COMPONENTS/, importComponents.join('\n'))
-    .replace(/\/\/ INSTALL/, install)
-    .replace(/\/\/ EXPORT_COMPONENTS/, `export { ${exportComponents} }`);
+    .replace(/\/\/ INSTALL/, install.join('\n  '));
 }
 
 function buildTypings(cb) {
-  copyTypings();
-
   const output = `${getOutput()}/core`;
 
   const modules = fs.readdirSync('./src/core/modules').filter((file) => {
@@ -117,19 +69,17 @@ function buildTypings(cb) {
     return fs.existsSync(`./src/core/components/${file}/${file}.d.ts`);
   });
 
-  const mainContent = fs.readFileSync(path.resolve(__dirname, '../src/core/framework7.d.ts'));
-  const typesContent = fs.readFileSync(
-    path.resolve(__dirname, '../src/core/framework7-types.d.ts'),
-  );
+  const rootTypings = generateTypings('.', modules, components);
+  const jsTypings = generateTypings('..', modules, components);
 
-  const mainTypings = generateTypings(mainContent, modules, components);
-  const typesTypings = generateTypings(typesContent, modules, components).replace(
-    /\.\/types\//g,
-    './',
-  );
-
-  fs.writeFileSync(`${output}/framework7.d.ts`, mainTypings);
-  fs.writeFileSync(`${output}/framework7-types.d.ts`, typesTypings);
+  fs.writeFileSync(`${output}/js/framework7.d.ts`, jsTypings);
+  fs.writeFileSync(`${output}/js/framework7.bundle.d.ts`, jsTypings);
+  fs.writeFileSync(`${output}/js/framework7-lite.d.ts`, jsTypings);
+  fs.writeFileSync(`${output}/js/framework7-lite.bundle.d.ts`, jsTypings);
+  fs.writeFileSync(`${output}/framework7.esm.d.ts`, rootTypings);
+  fs.writeFileSync(`${output}/framework7.esm.bundle.d.ts`, rootTypings);
+  fs.writeFileSync(`${output}/framework7-lite.esm.d.ts`, rootTypings);
+  fs.writeFileSync(`${output}/framework7-lite.esm.bundle.d.ts`, rootTypings);
 
   cb();
 }

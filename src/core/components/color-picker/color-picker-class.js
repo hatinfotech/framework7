@@ -1,41 +1,27 @@
-import {
-  extend,
-  colorRgbToHex,
-  colorRgbToHsl,
-  colorHslToHsb,
-  colorHslToRgb,
-  colorHsbToHsl,
-  colorHexToRgb,
-  nextTick,
-  deleteProps,
-} from '../../shared/utils.js';
-import Framework7Class from '../../shared/class.js';
-import $ from '../../shared/dom7.js';
-import { getDevice } from '../../shared/get-device.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
+import Framework7Class from '../../utils/class';
 
-import moduleAlphaSlider from './modules/alpha-slider.js';
-import moduleCurrentColor from './modules/current-color.js';
-import moduleHex from './modules/hex.js';
-import moduleHsbSliders from './modules/hsb-sliders.js';
-import moduleHueSlider from './modules/hue-slider.js';
-import moduleBrightnessSlider from './modules/brightness-slider.js';
-import modulePalette from './modules/palette.js';
-import moduleInitialCurrentColors from './modules/initial-current-colors.js';
-import moduleRgbBars from './modules/rgb-bars.js';
-import moduleRgbSliders from './modules/rgb-sliders.js';
-import moduleSbSpectrum from './modules/sb-spectrum.js';
-import moduleHsSpectrum from './modules/hs-spectrum.js';
-import moduleWheel from './modules/wheel.js';
-
-/** @jsx $jsx */
-import $jsx from '../../shared/$jsx.js';
+import moduleAlphaSlider from './modules/alpha-slider';
+import moduleCurrentColor from './modules/current-color';
+import moduleHex from './modules/hex';
+import moduleHsbSliders from './modules/hsb-sliders';
+import moduleHueSlider from './modules/hue-slider';
+import moduleBrightnessSlider from './modules/brightness-slider';
+import modulePalette from './modules/palette';
+import moduleInitialCurrentColors from './modules/initial-current-colors';
+import moduleRgbBars from './modules/rgb-bars';
+import moduleRgbSliders from './modules/rgb-sliders';
+import moduleSbSpectrum from './modules/sb-spectrum';
+import moduleHsSpectrum from './modules/hs-spectrum';
+import moduleWheel from './modules/wheel';
 
 class ColorPicker extends Framework7Class {
   constructor(app, params = {}) {
     super(params, [app]);
     const self = this;
 
-    self.params = extend({}, app.params.colorPicker, params);
+    self.params = Utils.extend({}, app.params.colorPicker, params);
 
     let $containerEl;
     if (self.params.containerEl) {
@@ -53,7 +39,7 @@ class ColorPicker extends Framework7Class {
       $targetEl = $(self.params.targetEl);
     }
 
-    extend(self, {
+    Utils.extend(self, {
       app,
       $containerEl,
       containerEl: $containerEl && $containerEl[0],
@@ -68,17 +54,17 @@ class ColorPicker extends Framework7Class {
       modules: {
         'alpha-slider': moduleAlphaSlider,
         'current-color': moduleCurrentColor,
-        hex: moduleHex, // eslint-disable-line
+        'hex': moduleHex, // eslint-disable-line
         'hsb-sliders': moduleHsbSliders,
         'hue-slider': moduleHueSlider,
         'brightness-slider': moduleBrightnessSlider,
-        palette: modulePalette, // eslint-disable-line
+        'palette': modulePalette, // eslint-disable-line
         'initial-current-colors': moduleInitialCurrentColors,
         'rgb-bars': moduleRgbBars,
         'rgb-sliders': moduleRgbSliders,
         'sb-spectrum': moduleSbSpectrum,
         'hs-spectrum': moduleHsSpectrum,
-        wheel: moduleWheel, // eslint-disable-line
+        'wheel': moduleWheel, // eslint-disable-line
       },
     });
 
@@ -99,10 +85,7 @@ class ColorPicker extends Framework7Class {
       if ($clickTargetEl.closest('[class*="backdrop"]').length) return;
       if ($clickTargetEl.closest('.color-picker-popup, .color-picker-popover').length) return;
       if ($inputEl && $inputEl.length > 0) {
-        if (
-          $clickTargetEl[0] !== $inputEl[0] &&
-          $clickTargetEl.closest('.sheet-modal').length === 0
-        ) {
+        if ($clickTargetEl[0] !== $inputEl[0] && $clickTargetEl.closest('.sheet-modal').length === 0) {
           self.close();
         }
       } else if ($(e.target).closest('.sheet-modal').length === 0) {
@@ -111,7 +94,7 @@ class ColorPicker extends Framework7Class {
     }
 
     // Events
-    extend(self, {
+    Utils.extend(self, {
       attachInputEvents() {
         self.$inputEl.on('click', onInputClick);
         if (self.params.inputReadOnly) {
@@ -205,14 +188,13 @@ class ColorPicker extends Framework7Class {
     const self = this;
     const { app, modal, params } = self;
     const { openIn, openInPhone } = params;
-    const device = getDevice();
     if (modal && modal.type) return modal.type;
     if (openIn !== 'auto') return openIn;
     if (self.inline) return null;
-    if (device.ios) {
-      return device.ipad ? 'popover' : openInPhone;
+    if (app.device.ios) {
+      return app.device.ipad ? 'popover' : openInPhone;
     }
-    if (app.width >= 768 || (device.desktop && app.theme === 'aurora')) {
+    if (app.width >= 768 || (app.device.desktop && app.theme === 'aurora')) {
       return 'popover';
     }
 
@@ -241,7 +223,16 @@ class ColorPicker extends Framework7Class {
     const self = this;
     if (typeof value === 'undefined') return;
 
-    let { hex, rgb, hsl, hsb, alpha = 1, hue, rgba, hsla } = self.value || {};
+    let {
+      hex,
+      rgb,
+      hsl,
+      hsb,
+      alpha = 1,
+      hue,
+      rgba,
+      hsla,
+    } = (self.value || {});
 
     const needChangeEvent = self.value || (!self.value && !self.params.value);
     let valueChanged;
@@ -264,11 +255,11 @@ class ColorPicker extends Framework7Class {
     if (!valueChanged) return;
 
     if (value.rgb || value.rgba) {
-      const [r, g, b, a = alpha] = value.rgb || value.rgba;
+      const [r, g, b, a = alpha] = (value.rgb || value.rgba);
       rgb = [r, g, b];
-      hex = colorRgbToHex(...rgb);
-      hsl = colorRgbToHsl(...rgb);
-      hsb = colorHslToHsb(...hsl);
+      hex = Utils.colorRgbToHex(...rgb);
+      hsl = Utils.colorRgbToHsl(...rgb);
+      hsb = Utils.colorHslToHsb(...hsl);
       hsl = self.normalizeHsValues(hsl);
       hsb = self.normalizeHsValues(hsb);
       hue = hsb[0];
@@ -278,11 +269,11 @@ class ColorPicker extends Framework7Class {
     }
 
     if (value.hsl || value.hsla) {
-      const [h, s, l, a = alpha] = value.hsl || value.hsla;
+      const [h, s, l, a = alpha] = (value.hsl || value.hsla);
       hsl = [h, s, l];
-      rgb = colorHslToRgb(...hsl);
-      hex = colorRgbToHex(...rgb);
-      hsb = colorHslToHsb(...hsl);
+      rgb = Utils.colorHslToRgb(...hsl);
+      hex = Utils.colorRgbToHex(...rgb);
+      hsb = Utils.colorHslToHsb(...hsl);
       hsl = self.normalizeHsValues(hsl);
       hsb = self.normalizeHsValues(hsb);
       hue = hsb[0];
@@ -294,9 +285,9 @@ class ColorPicker extends Framework7Class {
     if (value.hsb) {
       const [h, s, b, a = alpha] = value.hsb;
       hsb = [h, s, b];
-      hsl = colorHsbToHsl(...hsb);
-      rgb = colorHslToRgb(...hsl);
-      hex = colorRgbToHex(...rgb);
+      hsl = Utils.colorHsbToHsl(...hsb);
+      rgb = Utils.colorHslToRgb(...hsl);
+      hex = Utils.colorRgbToHex(...rgb);
       hsl = self.normalizeHsValues(hsl);
       hsb = self.normalizeHsValues(hsb);
       hue = hsb[0];
@@ -306,10 +297,10 @@ class ColorPicker extends Framework7Class {
     }
 
     if (value.hex) {
-      rgb = colorHexToRgb(value.hex);
-      hex = colorRgbToHex(...rgb);
-      hsl = colorRgbToHsl(...rgb);
-      hsb = colorHslToHsb(...hsl);
+      rgb = Utils.colorHexToRgb(value.hex);
+      hex = Utils.colorRgbToHex(...rgb);
+      hsl = Utils.colorRgbToHsl(...rgb);
+      hsb = Utils.colorHslToHsb(...hsl);
       hsl = self.normalizeHsValues(hsl);
       hsb = self.normalizeHsValues(hsb);
       hue = hsb[0];
@@ -330,9 +321,9 @@ class ColorPicker extends Framework7Class {
     if (typeof value.hue !== 'undefined') {
       const [h, s, l] = hsl; // eslint-disable-line
       hsl = [value.hue, s, l];
-      hsb = colorHslToHsb(...hsl);
-      rgb = colorHslToRgb(...hsl);
-      hex = colorRgbToHex(...rgb);
+      hsb = Utils.colorHslToHsb(...hsl);
+      rgb = Utils.colorHslToRgb(...hsl);
+      hex = Utils.colorRgbToHex(...rgb);
       hsl = self.normalizeHsValues(hsl);
       hsb = self.normalizeHsValues(hsb);
       hue = hsb[0];
@@ -349,7 +340,7 @@ class ColorPicker extends Framework7Class {
       rgba,
       hsla,
     };
-    if (!self.initialValue) self.initialValue = extend({}, self.value);
+    if (!self.initialValue) self.initialValue = Utils.extend({}, self.value);
     self.updateValue(needChangeEvent);
     if (self.opened && updateModules) {
       self.updateModules();
@@ -422,29 +413,27 @@ class ColorPicker extends Framework7Class {
       return self.params.renderNavbar.call(self, self);
     }
     const { openIn, navbarTitleText, navbarBackLinkText, navbarCloseText } = self.params;
-    return (
-      <div class="navbar">
-        <div class="navbar-bg"></div>
-        <div class="navbar-inner sliding">
-          {openIn === 'page' && (
-            <div class="left">
-              <a class="link back">
-                <i class="icon icon-back"></i>
-                <span class="if-not-md">{navbarBackLinkText}</span>
-              </a>
-            </div>
-          )}
-          <div class="title">{navbarTitleText}</div>
-          {openIn !== 'page' && (
-            <div class="right">
-              <a class="link popup-close" data-popup=".color-picker-popup">
-                {navbarCloseText}
-              </a>
-            </div>
-          )}
+    return `
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        ${openIn === 'page' ? `
+        <div class="left">
+          <a class="link back">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">${navbarBackLinkText}</span>
+          </a>
         </div>
+        ` : ''}
+        <div class="title">${navbarTitleText}</div>
+        ${openIn !== 'page' ? `
+        <div class="right">
+          <a class="link popup-close" data-popup=".color-picker-popup">${navbarCloseText}</a>
+        </div>
+        ` : ''}
       </div>
-    );
+    </div>
+  `.trim();
   }
 
   renderToolbar() {
@@ -452,96 +441,99 @@ class ColorPicker extends Framework7Class {
     if (self.params.renderToolbar) {
       return self.params.renderToolbar.call(self, self);
     }
-    return (
-      <div class="toolbar toolbar-top no-shadow">
-        <div class="toolbar-inner">
-          <div class="left"></div>
-          <div class="right">
-            <a
-              class="link sheet-close popover-close"
-              data-sheet=".color-picker-sheet-modal"
-              data-popover=".color-picker-popover"
-            >
-              {self.params.toolbarCloseText}
-            </a>
-          </div>
+    return `
+    <div class="toolbar toolbar-top no-shadow">
+      <div class="toolbar-inner">
+        <div class="left"></div>
+        <div class="right">
+          <a class="link sheet-close popover-close" data-sheet=".color-picker-sheet-modal" data-popover=".color-picker-popover">${self.params.toolbarCloseText}</a>
         </div>
       </div>
-    );
+    </div>
+  `.trim();
   }
 
   renderInline() {
     const self = this;
     const { cssClass, groupedModules } = self.params;
-    return (
-      <div
-        class={`color-picker color-picker-inline ${
-          groupedModules ? 'color-picker-grouped-modules' : ''
-        } ${cssClass || ''}`}
-      >
-        {self.renderPicker()}
-      </div>
-    );
+    const inlineHtml = `
+    <div class="color-picker color-picker-inline ${groupedModules ? 'color-picker-grouped-modules' : ''} ${cssClass || ''}">
+      ${self.renderPicker()}
+    </div>
+  `.trim();
+
+    return inlineHtml;
   }
 
   renderSheet() {
     const self = this;
     const { cssClass, toolbarSheet, groupedModules } = self.params;
-    return (
-      <div
-        class={`sheet-modal color-picker color-picker-sheet-modal ${
-          groupedModules ? 'color-picker-grouped-modules' : ''
-        } ${cssClass || ''}`}
-      >
-        {toolbarSheet && self.renderToolbar()}
-        <div class="sheet-modal-inner">
-          <div class="page-content">{self.renderPicker()}</div>
+    const sheetHtml = `
+    <div class="sheet-modal color-picker color-picker-sheet-modal ${groupedModules ? 'color-picker-grouped-modules' : ''} ${cssClass || ''}">
+      ${toolbarSheet ? self.renderToolbar() : ''}
+      <div class="sheet-modal-inner">
+        <div class="page-content">
+          ${self.renderPicker()}
         </div>
       </div>
-    );
+    </div>
+  `.trim();
+
+    return sheetHtml;
   }
 
   renderPopover() {
     const self = this;
     const { cssClass, toolbarPopover, groupedModules } = self.params;
-    return (
-      <div class={`popover color-picker-popover ${cssClass || ''}`}>
-        <div class="popover-inner">
-          <div class={`color-picker ${groupedModules ? 'color-picker-grouped-modules' : ''}`}>
-            {toolbarPopover && self.renderToolbar()}
-            <div class="page-content">{self.renderPicker()}</div>
+    const popoverHtml = `
+    <div class="popover color-picker-popover ${cssClass || ''}">
+      <div class="popover-inner">
+        <div class="color-picker ${groupedModules ? 'color-picker-grouped-modules' : ''}">
+          ${toolbarPopover ? self.renderToolbar() : ''}
+          <div class="page-content">
+            ${self.renderPicker()}
           </div>
         </div>
       </div>
-    );
+    </div>
+  `.trim();
+
+    return popoverHtml;
   }
 
   renderPopup() {
     const self = this;
     const { cssClass, navbarPopup, groupedModules } = self.params;
-    return (
-      <div class={`popup color-picker-popup ${cssClass || ''}`}>
-        <div class="page">
-          {navbarPopup && self.renderNavbar()}
-          <div class={`color-picker ${groupedModules ? 'color-picker-grouped-modules' : ''}`}>
-            <div class="page-content">{self.renderPicker()}</div>
+    const popupHtml = `
+    <div class="popup color-picker-popup ${cssClass || ''}">
+      <div class="page">
+        ${navbarPopup ? self.renderNavbar() : ''}
+        <div class="color-picker ${groupedModules ? 'color-picker-grouped-modules' : ''}">
+          <div class="page-content">
+            ${self.renderPicker()}
           </div>
         </div>
       </div>
-    );
+    </div>
+  `.trim();
+
+    return popupHtml;
   }
 
   renderPage() {
     const self = this;
     const { cssClass, groupedModules } = self.params;
-    return (
-      <div class={`page color-picker-page ${cssClass || ''}`} data-name="color-picker-page">
-        {self.renderNavbar()}
-        <div class={`color-picker ${groupedModules ? 'color-picker-grouped-modules' : ''}`}>
-          <div class="page-content">{self.renderPicker()}</div>
+    const pageHtml = `
+    <div class="page color-picker-page ${cssClass || ''}" data-name="color-picker-page">
+      ${self.renderNavbar()}
+      <div class="color-picker ${groupedModules ? 'color-picker-grouped-modules' : ''}">
+        <div class="page-content">
+          ${self.renderPicker()}
         </div>
       </div>
-    );
+    </div>
+  `.trim();
+    return pageHtml;
   }
 
   // eslint-disable-next-line
@@ -589,7 +581,7 @@ class ColorPicker extends Framework7Class {
         self.setValue({ hex: '#ff0000' }, false);
       }
     } else if (value) {
-      self.initialValue = extend({}, value);
+      self.initialValue = Utils.extend({}, value);
       self.setValue(value, false);
     }
 
@@ -674,7 +666,7 @@ class ColorPicker extends Framework7Class {
     self.closing = false;
 
     if (!self.inline) {
-      nextTick(() => {
+      Utils.nextTick(() => {
         if (self.modal && self.modal.el && self.modal.destroy) {
           if (!self.params.routableModals) {
             self.modal.destroy();
@@ -744,8 +736,8 @@ class ColorPicker extends Framework7Class {
         if (modalType === 'popup') backdrop = true;
       }
       const modalParams = {
-        targetEl: $targetEl || $inputEl,
-        scrollToEl: params.scrollToInput ? $targetEl || $inputEl : undefined,
+        targetEl: ($targetEl || $inputEl),
+        scrollToEl: params.scrollToInput ? ($targetEl || $inputEl) : undefined,
         content: colorPickerContent,
         backdrop,
         closeByBackdropClick: params.closeByBackdropClick,
@@ -753,19 +745,12 @@ class ColorPicker extends Framework7Class {
           open() {
             const modal = this;
             self.modal = modal;
-            self.$el =
-              modalType === 'popover' || modalType === 'popup'
-                ? modal.$el.find('.color-picker')
-                : modal.$el;
+            self.$el = modalType === 'popover' || modalType === 'popup' ? modal.$el.find('.color-picker') : modal.$el;
             self.$el[0].f7ColorPicker = self;
             self.onOpen();
           },
-          opened() {
-            self.onOpened();
-          },
-          close() {
-            self.onClose();
-          },
+          opened() { self.onOpened(); },
+          close() { self.onClose(); },
           closed() {
             self.onClosed();
             if (self.$el && self.$el[0]) {
@@ -864,7 +849,7 @@ class ColorPicker extends Framework7Class {
     }
 
     if ($el && $el.length) delete self.$el[0].f7ColorPicker;
-    deleteProps(self);
+    Utils.deleteProps(self);
     self.destroyed = true;
   }
 }

@@ -1,6 +1,6 @@
-import $ from '../../shared/dom7.js';
-import { extend, deleteProps } from '../../shared/utils.js';
-import Framework7Class from '../../shared/class.js';
+import $ from 'dom7';
+import Utils from '../../utils/utils';
+import Framework7Class from '../../utils/class';
 
 class Messagebar extends Framework7Class {
   constructor(app, params = {}) {
@@ -22,7 +22,7 @@ class Messagebar extends Framework7Class {
     // Extend defaults with modules params
     messagebar.useModulesParams(defaults);
 
-    messagebar.params = extend(defaults, params);
+    messagebar.params = Utils.extend(defaults, params);
 
     // El
     const $el = $(messagebar.params.el);
@@ -55,7 +55,7 @@ class Messagebar extends Framework7Class {
       $el.addClass('messagebar-top');
     }
 
-    extend(messagebar, {
+    Utils.extend(messagebar, {
       $el,
       el: $el[0],
       $areaEl,
@@ -89,20 +89,10 @@ class Messagebar extends Framework7Class {
       const index = $(this).index();
       if ($(e.target).closest('.messagebar-attachment-delete').length) {
         $(this).trigger('messagebar:attachmentdelete', index);
-        messagebar.emit(
-          'local::attachmentDelete messagebarAttachmentDelete',
-          messagebar,
-          this,
-          index,
-        );
+        messagebar.emit('local::attachmentDelete messagebarAttachmentDelete', messagebar, this, index);
       } else {
         $(this).trigger('messagebar:attachmentclick', index);
-        messagebar.emit(
-          'local::attachmentClick messagebarAttachmentClick',
-          messagebar,
-          this,
-          index,
-        );
+        messagebar.emit('local::attachmentClick messagebarAttachmentClick', messagebar, this, index);
       }
     }
     function onTextareaChange() {
@@ -140,6 +130,7 @@ class Messagebar extends Framework7Class {
       $textareaEl.off('blur', onTextareaBlur);
       app.off('resize', onAppResize);
     };
+
 
     // Install Modules
     messagebar.useModules();
@@ -223,15 +214,9 @@ class Messagebar extends Framework7Class {
         const pageScrollHeight = $pageContentEl[0].scrollHeight;
         const pageOffsetHeight = $pageContentEl[0].offsetHeight;
         const pageScrollTop = $pageContentEl[0].scrollTop;
-        const scrollOnBottom = pageScrollTop === pageScrollHeight - pageOffsetHeight;
+        const scrollOnBottom = (pageScrollTop === pageScrollHeight - pageOffsetHeight);
         if (!maxHeight) {
-          maxHeight =
-            $pageEl[0].offsetHeight -
-            currentPaddingTop -
-            $sheetEl.outerHeight() -
-            $attachmentsEl.outerHeight() -
-            parseInt($areaEl.css('margin-top'), 10) -
-            parseInt($areaEl.css('margin-bottom'), 10);
+          maxHeight = $pageEl[0].offsetHeight - currentPaddingTop - $sheetEl.outerHeight() - $attachmentsEl.outerHeight() - parseInt($areaEl.css('margin-top'), 10) - parseInt($areaEl.css('margin-bottom'), 10);
         }
         $textareaEl.css('max-height', `${maxHeight}px`);
         $pageContentEl.css('padding-bottom', `${requiredPaddingBottom}px`);
@@ -259,7 +244,7 @@ class Messagebar extends Framework7Class {
     const messagebar = this;
     const $attachmentsEl = $(`<div class="messagebar-attachments">${innerHTML}</div>`);
     $attachmentsEl.insertBefore(messagebar.$textareaEl);
-    extend(messagebar, {
+    Utils.extend(messagebar, {
       $attachmentsEl,
       attachmentsEl: $attachmentsEl[0],
     });
@@ -319,9 +304,7 @@ class Messagebar extends Framework7Class {
     if (messagebar.params.renderAttachments) {
       html = messagebar.params.renderAttachments.call(messagebar, messagebar.attachments);
     } else {
-      html = `${messagebar.attachments
-        .map((attachment) => messagebar.renderAttachment(attachment))
-        .join('')}`;
+      html = `${messagebar.attachments.map(attachment => messagebar.renderAttachment(attachment)).join('')}`;
     }
     if (messagebar.$attachmentsEl.length === 0) {
       messagebar.attachmentsCreate(html);
@@ -334,7 +317,7 @@ class Messagebar extends Framework7Class {
     const messagebar = this;
     const $sheetEl = $(`<div class="messagebar-sheet">${innerHTML}</div>`);
     messagebar.$el.append($sheetEl);
-    extend(messagebar, {
+    Utils.extend(messagebar, {
       $sheetEl,
       sheetEl: $sheetEl[0],
     });
@@ -391,7 +374,7 @@ class Messagebar extends Framework7Class {
       messagebar.$el[0].f7Messagebar = null;
       delete messagebar.$el[0].f7Messagebar;
     }
-    deleteProps(messagebar);
+    Utils.deleteProps(messagebar);
   }
 }
 

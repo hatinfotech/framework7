@@ -1,8 +1,7 @@
 /* === Elevation === */
-@import 'elevation-vars.less';
+@import url('elevation-vars.less');
 
-@elevations: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-  24;
+@elevations: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24;
 
 each(@elevations, {
   .elevation-@{value} {
@@ -44,11 +43,11 @@ each(@elevations, {
 }
 
 .if-ios-theme({
-  @import './elevation-ios.less';
+  @import url('./elevation-ios.less');
 });
 .if-md-theme({
-  @import './elevation-md.less';
+  @import url('./elevation-md.less');
 });
 .if-aurora-theme({
-  @import './elevation-aurora.less';
+  @import url('./elevation-aurora.less');
 });

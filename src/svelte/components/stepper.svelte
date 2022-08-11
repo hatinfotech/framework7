@@ -1,11 +1,11 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, noUndefinedProps, plainText, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -58,7 +58,7 @@
     return f7Stepper;
   }
 
-  $: classes = classNames(
+  $: classes = Utils.classNames(
     className,
     'stepper',
     {
@@ -84,7 +84,7 @@
       'stepper-raised-md': raisedMd,
       'stepper-raised-aurora': raisedAurora,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
   function watchValue(newValue) {
@@ -95,77 +95,76 @@
   $: watchValue(value);
 
   function onInput(event) {
-    emit('input', [event, f7Stepper]);
+    dispatch('input', [event, f7Stepper]);
+    if (typeof $$props.onInput === 'function') $$props.onInput(event, f7Stepper);
   }
 
   function onChange(event) {
-    emit('change', [event, f7Stepper]);
+    dispatch('change', [event, f7Stepper]);
+    if (typeof $$props.onChange === 'function') $$props.onChange(event, f7Stepper);
   }
 
   function onMinusClick(event) {
-    emit('stepperMinusClick', [event, f7Stepper]);
+    dispatch('stepperMinusClick', [event, f7Stepper]);
+    if (typeof $$props.onStepperMinusClick === 'function') $$props.onStepperMinusClick(event, f7Stepper);
   }
 
   function onPlusClick(event) {
-    emit('stepperPlusClick', [event, f7Stepper]);
+    dispatch('stepperPlusClick', [event, f7Stepper]);
+    if (typeof $$props.onStepperPlusClick === 'function') $$props.onStepperPlusClick(event, f7Stepper);
   }
 
   onMount(() => {
     if (!init) return;
-    f7ready(() => {
-      f7Stepper = app.f7.stepper.create(
-        noUndefinedProps({
-          el,
-          min,
-          max,
-          value,
-          step,
-          formatValue,
-          autorepeat,
-          autorepeatDynamic,
-          wraps,
-          manualInputMode,
-          decimalPoint,
-          buttonsEndInputMode,
-          on: {
-            change(stepper, newValue) {
-              emit('stepperChange', [newValue]);
-              value = newValue;
-            },
+    f7.ready(() => {
+      f7Stepper = f7.instance.stepper.create(Utils.noUndefinedProps({
+        el,
+        min,
+        max,
+        value,
+        step,
+        formatValue,
+        autorepeat,
+        autorepeatDynamic,
+        wraps,
+        manualInputMode,
+        decimalPoint,
+        buttonsEndInputMode,
+        on: {
+          change(stepper, newValue) {
+            dispatch('stepperChange', [newValue]);
+            if (typeof $$props.onStepperChange === 'function') $$props.onStepperChange(newValue);
           },
-        }),
-      );
+        },
+      }));
     });
   });
 
   onDestroy(() => {
-    if (f7Stepper && f7Stepper.destroy) {
-      f7Stepper.destroy();
-      f7Stepper = null;
-    }
+    if (f7Stepper && f7Stepper.destroy) f7Stepper.destroy();
   });
 </script>
 
 <div bind:this={el} class={classes} {...restProps($$restProps)}>
   <div on:click={onMinusClick} class="stepper-button-minus" />
-  {#if input && !buttonsOnly}
-    <div class="stepper-input-wrap">
-      <input
-        {name}
-        id={inputId}
-        type={inputType}
-        min={inputType === 'number' ? min : undefined}
-        max={inputType === 'number' ? max : undefined}
-        step={inputType === 'number' ? step : undefined}
-        on:input={onInput}
-        on:change={onChange}
-        value={typeof value === 'undefined' ? '' : value}
-        readonly={inputReadonly}
-      />
-    </div>
+  {#if (input && !buttonsOnly)}
+  <div class="stepper-input-wrap">
+    <input
+      name={name}
+      id={inputId}
+      type={inputType}
+      min={inputType === 'number' ? min : undefined}
+      max={inputType === 'number' ? max : undefined}
+      step={inputType === 'number' ? step : undefined}
+      on:input={onInput}
+      on:change={onChange}
+      value={typeof value === 'undefined' ? '' : value}
+      readonly={inputReadonly}
+    />
+  </div>
   {/if}
-  {#if !input && !buttonsOnly}
-    <div class="stepper-value">{plainText(value)}</div>
+  {#if (!input && !buttonsOnly)}
+    <div class="stepper-value">{Utils.text(value)}</div>
   {/if}
   <div on:click={onPlusClick} class="stepper-button-plus" />
 </div>

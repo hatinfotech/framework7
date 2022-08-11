@@ -1,14 +1,15 @@
 <script>
   import { createEventDispatcher, onMount, onDestroy, afterUpdate } from 'svelte';
-  import { colorClasses } from '../shared/mixins.js';
-  import { classNames, noUndefinedProps, createEmitter } from '../shared/utils.js';
-  import { restProps } from '../shared/rest-props.js';
-  import { app, f7ready } from '../shared/f7.js';
+  import Mixins from '../utils/mixins';
+  import Utils from '../utils/utils';
+  import restProps from '../utils/rest-props';
+  import f7 from '../utils/f7';
+  import hasSlots from '../utils/has-slots';
 
   import Link from './link.svelte';
   import Input from './input.svelte';
 
-  const emit = createEmitter(createEventDispatcher, $$props);
+  const dispatch = createEventDispatcher();
 
   let className = undefined;
   export { className as class };
@@ -42,7 +43,32 @@
     return f7Messagebar;
   }
 
-  $: classes = classNames(
+  export function clear(...args) {
+    if (!f7Messagebar) return undefined;
+    return f7Messagebar.clear(...args);
+  }
+  export function getValue(...args) {
+    if (!f7Messagebar) return undefined;
+    return f7Messagebar.getValue(...args);
+  }
+  export function setValue(...args) {
+    if (!f7Messagebar) return undefined;
+    return f7Messagebar.setValue(...args);
+  }
+  export function resize(...args) {
+    if (!f7Messagebar) return undefined;
+    return f7Messagebar.resizePage(...args);
+  }
+  export function focus(...args) {
+    if (!f7Messagebar) return undefined;
+    return f7Messagebar.focus(...args);
+  }
+  export function blur(...args) {
+    if (!f7Messagebar) return undefined;
+    return f7Messagebar.blur(...args);
+  }
+
+  $: classes = Utils.classNames(
     className,
     'toolbar',
     'messagebar',
@@ -50,10 +76,11 @@
       'messagebar-attachments-visible': attachmentsVisible,
       'messagebar-sheet-visible': sheetVisible,
     },
-    colorClasses($$props),
+    Mixins.colorClasses($$props),
   );
 
-  $: hasSendLinkSlots = $$slots['send-link'];
+  // eslint-disable-next-line
+  $: hasSendLinkSlots = hasSlots(arguments, 'send-link');
 
   let initialWatchedSheet = false;
   function watchSheetVisible() {
@@ -78,80 +105,85 @@
   $: watchAttachmentsVisible(attachmentsVisible);
 
   function onChange(event) {
-    emit('change', [...event.detail]);
+    dispatch('change', [...event.detail]);
+    if (typeof $$props.onChange === 'function') $$props.onChange(...event.detail);
   }
 
   function onInput(event) {
-    emit('input', [...event.detail]);
-    value = event.detail[0].target.value;
+    dispatch('input', [...event.detail]);
+    if (typeof $$props.onInput === 'function') $$props.onInput(...event.detail);
   }
 
   function onFocus(event) {
-    emit('focus', [...event.detail]);
+    dispatch('focus', [...event.detail]);
+    if (typeof $$props.onFocus === 'function') $$props.onFocus(...event.detail);
   }
 
   function onBlur(event) {
-    emit('blur', [...event.detail]);
+    dispatch('blur', [...event.detail]);
+    if (typeof $$props.onBlur === 'function') $$props.onBlur(...event.detail);
   }
 
   function onClick(event) {
     const inputValue = el.querySelector('textarea');
-    const clear = f7Messagebar
-      ? () => {
-          f7Messagebar.clear();
-        }
-      : () => {};
 
-    emit('submit', [inputValue, clear]);
-    emit('send', [inputValue, clear]);
-    emit('click', [event]);
+    const clear = f7Messagebar
+      ? () => { f7Messagebar.clear(); }
+      : () => {};
+    dispatch('submit', [inputValue, clear]);
+    if (typeof $$props.onSubmit === 'function') $$props.onSubmit(inputValue, clear);
+    dispatch('send', [inputValue, clear]);
+    if (typeof $$props.onSend === 'function') $$props.onSend(inputValue, clear);
+    dispatch('click', [event]);
+    if (typeof $$props.onClick === 'function') $$props.onClick(event);
   }
 
   function onAttachmentDelete(inst, attachmentEl, attachmentElIndex) {
-    emit('messagebarAttachmentDelete', [inst, attachmentEl, attachmentElIndex]);
+    dispatch('messagebarAttachmentDelete', [inst, attachmentEl, attachmentElIndex]);
+    if (typeof $$props.onMessagebarAttachmentDelete === 'function') $$props.onMessagebarAttachmentDelete(inst, attachmentEl, attachmentElIndex);
   }
 
   function onAttachmentClick(inst, attachmentEl, attachmentElIndex) {
-    emit('messagebarAttachmentClick', [inst, attachmentEl, attachmentElIndex]);
+    dispatch('messagebarAttachmentClick', [inst, attachmentEl, attachmentElIndex]);
+    if (typeof $$props.onMessagebarAttachmentClick === 'function') $$props.onMessagebarAttachmentClick(inst, attachmentEl, attachmentElIndex);
   }
 
   function onResizePage(inst) {
-    emit('messagebarResizePage', [inst]);
+    dispatch('messagebarResizePage', [inst]);
+    if (typeof $$props.onMessagebarResizePage === 'function') $$props.onMessagebarResizePage(inst);
   }
 
   onMount(() => {
     if (!init || !el) return;
-    f7ready(() => {
+    f7.ready(() => {
       if (el) {
-        const dom7 = app.f7.$;
+        const dom7 = f7.instance.$;
         const attachmentsEl = dom7(el).find('.toolbar-inner > .messagebar-attachments');
         if (attachmentsEl.length) dom7(el).find('.messagebar-area').prepend(attachmentsEl);
 
         const sheetEl = dom7(el).find('.toolbar-inner > .messagebar-sheet');
         if (sheetEl.length) dom7(el).append(sheetEl);
       }
-      f7Messagebar = app.f7.messagebar.create(
-        noUndefinedProps({
-          el,
-          top,
-          resizePage,
-          bottomOffset,
-          topOffset,
-          maxHeight,
-          on: {
-            attachmentDelete: onAttachmentDelete,
-            attachmentClick: onAttachmentClick,
-            resizePage: onResizePage,
-          },
-        }),
-      );
+      f7Messagebar = f7.instance.messagebar.create(Utils.noUndefinedProps({
+        el,
+        top,
+        resizePage,
+        bottomOffset,
+        topOffset,
+        maxHeight,
+        on: {
+          attachmentDelete: onAttachmentDelete,
+          attachmentClick: onAttachmentClick,
+          resizePage: onResizePage,
+        },
+      }));
     });
   });
 
   afterUpdate(() => {
     if (!f7Messagebar) return;
-    if (el && app.f7) {
-      const dom7 = app.f7.$;
+    if (el && f7.instance) {
+      const dom7 = f7.instance.$;
       const attachmentsEl = dom7(el).find('.toolbar-inner > .messagebar-attachments');
       if (attachmentsEl.length) dom7(el).find('.messagebar-area').prepend(attachmentsEl);
 
@@ -171,44 +203,42 @@
   });
 
   onDestroy(() => {
-    if (f7Messagebar && f7Messagebar.destroy) {
-      f7Messagebar.destroy();
-      f7Messagebar = null;
-    }
+    if (f7Messagebar && f7Messagebar.destroy) f7Messagebar.destroy();
   });
+
 </script>
 
 <div bind:this={el} class={classes} data-f7-slot={f7Slot} {...restProps($$restProps)}>
-  <slot messagebar={f7Messagebar} name="before-inner" />
+  <slot name="before-inner" />
   <div class="toolbar-inner">
-    <slot messagebar={f7Messagebar} name="inner-start" />
+    <slot name="inner-start" />
     <div class="messagebar-area">
-      <slot messagebar={f7Messagebar} name="before-area" />
+      <slot name="before-area" />
       <Input
         id={textareaId}
         type="textarea"
         wrap={false}
-        {placeholder}
-        {disabled}
-        {name}
-        {readonly}
-        {resizable}
+        placeholder={placeholder}
+        disabled={disabled}
+        name={name}
+        readonly={readonly}
+        resizable={resizable}
         value={typeof value === 'undefined' ? '' : value}
         on:input={onInput}
         on:change={onChange}
         on:focus={onFocus}
         on:blur={onBlur}
       />
-      <slot messagebar={f7Messagebar} name="after-inner" />
+      <slot name="after-inner" />
     </div>
-    {#if (sendLink && sendLink.length > 0) || hasSendLinkSlots}
-      <Link {onClick}>
-        <slot messagebar={f7Messagebar} name="send-link" />
+    {#if ((sendLink && sendLink.length > 0) || hasSendLinkSlots)}
+      <Link onClick={onClick}>
+        <slot name="send-link" />
         {sendLink}
       </Link>
     {/if}
-    <slot messagebar={f7Messagebar} name="inner-end" />
-    <slot messagebar={f7Messagebar} />
+    <slot name="inner-end" />
+    <slot />
   </div>
-  <slot messagebar={f7Messagebar} name="after-inner" />
+  <slot name="after-inner" />
 </div>
