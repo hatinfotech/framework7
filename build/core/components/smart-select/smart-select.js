@@ -27,7 +27,7 @@ export default {
       searchbarDisableButton: undefined,
       searchbarSpellcheck: false,
       closeOnSelect: false,
-      virtualList: true,
+      virtualList: false,
       virtualListHeight: undefined,
       scrollToSelectedItem: false,
       formColorTheme: undefined,
