@@ -7,7 +7,7 @@
  *
  * Released under the MIT License
  *
- * Released on: August 19, 2022
+ * Released on: September 3, 2022
  */
 
 (function (global, factory) {
@@ -22168,10 +22168,12 @@
       var step = stepper.step;
       var min = stepper.min;
       var max = stepper.max;
+      var decimalPoint = stepper.params.decimalPoint;
 
       var oldValue = stepper.value;
 
-      var value = Math.round(newValue / step) * step;
+      // let value = Math.round(newValue / step) * step;
+      var value = decimalPoint > 0 ? newValue : (Math.round(newValue / step) * step);
       if (stepper.params.wraps && withWraps) {
         if (value > max) { value = min; }
         if (value < min) { value = max; }

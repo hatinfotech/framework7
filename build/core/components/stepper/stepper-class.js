@@ -291,10 +291,12 @@ class Stepper extends Framework7Class {
   setValue(newValue, forceUpdate, withWraps) {
     const stepper = this;
     const { step, min, max } = stepper;
+    const decimalPoint = stepper.params.decimalPoint;
 
     const oldValue = stepper.value;
 
-    let value = Math.round(newValue / step) * step;
+    // let value = Math.round(newValue / step) * step;
+    let value = decimalPoint > 0 ? newValue.toFixed(decimalPoint) : Math.round(newValue / step) * step;
     if (stepper.params.wraps && withWraps) {
       if (value > max) value = min;
       if (value < min) value = max;
